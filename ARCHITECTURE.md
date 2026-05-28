@@ -38,6 +38,7 @@ User Intent
   -> QualityAgent      # 边界、肤色、光照、款式相似度评分
   -> OpsAgent          # 趋势洞察、运营日报、活动建议
   -> CustomerAgent     # 多轮客服、预约、售后
+  -> EvaluationAgent   # 按赛题评分体系自动打分并反推开发任务
   -> HumanConfirmNode  # 高风险动作人工确认
   -> ExecutorTool      # Mock API / 美团 API
 ```
@@ -49,6 +50,7 @@ User Intent
 - `NailStyle`：颜色、图案、甲型、饰品、风格标签、价格区间。
 - `MerchantSignal`：点击、收藏、订单、搜索、库存、预约。
 - `ActionProposal`：Agent 建议的运营动作，必须支持确认、拒绝、回滚记录。
+- `EvaluationResult`：一次运行的评分结果，包含分项分、扣分原因、证据和下一步开发任务。
 
 ## 技术路线
 
@@ -56,4 +58,4 @@ User Intent
 - 后端：优先复用 DeerFlow 的 sub-agent、memory、sandbox、skills 思路。
 - 视觉：MediaPipe Hands 定位手部，SAM 做甲面 mask，局部扩散模型做试戴。
 - 运营：向量库 + 规则约束 + 工具调用，客服回复必须引用门店事实或 mock 事实。
-- 评测：生成质量分、运营转化指标、异常处理覆盖数，映射到赛题评分标准。
+- 评测：由 `EvaluationAgent` 生成质量分、运营转化指标、异常处理覆盖数，映射到赛题评分标准，并作为开发优先级输入。

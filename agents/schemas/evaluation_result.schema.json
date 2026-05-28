@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "NailFlow Evaluation Result",
+  "type": "object",
+  "required": [
+    "total_score",
+    "rubric_scores",
+    "verdict",
+    "blocking_issues",
+    "evidence",
+    "next_dev_tasks",
+    "demo_talking_points"
+  ],
+  "properties": {
+    "total_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "rubric_scores": {
+      "type": "object",
+      "required": [
+        "completeness",
+        "application_effect",
+        "innovation",
+        "business_value",
+        "constraints_bonus"
+      ],
+      "properties": {
+        "completeness": { "type": "number", "minimum": 0, "maximum": 30 },
+        "application_effect": { "type": "number", "minimum": 0, "maximum": 25 },
+        "innovation": { "type": "number", "minimum": 0, "maximum": 20 },
+        "business_value": { "type": "number", "minimum": 0, "maximum": 15 },
+        "constraints_bonus": { "type": "number", "minimum": 0, "maximum": 10 }
+      },
+      "additionalProperties": false
+    },
+    "verdict": {
+      "type": "string",
+      "enum": ["pass", "weak_pass", "fail"]
+    },
+    "blocking_issues": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "evidence": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "next_dev_tasks": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "demo_talking_points": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}
