@@ -1,0 +1,42 @@
+# macOS / editor
+.DS_Store
+*.log
+
+# Secrets and local model/provider configuration
+.env
+.env.*
+config.yaml
+extensions_config.json
+**/.env
+**/.env.*
+**/config.yaml
+**/extensions_config.json
+**/*secret*
+**/*.key
+
+# Dependencies and build outputs
+node_modules/
+**/node_modules/
+dist/
+**/dist/
+*.tsbuildinfo
+.next/
+**/.next/
+.venv/
+**/.venv/
+__pycache__/
+**/__pycache__/
+
+# DeerFlow local runtime state
+**/.deer-flow/
+research/sources/deer-flow-main/
+research/cloned_repos/
+
+# Oversized raw archives / local generated data
+美甲图片.zip
+*.sst
+*.db
+
+# Keep downloaded reference source archives and papers
+!research/sources/*.zip
+!research/sources/*.pdf
