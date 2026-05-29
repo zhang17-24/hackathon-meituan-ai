@@ -113,7 +113,59 @@ python3 ../serve_spa.py
 ## 下一步开发顺序
 
 1. 先实现 `EvaluationAgent` 的结构化打分，哪怕业务结果先是 mock。
-2. 接入外部图像模型，跑通“手图 + 款式图 + mask + prompt -> 试戴图”。
+2. 接入外部图像模型，跑通”手图 + 款式图 + mask + prompt -> 试戴图”。
 3. 建立本地运营知识库，用 `rg` 检索 mock 数据生成运营建议。
 4. 加长期记忆：用户偏好、门店历史、营销反馈、售后风险。
 5. 让评价 Agent 每次运行后自动产出 `next_dev_tasks`，用评分收益驱动迭代。
+
+## NailFlow 快速启动
+
+### 1. 配置环境变量
+
+在 `.env` 文件中填入真实 API key：
+
+```bash
+OPENAI_API_KEY=your_llm_key
+OPENAI_BASE_URL=https://your-llm-endpoint/v1
+NAIL_IMAGE_API_KEY=your_image_key
+NAIL_IMAGE_API_URL=https://your-image-api/inpaint
+```
+
+在 `config.yaml` 中配置至少一个 LLM 模型（取消注释其中一个 `models:` 条目）。
+
+### 2. 安装依赖
+
+```bash
+# 后端
+cd backend && uv sync
+uv pip install mediapipe chromadb apscheduler pillow httpx
+
+# 前端
+cd ../frontend && pnpm install
+```
+
+### 3. 初始化数据库 + 测试账号
+
+```bash
+cd backend
+python -c “from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()”
+python scripts/seed_nail_users.py
+```
+
+### 4. 启动服务
+
+```bash
+# 终端 1：后端（端口 8001）
+cd backend && uv run python -m uvicorn app.gateway.app:app --port 8001 --reload
+
+# 终端 2：前端（端口 3000）
+cd frontend && pnpm dev
+```
+
+### 5. 测试账号
+
+| 邮箱 | 密码 | 角色 | 可访问 |
+|------|------|------|--------|
+| user@nailflow.dev | nail123456 | 用户 | /workspace/nail/tryon |
+| ops@nailflow.dev | nail123456 | 运营 | 以上 + /workspace/nail/dashboard |
+| dev@nailflow.dev | nail123456 | 开发 | 以上 + /workspace/nail/evaluation |
