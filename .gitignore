@@ -27,6 +27,9 @@ dist/
 __pycache__/
 **/__pycache__/
 
+# NailFlow runtime data (uploads, results, chroma vectors)
+data/
+
 # DeerFlow local runtime state
 **/.deer-flow/
 research/sources/deer-flow-main/
