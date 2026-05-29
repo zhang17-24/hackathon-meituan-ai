@@ -1,6 +1,7 @@
 """JWT token creation and verification."""
 
 from datetime import UTC, datetime, timedelta
+from typing import Literal
 
 import jwt
 from pydantic import BaseModel
@@ -16,7 +17,7 @@ class TokenPayload(BaseModel):
     exp: datetime
     iat: datetime | None = None
     ver: int = 0  # token_version — must match User.token_version
-    nail_role: str = "user"  # NailFlow portal role
+    nail_role: Literal["user", "ops", "dev"] = "user"  # NailFlow portal role
 
 
 def create_access_token(

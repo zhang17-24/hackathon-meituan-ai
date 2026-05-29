@@ -174,8 +174,8 @@ async def init_engine(
                     "ALTER TABLE users ADD COLUMN IF NOT EXISTS nail_role TEXT NOT NULL DEFAULT 'user'"
                 ))
         logger.info("Migration: added nail_role column to users table")
-    except Exception:
-        pass  # Column already exists or table not yet created — both are fine
+    except Exception as e:
+        logger.debug("nail_role column migration skipped (already exists or other): %s", e)
 
     logger.info("Persistence engine initialized: backend=%s", backend)
 
