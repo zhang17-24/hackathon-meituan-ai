@@ -765,6 +765,24 @@ def _build_custom_mounts_section(*, app_config: AppConfig | None = None) -> str:
     return f"\n**Custom Mounted Directories:**\n{mounts_list}\n- If the user needs files outside `/mnt/user-data`, use these absolute container paths directly when they match the requested directory"
 
 
+_NAIL_ROLE_PREFIX = {
+    "user": (
+        "你是 NailFlow 的 AI 美甲顾问。帮助用户进行 AI 美甲试戴、发现爆款款式、获取个性化推荐。\n"
+        "试戴时依次调用：hand_detect → nail_mask → style_understanding → prompt_builder → image_generation → quality_check。\n"
+        "用中文回复，语气亲切、专业。\n\n"
+    ),
+    "ops": (
+        "你是 NailFlow 的智能运营助手。能进行试戴，还能分析运营数据、发现趋势、生成营销方案、处理客服咨询。\n"
+        "所有影响价格/库存/预约/退款的操作必须先生成 ActionProposal，等待人工确认。\n"
+        "回复中标注数据来源（来自趋势分析/用户偏好/门店规则）。\n\n"
+    ),
+    "dev": (
+        "你是 NailFlow 开发版 AI，拥有全部工具权限。每次试戴或运营分析结束后，主动调用 evaluation_tool 打分。\n"
+        "详细展示每个工具的参数和返回结果，便于调试。\n\n"
+    ),
+}
+
+
 def apply_prompt_template(
     subagent_enabled: bool = False,
     max_concurrent_subagents: int = 3,
@@ -772,6 +790,7 @@ def apply_prompt_template(
     agent_name: str | None = None,
     available_skills: set[str] | None = None,
     app_config: AppConfig | None = None,
+    nail_role: str = "user",
 ) -> str:
     # Include subagent section only if enabled (from runtime parameter)
     n = max_concurrent_subagents
@@ -810,7 +829,8 @@ def apply_prompt_template(
     # Memory and current date are injected per-turn via DynamicContextMiddleware
     # as a <system-reminder> in the first HumanMessage, keeping this prompt
     # identical across users and sessions for maximum prefix-cache reuse.
-    return SYSTEM_PROMPT_TEMPLATE.format(
+    role_prefix = _NAIL_ROLE_PREFIX.get(nail_role, _NAIL_ROLE_PREFIX["user"])
+    base_prompt = SYSTEM_PROMPT_TEMPLATE.format(
         agent_name=agent_name or "DeerFlow 2.0",
         soul=get_agent_soul(agent_name),
         self_update_section=_build_self_update_section(agent_name),
@@ -821,3 +841,4 @@ def apply_prompt_template(
         subagent_thinking=subagent_thinking,
         acp_section=acp_and_mounts_section,
     )
+    return role_prefix + base_prompt

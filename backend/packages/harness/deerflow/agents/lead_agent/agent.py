@@ -399,6 +399,15 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
     is_bootstrap = cfg.get("is_bootstrap", False)
     agent_name = validate_agent_name(cfg.get("agent_name"))
 
+    # NailFlow: resolve tool groups based on nail_role
+    nail_role = cfg.get("nail_role", "user")
+    _ROLE_GROUPS = {
+        "user": ["nail"],
+        "ops":  ["nail", "nail_ops"],
+        "dev":  ["nail", "nail_ops", "nail_dev"],
+    }
+    nail_groups = _ROLE_GROUPS.get(nail_role, ["nail"])
+
     agent_config = load_agent_config(agent_name) if not is_bootstrap else None
     available_skills = _available_skill_names(agent_config, is_bootstrap)
     # Custom agent model from agent config (if any), or None to let _resolve_model_name pick the default
@@ -470,6 +479,7 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
                 max_concurrent_subagents=max_concurrent_subagents,
                 available_skills=set(["bootstrap"]),
                 app_config=resolved_app_config,
+                nail_role=nail_role,
             ),
             state_schema=ThreadState,
         )
@@ -477,8 +487,10 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
     # Custom agents can update their own SOUL.md / config via update_agent.
     # The default agent (no agent_name) does not see this tool.
     extra_tools = [update_agent] if agent_name else []
-    # Default lead agent (unchanged behavior)
-    tools = get_available_tools(model_name=model_name, groups=agent_config.tool_groups if agent_config else None, subagent_enabled=subagent_enabled, app_config=resolved_app_config)
+    # Merge agent tool_groups with nail_groups for NailFlow role-based tool access
+    _base_groups = agent_config.tool_groups if agent_config else None
+    _effective_groups = list(dict.fromkeys((_base_groups or []) + nail_groups)) if nail_groups else _base_groups
+    tools = get_available_tools(model_name=model_name, groups=_effective_groups, subagent_enabled=subagent_enabled, app_config=resolved_app_config)
     return create_agent(
         model=create_chat_model(name=model_name, thinking_enabled=thinking_enabled, reasoning_effort=reasoning_effort, app_config=resolved_app_config, attach_tracing=False),
         tools=filter_tools_by_skill_allowed_tools(tools + extra_tools, skills_for_tool_policy),
@@ -489,6 +501,7 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
             agent_name=agent_name,
             available_skills=set(agent_config.skills) if agent_config and agent_config.skills is not None else None,
             app_config=resolved_app_config,
+            nail_role=nail_role,
         ),
         state_schema=ThreadState,
     )
