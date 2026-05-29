@@ -44,7 +44,9 @@ def style_understanding_tool(style_image_path: str, user_description: str = "") 
     """
     try:
         from deerflow.models import create_chat_model
-        model = create_chat_model(thinking_enabled=False, attach_tracing=False)
+        from .base import get_tool_model
+        _tool_model = get_tool_model("style_understanding_tool")
+        model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_tracing=False)
 
         img_b64 = _encode_image(style_image_path)
 

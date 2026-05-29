@@ -16,6 +16,7 @@ interface NailNavItem {
 const NAV_ITEMS: NailNavItem[] = [
   // 试戴功能进入带 nail 模式的新对话（复用 DeerFlow 对话界面）
   { href: "/workspace/chats/new?mode=nail", label: "AI 试戴",  emoji: "💅", requiredRole: "user" },
+  { href: "/workspace/nail/tools",          label: "工具管理", emoji: "🔧", requiredRole: "user" },
   { href: "/workspace/nail/dashboard",      label: "运营看板", emoji: "📊", requiredRole: "ops" },
   { href: "/workspace/nail/evaluation",     label: "评分面板", emoji: "⚡", requiredRole: "dev" },
 ];

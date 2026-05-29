@@ -73,7 +73,33 @@ async def list_models(config: AppConfig = Depends(get_config)) -> ModelsListResp
         }
         ```
     """
-    models = [
+    # 1. 读 DB 中活跃的用户自定义模型
+    import logging as _logging
+    _logger = _logging.getLogger(__name__)
+    db_models: list[ModelResponse] = []
+    db_names: set[str] = set()
+    try:
+        from packages.harness.deerflow.tools.nail.base import get_db
+        with get_db() as conn:
+            rows = conn.execute(
+                "SELECT name, model_id, display_name, supports_vision, supports_thinking "
+                "FROM nail_model_configs WHERE is_active = 1 ORDER BY created_at DESC"
+            ).fetchall()
+        for r in rows:
+            db_models.append(ModelResponse(
+                name=r["name"],
+                model=r["model_id"],
+                display_name=r["display_name"],
+                description=None,
+                supports_thinking=bool(r["supports_thinking"]),
+                supports_reasoning_effort=False,
+            ))
+            db_names.add(r["name"])
+    except Exception as e:
+        _logger.debug("读取 nail_model_configs 失败（可能未初始化）: %s", e)
+
+    # 2. config.yaml 静态模型（跳过 DB 中同名的模型）
+    static_models = [
         ModelResponse(
             name=model.name,
             model=model.model,
@@ -83,9 +109,11 @@ async def list_models(config: AppConfig = Depends(get_config)) -> ModelsListResp
             supports_reasoning_effort=model.supports_reasoning_effort,
         )
         for model in config.models
+        if model.name not in db_names
     ]
+
     return ModelsListResponse(
-        models=models,
+        models=db_models + static_models,
         token_usage=TokenUsageResponse(enabled=config.token_usage.enabled),
     )
 

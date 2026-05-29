@@ -89,5 +89,54 @@ def init_nail_tables() -> None:
                 content      TEXT,
                 created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
             );
+
+            CREATE TABLE IF NOT EXISTS nail_model_configs (
+                id                TEXT PRIMARY KEY,
+                name              TEXT UNIQUE NOT NULL,
+                display_name      TEXT NOT NULL,
+                provider          TEXT NOT NULL,
+                model_id          TEXT NOT NULL,
+                api_key           TEXT,
+                api_base          TEXT NOT NULL,
+                use_class         TEXT NOT NULL,
+                supports_vision   INTEGER DEFAULT 0,
+                supports_thinking INTEGER DEFAULT 0,
+                is_active         INTEGER DEFAULT 1,
+                created_at        DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at        DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS nail_agent_configs (
+                config_key  TEXT PRIMARY KEY,
+                model_name  TEXT NOT NULL,
+                updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
+
+            CREATE TABLE IF NOT EXISTS nail_tool_overrides (
+                tool_name   TEXT PRIMARY KEY,
+                model_name  TEXT,
+                is_enabled  INTEGER DEFAULT 1,
+                updated_at  DATETIME DEFAULT CURRENT_TIMESTAMP
+            );
         """)
     logger.info("NailFlow tables initialized at %s", DB_PATH)
+
+
+def get_tool_model(tool_name: str) -> str | None:
+    """读取工具的模型配置：先查工具覆盖，再查全局 tool_default，都没有返回 None。"""
+    try:
+        with get_db() as conn:
+            row = conn.execute(
+                "SELECT model_name FROM nail_tool_overrides "
+                "WHERE tool_name = ? AND is_enabled = 1",
+                (tool_name,),
+            ).fetchone()
+            if row and row["model_name"]:
+                return row["model_name"]
+            default = conn.execute(
+                "SELECT model_name FROM nail_agent_configs WHERE config_key = 'tool_default'"
+            ).fetchone()
+            return default["model_name"] if default else None
+    except Exception as e:
+        logger.debug("get_tool_model(%s) failed (DB not ready?): %s", tool_name, e)
+        return None

@@ -413,6 +413,20 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
     # Custom agent model from agent config (if any), or None to let _resolve_model_name pick the default
     agent_model_name = agent_config.model if agent_config and agent_config.model else None
 
+    # NailFlow: 若请求未指定 model_name，从 nail_agent_configs["main_agent"] 读取全局默认
+    if not (requested_model_name or agent_model_name):
+        try:
+            from packages.harness.deerflow.tools.nail.base import get_db as _nail_get_db
+            with _nail_get_db() as _db:
+                _row = _db.execute(
+                    "SELECT model_name FROM nail_agent_configs WHERE config_key='main_agent'"
+                ).fetchone()
+                if _row and _row["model_name"]:
+                    requested_model_name = _row["model_name"]
+                    logger.debug("NailFlow: using nail_agent_configs main_agent = %s", requested_model_name)
+        except Exception as _e:
+            logger.debug("NailFlow: nail_agent_configs not available: %s", _e)
+
     # Final model name resolution: request → agent config → global default, with fallback for unknown names
     model_name = _resolve_model_name(requested_model_name or agent_model_name, app_config=resolved_app_config)
 

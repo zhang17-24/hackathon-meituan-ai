@@ -84,7 +84,9 @@ def quality_check_tool(
 
     try:
         from deerflow.models import create_chat_model
-        model = create_chat_model(thinking_enabled=False, attach_tracing=False)
+        from .base import get_tool_model
+        _tool_model = get_tool_model("quality_check_tool")
+        model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_tracing=False)
 
         orig_b64 = _encode(original_hand_path)
         res_b64 = _encode(result_path)

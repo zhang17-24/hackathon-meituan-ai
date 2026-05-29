@@ -4,6 +4,7 @@ import {
   BellIcon,
   InfoIcon,
   BrainIcon,
+  CpuIcon,
   PaletteIcon,
   SparklesIcon,
   UserIcon,
@@ -25,11 +26,13 @@ import { MemorySettingsPage } from "@/components/workspace/settings/memory-setti
 import { NotificationSettingsPage } from "@/components/workspace/settings/notification-settings-page";
 import { SkillSettingsPage } from "@/components/workspace/settings/skill-settings-page";
 import { ToolSettingsPage } from "@/components/workspace/settings/tool-settings-page";
+import { ModelSettingsPage } from "@/components/workspace/settings/model-settings-page";
 import { useI18n } from "@/core/i18n/hooks";
 import { cn } from "@/lib/utils";
 
 type SettingsSection =
   | "account"
+  | "models"
   | "appearance"
   | "memory"
   | "tools"
@@ -61,6 +64,11 @@ export function SettingsDialog(props: SettingsDialogProps) {
         id: "account",
         label: t.settings.sections.account,
         icon: UserIcon,
+      },
+      {
+        id: "models",
+        label: "模型配置",
+        icon: CpuIcon,
       },
       {
         id: "appearance",
@@ -134,6 +142,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
           <ScrollArea className="h-full min-h-0 rounded-lg border">
             <div className="space-y-8 p-6">
               {activeSection === "account" && <AccountSettingsPage />}
+              {activeSection === "models" && <ModelSettingsPage />}
               {activeSection === "appearance" && <AppearanceSettingsPage />}
               {activeSection === "memory" && <MemorySettingsPage />}
               {activeSection === "tools" && <ToolSettingsPage />}

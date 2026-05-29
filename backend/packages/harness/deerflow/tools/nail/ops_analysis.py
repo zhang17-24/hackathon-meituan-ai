@@ -43,7 +43,9 @@ def ops_analysis_tool(trend_summary: str, query: str = "") -> str:
 
     try:
         from deerflow.models import create_chat_model
-        model = create_chat_model(thinking_enabled=False, attach_tracing=False)
+        from .base import get_tool_model
+        _tool_model = get_tool_model("ops_analysis_tool")
+        model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_tracing=False)
 
         prompt = (
             f"你是美团美甲门店运营专家。生成 2-3 条可执行运营方案（JSON格式）。\n"
