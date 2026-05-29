@@ -1,0 +1,20 @@
+-- NailFlow Mock 运营信号数据
+INSERT OR IGNORE INTO ops_signals (user_id, style_id, signal_type, created_at) VALUES
+('u001', 'cat_eye_purple',  'save',  datetime('now', '-1 day')),
+('u002', 'cat_eye_purple',  'save',  datetime('now', '-2 day')),
+('u003', 'cat_eye_purple',  'order', datetime('now', '-1 day')),
+('u004', 'cat_eye_purple',  'click', datetime('now', '-1 day')),
+('u001', 'french_tip_gold', 'save',  datetime('now', '-3 day')),
+('u004', 'french_tip_gold', 'click', datetime('now', '-1 day')),
+('u005', 'french_tip_gold', 'save',  datetime('now', '-2 day')),
+('u002', 'ombre_pink',      'save',  datetime('now', '-2 day')),
+('u005', 'ombre_pink',      'order', datetime('now', '-4 day')),
+('u003', 'ombre_pink',      'save',  datetime('now', '-1 day')),
+('u001', 'nail_art_floral', 'click', datetime('now', '-5 day')),
+('u006', 'solid_nude',      'order', datetime('now', '-1 day')),
+('u007', 'solid_nude',      'order', datetime('now', '-2 day')),
+('u008', 'solid_nude',      'save',  datetime('now', '-1 day')),
+('u009', 'solid_nude',      'click', datetime('now', '-1 day')),
+('u001', 'marble_white',    'save',  datetime('now', '-6 day')),
+('u010', 'glitter_holographic','save', datetime('now', '-1 day')),
+('u011', 'glitter_holographic','click', datetime('now', '-1 day'));
