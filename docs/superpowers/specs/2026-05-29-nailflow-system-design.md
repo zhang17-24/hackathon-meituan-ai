@@ -412,6 +412,8 @@ nailflow/
 
 ---
 
-> 状态：**设计已确认，待进入实现计划阶段**
+> 状态：**实现计划已生成**
+>
+> 实现计划：[docs/superpowers/plans/2026-05-29-nailflow-implementation.md](../plans/2026-05-29-nailflow-implementation.md)
 >
 > *文档持续更新，每次设计对话后同步追加*
