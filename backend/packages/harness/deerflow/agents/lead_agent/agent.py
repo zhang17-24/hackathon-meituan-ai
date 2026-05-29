@@ -19,6 +19,8 @@ middleware, and the async path inside ``TitleMiddleware``. Any new in-graph
 """
 
 import logging
+import time as _time
+import uuid as _uuid
 
 from langchain.agents import create_agent
 from langchain.agents.middleware import AgentMiddleware
@@ -46,6 +48,40 @@ from deerflow.skills.types import Skill
 from deerflow.tracing import build_tracing_callbacks
 
 logger = logging.getLogger(__name__)
+
+
+def _log_tool_call(
+    run_id: str,
+    tool_name: str,
+    call_index: int,
+    input_data: object,
+    output_data: object,
+    thinking: str,
+    duration_ms: int,
+) -> None:
+    """幂等写入工具调用日志到 tool_call_log 表，失败不影响主流程。"""
+    try:
+        import json as _json
+        from packages.harness.deerflow.tools.nail.base import get_db as _nail_get_db
+        with _nail_get_db() as conn:
+            conn.execute(
+                "INSERT OR IGNORE INTO tool_call_log "
+                "(id, run_id, tool_name, call_index, input_json, output_json, thinking, duration_ms) "
+                "VALUES (?,?,?,?,?,?,?,?)",
+                (
+                    str(_uuid.uuid4()),
+                    run_id,
+                    tool_name,
+                    call_index,
+                    _json.dumps(input_data, ensure_ascii=False, default=str)[:4096],
+                    _json.dumps(output_data, ensure_ascii=False, default=str)[:4096],
+                    str(thinking or "")[:2048],
+                    duration_ms,
+                )
+            )
+    except Exception as _e:
+        import logging as _logging
+        _logging.getLogger(__name__).debug("_log_tool_call failed: %s", _e)
 
 
 def _get_runtime_config(config: RunnableConfig) -> dict:
@@ -408,6 +444,19 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
     }
     nail_groups = _ROLE_GROUPS.get(nail_role, ["nail"])
 
+    # NailFlow: page_mode 控制工具子集（在 nail_role 权限内进一步过滤）
+    nail_page_mode = cfg.get("nail_page_mode", "tryon")
+    _MODE_TOOL_GROUPS = {
+        "tryon": ["nail"],
+        "ops":   ["nail", "nail_ops"],
+        "eval":  ["nail", "nail_ops", "nail_dev"],
+    }
+    mode_groups = _MODE_TOOL_GROUPS.get(nail_page_mode, ["nail"])
+    # 取交集：mode 要求的组 ∩ nail_role 有权访问的组
+    nail_groups = [g for g in mode_groups if g in nail_groups]
+    if not nail_groups:
+        nail_groups = ["nail"]  # 降级到最小权限
+
     agent_config = load_agent_config(agent_name) if not is_bootstrap else None
     available_skills = _available_skill_names(agent_config, is_bootstrap)
     # Custom agent model from agent config (if any), or None to let _resolve_model_name pick the default
@@ -494,6 +543,7 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
                 available_skills=set(["bootstrap"]),
                 app_config=resolved_app_config,
                 nail_role=nail_role,
+                nail_page_mode=nail_page_mode,
             ),
             state_schema=ThreadState,
         )
@@ -505,6 +555,39 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
     _base_groups = agent_config.tool_groups if agent_config else None
     _effective_groups = list(dict.fromkeys((_base_groups or []) + nail_groups))
     tools = get_available_tools(model_name=model_name, groups=_effective_groups, subagent_enabled=subagent_enabled, app_config=resolved_app_config)
+
+    # NailFlow: 工具调用日志包装（记录到 tool_call_log 表）
+    _run_id_for_log = str(_uuid.uuid4())
+    _call_counter: list[int] = [0]  # NOTE: 非线程安全，hackathon 单用户串行场景可接受
+
+    def _wrap_tool(t):
+        _orig = getattr(t, "func", None)
+        if _orig is None:
+            return t
+        import functools
+
+        @functools.wraps(_orig)
+        def _wrapped(*args, **kwargs):
+            idx = _call_counter[0]
+            _call_counter[0] += 1
+            start = _time.monotonic()
+            try:
+                result = _orig(*args, **kwargs)
+                duration = int((_time.monotonic() - start) * 1000)
+                _log_tool_call(_run_id_for_log, t.name, idx,
+                               {"args": args, "kwargs": kwargs}, result, "", duration)
+                return result
+            except Exception as exc:
+                duration = int((_time.monotonic() - start) * 1000)
+                _log_tool_call(_run_id_for_log, t.name, idx,
+                               {"args": args, "kwargs": kwargs}, {"error": str(exc)}, "", -1)
+                raise
+
+        t.func = _wrapped
+        return t
+
+    tools = [_wrap_tool(t) for t in tools]
+
     return create_agent(
         model=create_chat_model(name=model_name, thinking_enabled=thinking_enabled, reasoning_effort=reasoning_effort, app_config=resolved_app_config, attach_tracing=False),
         tools=filter_tools_by_skill_allowed_tools(tools + extra_tools, skills_for_tool_policy),
@@ -516,6 +599,7 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
             available_skills=set(agent_config.skills) if agent_config and agent_config.skills is not None else None,
             app_config=resolved_app_config,
             nail_role=nail_role,
+            nail_page_mode=nail_page_mode,
         ),
         state_schema=ThreadState,
     )

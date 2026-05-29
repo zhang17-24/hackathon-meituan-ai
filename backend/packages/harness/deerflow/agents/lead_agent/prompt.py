@@ -782,6 +782,31 @@ _NAIL_ROLE_PREFIX = {
     ),
 }
 
+# 按页面 mode 覆盖提示词前缀（优先级高于 nail_role）
+_NAIL_PAGE_MODE_PREFIX = {
+    "tryon": (
+        "你是 NailFlow AI 美甲试戴助手。专注于帮助用户完成 AI 试戴全流程。\n"
+        "试戴工具链：hand_detect_tool → nail_mask_tool → style_understanding_tool "
+        "→ prompt_builder_tool → image_generation_tool → quality_check_tool。\n"
+        "试戴完成后主动调用 nail_style_recommend_tool 为用户推荐相似款式。\n"
+        "用中文回复，语气亲切专业。\n\n"
+    ),
+    "ops": (
+        "你是 NailFlow 智能运营助手。分析美甲运营数据、发现趋势、生成营销方案。\n"
+        "工作流程：trend_query_tool → trend_discovery_tool → ops_analysis_tool → action_proposal_tool。\n"
+        "需要了解用户偏好分布时调用 user_pref_analytics_tool。\n"
+        "所有影响价格/库存/预约/退款的操作必须先生成 ActionProposal 等待人工确认。\n"
+        "回复中标注数据来源，用 Markdown 表格展示数据，用清晰结构呈现方案。\n\n"
+    ),
+    "eval": (
+        "你是 NailFlow 评分分析助手。评估 AI 试戴质量，提供改进建议。\n"
+        "分析流程：nail_run_query_tool（获取最近试戴数据）→ evaluation_tool（按赛题评分）。\n"
+        "评分时覆盖：完整性(30)、应用效果(25)、创新性(20)、商业价值(15)、硬约束(10)。\n"
+        "给出具体扣分原因和按评分收益排序的下一步开发任务。\n"
+        "详细展示工具调用过程，便于调试和答辩举证。\n\n"
+    ),
+}
+
 
 def apply_prompt_template(
     subagent_enabled: bool = False,
@@ -791,6 +816,7 @@ def apply_prompt_template(
     available_skills: set[str] | None = None,
     app_config: AppConfig | None = None,
     nail_role: str = "user",
+    nail_page_mode: str = "tryon",
 ) -> str:
     # Include subagent section only if enabled (from runtime parameter)
     n = max_concurrent_subagents
@@ -829,7 +855,11 @@ def apply_prompt_template(
     # Memory and current date are injected per-turn via DynamicContextMiddleware
     # as a <system-reminder> in the first HumanMessage, keeping this prompt
     # identical across users and sessions for maximum prefix-cache reuse.
-    role_prefix = _NAIL_ROLE_PREFIX.get(nail_role, _NAIL_ROLE_PREFIX["user"])
+    # page_mode 优先，没有匹配时退回到 nail_role 前缀
+    role_prefix = _NAIL_PAGE_MODE_PREFIX.get(
+        nail_page_mode,
+        _NAIL_ROLE_PREFIX.get(nail_role, _NAIL_ROLE_PREFIX["user"])
+    )
     base_prompt = SYSTEM_PROMPT_TEMPLATE.format(
         agent_name=agent_name or "DeerFlow 2.0",
         soul=get_agent_soul(agent_name),

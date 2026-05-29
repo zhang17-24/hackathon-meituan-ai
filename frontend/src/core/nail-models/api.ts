@@ -69,7 +69,7 @@ export async function listTools(): Promise<ToolsResponse> {
 
 export async function updateTool(
   toolName: string,
-  body: { model_name?: string | null; is_enabled?: boolean },
+  body: { model_name?: string | null; is_enabled?: boolean; enabled_pages?: string[] },
 ): Promise<void> {
   const res = await fetch(`${base()}/tools/${encodeURIComponent(toolName)}`, {
     method: "PUT",

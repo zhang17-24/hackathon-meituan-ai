@@ -79,9 +79,20 @@ async def get_dashboard(request: Request, days: int = 7):
             "SELECT status, COUNT(*) AS count FROM action_proposals GROUP BY status"
         ).fetchall()
 
+        top_styles = conn.execute("""
+            SELECT style_id, COUNT(*) as total,
+                   SUM(CASE WHEN signal_type='save' THEN 1 ELSE 0 END) as saves
+            FROM ops_signals
+            WHERE created_at >= datetime('now', ? || ' days')
+            GROUP BY style_id
+            ORDER BY total DESC
+            LIMIT 10
+        """, (f"-{days}",)).fetchall()
+
     return {
         "signals": [dict(s) for s in signals],
         "proposal_summary": {r["status"]: r["count"] for r in proposal_summary},
+        "top_styles": [dict(r) for r in top_styles],
         "days": days,
     }
 
@@ -100,3 +111,100 @@ async def serve_image(path: str, request: Request):
     if not safe.exists():
         raise HTTPException(status_code=404, detail=f"Image not found: {path}")
     return FileResponse(str(safe))
+
+
+# ─── 款式收藏 ───────────────────────────────────────────────
+
+class SaveStyleRequest(BaseModel):
+    signal_type: str = "save"  # "save" 或 "search"
+
+
+@router.post("/styles/{style_id}/save")
+@require_auth
+async def save_style(style_id: str, body: SaveStyleRequest, request: Request):
+    """用户收藏款式：更新用户偏好向量 + 写入 ops_signals。"""
+    from packages.harness.deerflow.tools.nail.base import update_user_pref_vector, get_db
+    user = request.state.user
+    user_id = str(user.id)
+
+    signal_type = body.signal_type if body.signal_type in ("save", "search") else "save"
+    update_user_pref_vector(user_id, style_id, signal_type)
+
+    with get_db() as conn:
+        conn.execute(
+            "INSERT INTO ops_signals (user_id, style_id, signal_type) VALUES (?,?,?)",
+            (user_id, style_id, signal_type)
+        )
+    return {"saved": True, "style_id": style_id, "signal_type": signal_type}
+
+
+# ─── 分析看板 ───────────────────────────────────────────────
+
+@router.get("/analytics/pref-distribution")
+@require_auth
+async def get_pref_distribution(request: Request):
+    """返回全体用户偏好风格分布（供运营看板饼图使用）。"""
+    from packages.harness.deerflow.tools.nail.base import get_db
+    with get_db() as conn:
+        rows = conn.execute("""
+            SELECT s.style_id,
+                   COALESCE(c.category, '其他') as category,
+                   SUM(CASE WHEN s.signal_type='save'  THEN 3 ELSE 1 END) as score
+            FROM ops_signals s
+            LEFT JOIN nail_style_catalog c ON s.style_id = c.style_id
+            GROUP BY s.style_id, c.category
+            ORDER BY score DESC
+        """).fetchall()
+
+    cat_scores: dict[str, int] = {}
+    for r in rows:
+        cat = r["category"] or "其他"
+        cat_scores[cat] = cat_scores.get(cat, 0) + r["score"]
+
+    total = sum(cat_scores.values()) or 1
+    distribution = [
+        {"category": k, "score": v, "percentage": round(v / total * 100, 1)}
+        for k, v in sorted(cat_scores.items(), key=lambda x: -x[1])
+    ]
+    return {"distribution": distribution, "total_signals": sum(cat_scores.values())}
+
+
+@router.get("/analytics/latest-run")
+@require_auth
+async def get_latest_run(request: Request):
+    """返回当前用户最近一次 nail_run 的工具调用链数据，供前端 ToolTimeline 展示。"""
+    from packages.harness.deerflow.tools.nail.base import get_db
+    user = request.state.user
+    user_id = str(user.id)
+
+    with get_db() as conn:
+        run = conn.execute(
+            "SELECT id, nail_role, status, created_at FROM nail_runs "
+            "WHERE user_id=? ORDER BY created_at DESC LIMIT 1",
+            (user_id,)
+        ).fetchone()
+        if run is None:
+            return {"run": None}
+        calls = conn.execute(
+            "SELECT tool_name, call_index, duration_ms FROM tool_call_log "
+            "WHERE run_id=? ORDER BY call_index ASC",
+            (run["id"],)
+        ).fetchall()
+
+    tool_chain = [
+        {
+            "tool":        c["tool_name"],
+            "call_index":  c["call_index"],
+            "duration_ms": c["duration_ms"] or 0,
+            "success":     (c["duration_ms"] or 0) >= 0,
+        }
+        for c in calls
+    ]
+    total_ms = sum(max(0, c["duration_ms"] or 0) for c in calls)
+    return {
+        "run": {
+            "run_id":            run["id"],
+            "tool_chain":        tool_chain,
+            "total_duration_ms": total_ms,
+        }
+    }

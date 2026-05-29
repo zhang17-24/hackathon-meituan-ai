@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Separator } from "@/components/ui/separator";
+import { NailPageLayout } from "@/components/nail/nail-page-layout";
+import { ToolTimeline } from "@/components/nail/tool-timeline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -91,6 +93,27 @@ export default function EvaluationPage() {
   const [loading, setLoading] = useState(false);
   const [log,     setLog]     = useState<string[]>([]);
 
+  interface RunData {
+    run_id: string;
+    tool_chain: Array<{ tool: string; call_index: number; duration_ms: number; success: boolean }>;
+    total_duration_ms: number;
+  }
+  const [latestRun, setLatestRun] = useState<RunData | null>(null);
+
+  const fetchLatestRun = useCallback(() => {
+    fetch("/api/nail/analytics/latest-run")
+      .then((r) => r.json())
+      .then((d) => setLatestRun(d.run ?? null))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    fetchLatestRun();
+    const handler = () => fetchLatestRun();
+    window.addEventListener("nail:refresh-dashboard", handler);
+    return () => window.removeEventListener("nail:refresh-dashboard", handler);
+  }, [fetchLatestRun]);
+
   if (!canAccess(nailRole, "dev")) {
     return (
       <div className="flex h-full flex-col">
@@ -160,7 +183,7 @@ export default function EvaluationPage() {
     }
   };
 
-  return (
+  const panelContent = (
     <div className="flex h-full flex-col">
       <EvalHeader />
 
@@ -328,10 +351,25 @@ export default function EvaluationPage() {
             </div>
           )}
 
+          {latestRun && (
+            <ToolTimeline
+              toolChain={latestRun.tool_chain}
+              totalDurationMs={latestRun.total_duration_ms}
+              className="mt-4"
+            />
+          )}
+
           <div className="h-4" />
         </div>
       </ScrollArea>
     </div>
+  );
+
+  return (
+    <NailPageLayout
+      pageMode="eval"
+      panel={panelContent}
+    />
   );
 }
 

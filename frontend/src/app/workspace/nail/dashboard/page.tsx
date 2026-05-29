@@ -14,6 +14,7 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/core/auth/AuthProvider";
 import { canAccess, type NailRole } from "@/lib/nail-auth";
 import { cn } from "@/lib/utils";
+import { NailPageLayout } from "@/components/nail/nail-page-layout";
 
 /* ── 类型 ── */
 interface Signal { style_id: string; signal_type: string; count: number }
@@ -65,6 +66,13 @@ export default function DashboardPage() {
 
   useEffect(() => { if (canAccess(nailRole, "ops")) fetchData(); }, [nailRole, fetchData]);
 
+  // 监听 Agent 工具调用完成后的刷新信号
+  useEffect(() => {
+    const handler = () => fetchData(true);
+    window.addEventListener("nail:refresh-dashboard", handler);
+    return () => window.removeEventListener("nail:refresh-dashboard", handler);
+  }, [fetchData]);
+
   const confirm = async (id: string, status: "approved" | "rejected") => {
     await fetch(`/api/nail/proposals/${id}/confirm`, {
       method: "POST",
@@ -105,122 +113,131 @@ export default function DashboardPage() {
     .map(([id, types]) => ({ id, total: Object.values(types).reduce((a, b) => a + b, 0), types }))
     .sort((a, b) => b.total - a.total);
 
-  return (
-    <div className="flex h-full flex-col">
-      <Header
-        extra={
-          <Button
-            variant="ghost" size="sm"
-            onClick={() => fetchData(true)}
-            disabled={refreshing}
-            className="text-xs text-muted-foreground h-7"
-          >
-            {refreshing ? (
-              <span className="size-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin mr-1" />
-            ) : "↻"}
-            刷新
-          </Button>
-        }
-      />
+  const panelContent = (
+    <div className="h-full overflow-auto">
+      <div className="flex h-full flex-col">
+        <Header
+          extra={
+            <Button
+              variant="ghost" size="sm"
+              onClick={() => fetchData(true)}
+              disabled={refreshing}
+              className="text-xs text-muted-foreground h-7"
+            >
+              {refreshing ? (
+                <span className="size-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin mr-1" />
+              ) : "↻"}
+              刷新
+            </Button>
+          }
+        />
 
-      <ScrollArea className="flex-1">
-        <div className="mx-auto max-w-3xl px-4 py-6 space-y-5">
+        <ScrollArea className="flex-1">
+          <div className="mx-auto max-w-3xl px-4 py-6 space-y-5">
 
-          {/* ── 汇总统计 ── */}
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { key: "pending",  label: "待确认", color: "text-amber-400",   bg: "bg-amber-500/5   border-amber-400/20"   },
-              { key: "approved", label: "已执行", color: "text-emerald-400", bg: "bg-emerald-500/5 border-emerald-400/20" },
-              { key: "rejected", label: "已拒绝", color: "text-muted-foreground", bg: "bg-muted/30 border-border/30" },
-            ].map(({ key, label, color, bg }) => (
-              <div key={key} className={cn("rounded-xl border p-3 text-center", bg)}>
-                {loading ? (
-                  <Skeleton className="h-7 w-8 mx-auto mb-1 rounded" />
-                ) : (
-                  <p className={cn("text-2xl font-bold tabular-nums", color)}>
-                    {summary[key] ?? 0}
-                  </p>
-                )}
-                <p className="text-[11px] text-muted-foreground mt-0.5">{label}</p>
+            {/* ── 汇总统计 ── */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { key: "pending",  label: "待确认", color: "text-amber-400",   bg: "bg-amber-500/5   border-amber-400/20"   },
+                { key: "approved", label: "已执行", color: "text-emerald-400", bg: "bg-emerald-500/5 border-emerald-400/20" },
+                { key: "rejected", label: "已拒绝", color: "text-muted-foreground", bg: "bg-muted/30 border-border/30" },
+              ].map(({ key, label, color, bg }) => (
+                <div key={key} className={cn("rounded-xl border p-3 text-center", bg)}>
+                  {loading ? (
+                    <Skeleton className="h-7 w-8 mx-auto mb-1 rounded" />
+                  ) : (
+                    <p className={cn("text-2xl font-bold tabular-nums", color)}>
+                      {summary[key] ?? 0}
+                    </p>
+                  )}
+                  <p className="text-[11px] text-muted-foreground mt-0.5">{label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* ── 近 7 天款式热度 ── */}
+            <section className="rounded-xl border border-border/60 bg-card overflow-hidden">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
+                <h2 className="text-sm font-semibold">近 7 天款式热度</h2>
+                <span className="text-[11px] text-muted-foreground">按信号总量排序</span>
               </div>
-            ))}
-          </div>
-
-          {/* ── 近 7 天款式热度 ── */}
-          <section className="rounded-xl border border-border/60 bg-card overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-3 border-b border-border/40">
-              <h2 className="text-sm font-semibold">近 7 天款式热度</h2>
-              <span className="text-[11px] text-muted-foreground">按信号总量排序</span>
-            </div>
-            <div className="p-3">
-              {loading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {Array.from({ length: 8 }).map((_, i) => (
-                    <Skeleton key={i} className="h-16 rounded-lg" />
-                  ))}
-                </div>
-              ) : styles.length === 0 ? (
-                <p className="text-sm text-muted-foreground py-6 text-center">暂无信号数据</p>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                  {styles.slice(0, 8).map(({ id, total, types }) => (
-                    <div
-                      key={id}
-                      className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 space-y-1.5"
-                    >
-                      <p className="text-[13px] font-medium text-foreground/90 truncate">{id}</p>
-                      <div className="flex flex-wrap gap-1">
-                        {Object.entries(types).map(([type, cnt]) => (
-                          <span
-                            key={type}
-                            className={cn(
-                              "inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium",
-                              SIGNAL_COLORS[type] ?? "text-muted-foreground bg-muted/30 border-border/30",
-                            )}
-                          >
-                            {SIGNAL_LABEL[type] ?? type} {cnt}
-                          </span>
-                        ))}
+              <div className="p-3">
+                {loading ? (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <Skeleton key={i} className="h-16 rounded-lg" />
+                    ))}
+                  </div>
+                ) : styles.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-6 text-center">暂无信号数据</p>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {styles.slice(0, 8).map(({ id, total, types }) => (
+                      <div
+                        key={id}
+                        className="rounded-lg border border-border/40 bg-muted/20 px-3 py-2.5 space-y-1.5"
+                      >
+                        <p className="text-[13px] font-medium text-foreground/90 truncate">{id}</p>
+                        <div className="flex flex-wrap gap-1">
+                          {Object.entries(types).map(([type, cnt]) => (
+                            <span
+                              key={type}
+                              className={cn(
+                                "inline-flex items-center rounded-full border px-1.5 py-0.5 text-[10px] font-medium",
+                                SIGNAL_COLORS[type] ?? "text-muted-foreground bg-muted/30 border-border/30",
+                              )}
+                            >
+                              {SIGNAL_LABEL[type] ?? type} {cnt}
+                            </span>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </section>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </section>
 
-          {/* ── 待确认运营方案 ── */}
-          <section className="rounded-xl border border-border/60 bg-card overflow-hidden">
-            <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40">
-              <h2 className="text-sm font-semibold">待确认运营方案</h2>
-              {proposals.length > 0 && (
-                <Badge className="bg-amber-500/15 text-amber-400 border-amber-400/30 text-[10px] h-4.5 px-1.5">
-                  {proposals.length}
-                </Badge>
-              )}
-            </div>
-            <div className="p-3 space-y-2.5">
-              {loading ? (
-                Array.from({ length: 2 }).map((_, i) => (
-                  <Skeleton key={i} className="h-28 rounded-xl" />
-                ))
-              ) : proposals.length === 0 ? (
-                <div className="py-8 text-center">
-                  <p className="text-sm text-muted-foreground">暂无待确认方案</p>
-                  <p className="text-[11px] text-muted-foreground/60 mt-1">
-                    运营 Agent 生成新方案后会出现在这里
-                  </p>
-                </div>
-              ) : (
-                proposals.map(p => <ProposalCard key={p.id} proposal={p} onConfirm={confirm} />)
-              )}
-            </div>
-          </section>
+            {/* ── 待确认运营方案 ── */}
+            <section className="rounded-xl border border-border/60 bg-card overflow-hidden">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-border/40">
+                <h2 className="text-sm font-semibold">待确认运营方案</h2>
+                {proposals.length > 0 && (
+                  <Badge className="bg-amber-500/15 text-amber-400 border-amber-400/30 text-[10px] h-4.5 px-1.5">
+                    {proposals.length}
+                  </Badge>
+                )}
+              </div>
+              <div className="p-3 space-y-2.5">
+                {loading ? (
+                  Array.from({ length: 2 }).map((_, i) => (
+                    <Skeleton key={i} className="h-28 rounded-xl" />
+                  ))
+                ) : proposals.length === 0 ? (
+                  <div className="py-8 text-center">
+                    <p className="text-sm text-muted-foreground">暂无待确认方案</p>
+                    <p className="text-[11px] text-muted-foreground/60 mt-1">
+                      运营 Agent 生成新方案后会出现在这里
+                    </p>
+                  </div>
+                ) : (
+                  proposals.map(p => <ProposalCard key={p.id} proposal={p} onConfirm={confirm} />)
+                )}
+              </div>
+            </section>
 
-          <div className="h-4" />
-        </div>
-      </ScrollArea>
+            <div className="h-4" />
+          </div>
+        </ScrollArea>
+      </div>
     </div>
+  );
+
+  return (
+    <NailPageLayout
+      pageMode="ops"
+      panel={panelContent}
+    />
   );
 }
 

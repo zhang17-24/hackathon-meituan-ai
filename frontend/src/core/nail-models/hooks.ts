@@ -87,7 +87,8 @@ export function useUpdateTool() {
       name: string;
       model_name?: string | null;
       is_enabled?: boolean;
-    }) => api.updateTool(args.name, { model_name: args.model_name, is_enabled: args.is_enabled }),
+      enabled_pages?: string[];
+    }) => api.updateTool(args.name, { model_name: args.model_name, is_enabled: args.is_enabled, enabled_pages: args.enabled_pages }),
     onSuccess: () => void qc.invalidateQueries({ queryKey: TOOLS_KEY }),
   });
 }

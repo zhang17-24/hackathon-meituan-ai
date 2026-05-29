@@ -1,121 +1,59 @@
 # backend/packages/harness/deerflow/tools/nail/preference_rag.py
-"""用户偏好 RAG：基于 ChromaDB 存储和检索用户喜好款式，提供个性化推荐。"""
+"""用户偏好 RAG：保存试戴/收藏信号，更新用户偏好向量。"""
 import json
 import logging
-import os
-from typing import Optional
 
 from langchain.tools import tool
 
+from .base import get_db, update_user_pref_vector
+
 logger = logging.getLogger(__name__)
-
-_CHROMA_DIR = os.getenv("CHROMA_PERSIST_DIR", "data/chroma")
-_client: Optional[object] = None
-_collection: Optional[object] = None
-
-
-def _get_collection():
-    """获取或初始化 ChromaDB collection（懒加载，进程内复用）。"""
-    global _client, _collection
-    if _collection is not None:
-        return _collection
-    try:
-        import chromadb
-        from chromadb.utils import embedding_functions
-        _client = chromadb.PersistentClient(path=_CHROMA_DIR)
-        ef = embedding_functions.DefaultEmbeddingFunction()
-        _collection = _client.get_or_create_collection(
-            name="user_preferences",
-            embedding_function=ef,
-        )
-        return _collection
-    except ImportError:
-        logger.error("chromadb not installed. Run: pip install chromadb")
-        raise
-    except Exception as e:
-        logger.error("ChromaDB init failed: %s", e)
-        raise
 
 
 @tool
-def preference_rag_tool(action: str, user_id: str, data: str = "") -> str:
-    """管理用户偏好 RAG：保存试戴偏好或查询个性化推荐。
+def preference_rag_tool(action: str, user_id: str, style_id: str = "", data: str = "") -> str:
+    """保存用户美甲偏好信号，更新偏好向量用于个性化推荐。
 
     Args:
-        action: "save"（保存用户喜好）或 "query"（查询推荐）。
-        user_id: 当前用户的唯一标识。
-        data: action=save 时为款式信息 JSON 字符串；
-              action=query 时为查询关键词字符串。
+        action: "save"（保存偏好信号）或 "get_stats"（查询用户偏好统计）。
+        user_id: 用户唯一标识。
+        style_id: 款式 ID（action=save 时必填）。
+        data: action=save 时信号类型："tryon"/"save"/"search"。
 
     Returns:
-        action=save: {"saved": true, "doc_id": "..."}
-        action=query: {"recommendations": [...], "count": n, "message": "..."}
-        失败时: {"error": "..."}
+        action=save: {"saved": true, "signal_type": "..."}
+        action=get_stats: {"trial_count": n, "save_count": n, "has_preference": bool}
+        失败时: {"error": "...", "saved": false}
     """
     try:
-        col = _get_collection()
-
         if action == "save":
-            style_data = json.loads(data) if (data and data.strip().startswith("{")) else {"description": data}
-            description = style_data.get("style_description_en") or style_data.get("description") or str(style_data)
+            signal_type = data if data in ("tryon", "save", "search") else "tryon"
+            update_user_pref_vector(user_id, style_id, signal_type)
+            if signal_type in ("save", "tryon"):
+                with get_db() as conn:
+                    conn.execute(
+                        "INSERT INTO ops_signals (user_id, style_id, signal_type) VALUES (?,?,?)",
+                        (user_id, style_id, signal_type)
+                    )
+            return json.dumps({"saved": True, "signal_type": signal_type}, ensure_ascii=False)
 
-            # 用户偏好 ID：user_id + 时间戳哈希
-            import time
-            doc_id = f"{user_id}_{int(time.time())}"
-
-            meta = {"user_id": user_id}
-            # 只存储字符串类型的 metadata（ChromaDB 限制）
-            for k, v in style_data.items():
-                if isinstance(v, str):
-                    meta[k] = v
-                elif isinstance(v, list):
-                    meta[k] = ",".join(str(i) for i in v)
-
-            col.add(
-                documents=[description],
-                metadatas=[meta],
-                ids=[doc_id],
-            )
-            return json.dumps({"saved": True, "doc_id": doc_id}, ensure_ascii=False)
-
-        elif action == "query":
-            query_text = data or "美甲推荐"
-            total = col.count()
-            if total == 0:
-                return json.dumps({
-                    "recommendations": [],
-                    "count": 0,
-                    "message": "暂无偏好记录，请先试戴几款，系统会学习您的喜好",
-                }, ensure_ascii=False)
-
-            results = col.query(
-                query_texts=[query_text],
-                n_results=min(5, total),
-                where={"user_id": user_id} if total > 0 else None,
-            )
-            docs = results.get("documents", [[]])[0]
-            metas = results.get("metadatas", [[]])[0]
-
-            recs = []
-            for doc, meta in zip(docs, metas):
-                recs.append({"description": doc, "style_info": meta})
-
+        elif action == "get_stats":
+            with get_db() as conn:
+                row = conn.execute(
+                    "SELECT trial_count, save_count FROM nail_user_prefs WHERE user_id=?",
+                    (user_id,)
+                ).fetchone()
+            if row is None:
+                return json.dumps({"trial_count": 0, "save_count": 0, "has_preference": False})
             return json.dumps({
-                "recommendations": recs,
-                "count": len(recs),
-                "message": f"基于您的历史偏好推荐 {len(recs)} 款",
+                "trial_count": row["trial_count"],
+                "save_count": row["save_count"],
+                "has_preference": True,
             }, ensure_ascii=False)
 
         else:
-            return json.dumps({"error": f"未知 action：{action}，请使用 save 或 query"})
+            return json.dumps({"error": f"未知 action: {action}，请用 save 或 get_stats"})
 
     except Exception as e:
         logger.error("PreferenceRAG error (action=%s): %s", action, e)
-        if action == "query":
-            return json.dumps({
-                "recommendations": [],
-                "count": 0,
-                "message": f"偏好查询暂不可用（{type(e).__name__}），推荐热门款式",
-                "error": str(e),
-            }, ensure_ascii=False)
         return json.dumps({"error": str(e), "saved": False})

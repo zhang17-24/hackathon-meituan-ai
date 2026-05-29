@@ -43,6 +43,7 @@ export interface ToolInfo {
   requires_vision: boolean;
   is_enabled: boolean;
   model_override: string | null;
+  enabled_pages?: string[];  // 在哪些页面启用，如 ["tryon","ops","eval"]
 }
 
 export interface ToolsResponse {

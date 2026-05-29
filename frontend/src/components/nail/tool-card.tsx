@@ -92,6 +92,36 @@ export function ToolCard({ tool }: ToolCardProps) {
           />
         </div>
       )}
+
+      {/* 页面启用开关：只有 LLM 工具且已启用时显示 */}
+      {tool.requires_llm && tool.is_enabled && (
+        <div className="mt-2 flex items-center gap-3 border-t pt-2">
+          <span className="text-xs text-muted-foreground shrink-0">页面</span>
+          <div className="flex gap-3">
+            {(["tryon", "ops", "eval"] as const).map((mode) => {
+              const LABELS: Record<string, string> = { tryon: "试戴", ops: "运营", eval: "评分" };
+              const isPageEnabled = tool.enabled_pages?.includes(mode) ?? true;
+              return (
+                <label key={mode} className="flex cursor-pointer items-center gap-1 select-none">
+                  <input
+                    type="checkbox"
+                    className="size-3 cursor-pointer rounded"
+                    checked={isPageEnabled}
+                    onChange={() => {
+                      const current = tool.enabled_pages ?? ["tryon", "ops", "eval"];
+                      const next = isPageEnabled
+                        ? current.filter((p) => p !== mode)
+                        : [...current, mode];
+                      updateTool.mutate({ name: tool.name, enabled_pages: next });
+                    }}
+                  />
+                  <span className="text-xs">{LABELS[mode]}</span>
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 # backend/app/gateway/routers/nail_config.py
 """NailFlow 配置 API：模型 CRUD、Agent 绑定、工具开关管理。"""
+import json
 import logging
 import uuid
 from datetime import datetime, UTC
@@ -17,6 +18,17 @@ router = APIRouter(prefix="/api/nail/config", tags=["nail-config"])
 def _get_db():
     from packages.harness.deerflow.tools.nail.base import get_db
     return get_db()
+
+
+def _safe_parse_pages(raw: str | None) -> list[str]:
+    """安全解析 enabled_pages JSON，失败时返回默认值。"""
+    if not raw:
+        return ["tryon", "ops", "eval"]
+    try:
+        parsed = json.loads(raw)
+        return parsed if isinstance(parsed, list) else ["tryon", "ops", "eval"]
+    except Exception:
+        return ["tryon", "ops", "eval"]
 
 
 # ─── Pydantic 模型 ──────────────────────────────────────────
@@ -67,6 +79,7 @@ class AgentConfigUpdate(BaseModel):
 class ToolOverrideUpdate(BaseModel):
     model_name: Optional[str] = None
     is_enabled: Optional[bool] = None
+    enabled_pages: Optional[list[str]] = None  # ["tryon","ops","eval"] 的子集
 
 
 # ─── 模型 CRUD ────────────────────────────────────────────
@@ -229,9 +242,10 @@ async def list_tools(request: Request):
             r["tool_name"]: {
                 "model_name": r["model_name"],
                 "is_enabled": bool(r["is_enabled"]),
+                "enabled_pages": r["enabled_pages"],
             }
             for r in conn.execute(
-                "SELECT tool_name, model_name, is_enabled FROM nail_tool_overrides"
+                "SELECT tool_name, model_name, is_enabled, enabled_pages FROM nail_tool_overrides"
             ).fetchall()
         }
 
@@ -248,6 +262,7 @@ async def list_tools(request: Request):
             "requires_vision": req_vision,
             "is_enabled": ov.get("is_enabled", True),
             "model_override": ov.get("model_name"),
+            "enabled_pages": _safe_parse_pages(ov.get("enabled_pages")),
         })
 
     builtin_tools = []
@@ -283,6 +298,8 @@ async def update_tool(tool_name: str, body: ToolOverrideUpdate, request: Request
                 updates["model_name"] = body.model_name
             if body.is_enabled is not None:
                 updates["is_enabled"] = int(body.is_enabled)
+            if body.enabled_pages is not None:
+                updates["enabled_pages"] = json.dumps(body.enabled_pages)
             if updates:
                 updates["updated_at"] = now
                 set_clause = ", ".join(f"{k} = ?" for k in updates)
@@ -292,14 +309,54 @@ async def update_tool(tool_name: str, body: ToolOverrideUpdate, request: Request
                 )
         else:
             conn.execute(
-                "INSERT INTO nail_tool_overrides (tool_name, model_name, is_enabled, updated_at) "
-                "VALUES (?, ?, ?, ?)",
+                "INSERT INTO nail_tool_overrides (tool_name, model_name, is_enabled, enabled_pages, updated_at) "
+                "VALUES (?, ?, ?, ?, ?)",
                 (
                     tool_name,
                     body.model_name,
                     int(body.is_enabled) if body.is_enabled is not None else 1,
+                    json.dumps(body.enabled_pages) if body.enabled_pages is not None else None,
                     now,
                 ),
             )
         conn.commit()
     return {"message": "更新成功"}
+
+
+# ─── Page-mode 配置 ───────────────────────────────────────────
+
+_PAGE_MODE_CONFIG = {
+    "tryon": {
+        "title": "AI 美甲试戴助手",
+        "subtitle": "上传手图和款式图，开始 AI 试戴",
+        "suggestions": [
+            "帮我试戴这款法式美甲",
+            "推荐适合我肤色的款式",
+            "这个款式适合日常吗？",
+        ],
+    },
+    "ops": {
+        "title": "运营分析助手",
+        "subtitle": "分析趋势数据，生成运营方案",
+        "suggestions": [
+            "分析本周热门美甲款式",
+            "生成本月营销方案",
+            "查看用户偏好风格分布",
+        ],
+    },
+    "eval": {
+        "title": "评分分析助手",
+        "subtitle": "评估试戴质量，生成答辩证据",
+        "suggestions": [
+            "分析最近一次 AI 试戴质量",
+            "当前系统哪里扣分最多？",
+            "生成答辩证据清单",
+        ],
+    },
+}
+
+
+@router.get("/page-mode/{mode}")
+async def get_page_mode_config(mode: str):
+    """返回指定页面模式的欢迎语和建议问题。"""
+    return _PAGE_MODE_CONFIG.get(mode, _PAGE_MODE_CONFIG["tryon"])
