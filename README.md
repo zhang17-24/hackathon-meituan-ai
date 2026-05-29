@@ -1,171 +1,387 @@
-# NailFlow: 美甲 AI 试戴与智能运营 Agent
+# NailFlow — 美甲 AI 试戴与智能运营
 
-面向美团黑客松“美甲 AI 试戴与智能运营”赛题的双端 Agent 产品原型。项目目标不是只做一个聊天机器人，而是用 DeerFlow 风格的多 Agent 工作流，把“AI 试戴、效果评估、门店运营、客服营销、人工确认”连成一个可演示、可迭代、可评分的系统。
+> 美团黑客松赛题原型 · 基于 DeerFlow（字节多 Agent 框架）二次开发  
+> **多 Agent 编排 + AI 试戴 + 智能运营 + 三端权限 + 自动评分**
 
-## 赛题理解
+---
 
-截图中的任务目标可以拆成两个业务闭环：
+## 产品概述
 
-- 用户端智能试戴：用户上传手部照片，选择美甲款式，系统生成尽量真实的试戴效果图，并提供清晰操作流程、加载状态、结果展示。
-- 运营端智能运营：AI 助手自动识别爆款趋势、生成运营日报、推荐款式组合与营销动作，并支持人工确认后执行。
+NailFlow 解决了美甲行业的两个核心矛盾：
 
-核心矛盾是：用户无法“所见即所得”，运营无法“实时感知”。所以本项目要同时解决图像可信度和运营行动力。
+| 问题 | NailFlow 解决方案 |
+|------|-----------------|
+| 用户无法"所见即所得"，试色靠想象 | AI 在真实手图上 inpaint，生成毫米级精准的试戴效果图 |
+| 运营无法"实时感知"爆款趋势 | 多 Agent 自动分析收藏/搜索/订单信号，生成可执行营销方案 |
 
-## 评分体系驱动开发
+### 三端角色
 
-本项目先做评价体系，再做功能。每个功能都必须能为评分项提供证据。
-
-| 一级指标 | 权重 | 赛题要求映射 | 可量化证据 | 开发优先级 |
-| --- | ---: | --- | --- | --- |
-| 完整性 | 30 | 理解人群、地理、时间约束；流程覆盖完整链路；异常处理能力 | 用户端完成“上传-选款-试戴-解释-预约”；运营端完成“趋势-建议-确认-执行”；至少覆盖 3 类异常 | P0 |
-| 应用效果 | 25 | 试戴真实、运营建议有效、能解决实际问题 | 甲面边界、肤色一致、光照一致、款式相似度、客服命中率、营销动作可执行率 | P0 |
-| 创新性 | 20 | 多约束拆解、并行工具链、智能容错、可视化确认 | DeerFlow 多 Agent 编排；外接生图模型；评价 Agent 自动反推改进；长期记忆营销 | P1 |
-| 商业价值 | 15 | 降低决策成本、提升转化、拉新复购和运营效率 | 试戴后预约转化、收藏率、营销活动点击率、客服节省时间、复购推荐 | P1 |
-| 加分项与硬约束 | 10 | 代码模块化、一键部署、Mock API、速度、异常覆盖 | 生成 <30s；工具响应 <3s；端到端 <2min；README/脚本清晰；至少 3 类失败处理 | P0 |
-
-### 评价 Agent 的作用
-
-`EvaluationAgent` 是本项目的第一优先级 Agent。它不生成业务结果，而是审查每次运行是否达标。
-
-输入：
-
-- 用户手图、款式图、试戴输出图。
-- Agent 执行日志、工具调用结果、异常记录。
-- 运营数据或 mock 数据：点击、收藏、预约、订单、客服问题。
-- 用户偏好与长期记忆：肤色、甲型、预算、常去商圈、历史喜好。
-
-输出：
-
-- `total_score`: 0-100 总分。
-- `rubric_scores`: 完整性、应用效果、创新性、商业价值、硬约束分项。
-- `blocking_issues`: 必须修复的问题。
-- `next_dev_tasks`: 下一步开发任务，按评分收益排序。
-- `demo_evidence`: 答辩时可展示的证据。
-
-## Agent 设计
-
-```text
-User Intent
-  -> PlannerAgent
-  -> TryOnAgent
-      -> HandDetectTool
-      -> NailMaskTool
-      -> ImageGenerationTool
-      -> TryOnQualityTool
-  -> OpsAgent
-      -> TrendRetrievalTool
-      -> MarketingPlanTool
-      -> CustomerServiceTool
-      -> ActionProposalTool
-  -> EvaluationAgent
-  -> HumanConfirmNode
+```
+👤 用户端 (user)    → AI 试戴 → 款式推荐 → 门店预约
+📊 运营端 (ops)     → 趋势分析 → 方案生成 → 人工确认执行  
+🔧 开发端 (dev)     → 工具管理 → 模型配置 → 自动评分
 ```
 
-### TryOnAgent
+---
 
-美甲试戴建议外接生图模型，而不是只靠前端贴图。Agent 内置工具负责拆解和约束：
+## 功能特性
 
-- `HandDetectTool`: 检测手部姿态、指尖、甲床候选区域。
-- `NailMaskTool`: 生成或修正甲面 mask，优先只编辑甲面。
-- `StyleUnderstandingTool`: 从款式图提取颜色、甲型、纹理、饰品、风格标签。
-- `ImageGenerationTool`: 调用外部图像模型，使用 inpaint / mask edit / reference image 生成试戴图。
-- `TryOnQualityTool`: 评估边界溢出、肤色漂移、光照一致、款式相似度和商业自然度。
+### 用户端试戴
+- 📸 上传手图 + 款式图，6 步 AI 工作流自动完成试戴
+- 🖐 MediaPipe 手部检测 + 精准甲面 Mask 生成
+- 🎨 款式理解（颜色/甲型/纹理/饰品标签）
+- ⚡ 智能 Prompt 构建 + 字节生图 API inpaint
+- ✅ 自动质量评估（边界/肤色/光照/款式相似度）
+- 💾 用户偏好 RAG 记忆（ChromaDB 向量检索）
 
-### OpsAgent
+### 运营端智能运营
+- 📈 实时聚合运营信号（点击/收藏/订单/搜索）
+- 🧠 LLM 趋势洞察 + 营销方案自动生成
+- 📋 ActionProposal 人工确认机制（防止自动误操作）
+- 📊 运营看板：方案状态追踪 + 历史效果记录
+- 💬 客服工具：引用门店事实、价格、档期
 
-运营 Agent 要像 OpenClaw 一样常驻、有记忆、能跨渠道响应。它不是 FAQ，而是“门店运营助手”。
+### 开发端自评
+- 🏆 EvaluationAgent 按赛题 5 维度自动打分（0-100）
+- 🔍 识别扣分原因，推荐下一步开发任务（按评分收益排序）
+- 🔧 工具管理：开关控制 + 工具级模型覆盖
+- ⚙️ 设置中心：可视化配置模型（千问/DeepSeek/豆包/Kimi/自定义）
 
-- 长期记忆：记录用户偏好、门店能力、热门款、历史营销效果、售后风险。
-- 检索方式：早期可以用 `grep/ripgrep` 检索 markdown/json/csv；中期升级为 RAG 向量库；最终接美团真实数据 API。
-- 营销手段：套餐组合、限时优惠、达人短文案、复购提醒、节日主题、低转化款清仓、售后安抚。
-- 人工确认：所有会影响价格、库存、预约、退款、上架的动作都必须先生成 `ActionProposal`。
+---
 
-## 提示词资产
+## 技术架构
 
-- [Evaluation Agent Prompt](agents/prompts/evaluation_agent_prompt.md)
-- [AI 美甲试戴 Prompt](agents/prompts/tryon_agent_prompt.md)
-- [AI 运营客服 Prompt](agents/prompts/ops_agent_prompt.md)
-- [评价 Agent 说明](agents/evaluation_agent.md)
-- [评分 JSON Schema](agents/schemas/evaluation_result.schema.json)
-
-## 前端原型
-
-前端在 [web](web) 目录，当前是普通用户可理解的页面壳：
-
-- `/`: 拍手图、选款式、看 AI 试戴进度。
-- `/styles`: 款式灵感和搜索。
-- `/booking`: 附近门店预约。
-- `/service`: 美甲顾问客服。
-- `/plans`: 我的试戴方案和售后记录。
-
-运行：
-
-```bash
-cd web
-npm install
-npm run build
-cd dist
-python3 ../serve_spa.py
+```
+┌─────────────────────────────────────────────────────┐
+│                  Next.js 16 Frontend                │
+│  用户端试戴  |  运营看板  |  工具管理  |  设置中心   │
+└──────────────────────┬──────────────────────────────┘
+                       │ HTTP / SSE
+┌──────────────────────▼──────────────────────────────┐
+│              FastAPI Gateway (:8001)                │
+│  JWT Auth (nail_role)  |  CSRF  |  CORS             │
+└──────────────────────┬──────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────┐
+│           DeerFlow LangGraph Runtime                │
+│  ┌─────────────────────────────────────────────┐   │
+│  │              Lead Agent                     │   │
+│  │  nail_role → 工具组权限过滤                  │   │
+│  │  [nail] [nail_ops] [nail_dev]               │   │
+│  └─────────────────────────────────────────────┘   │
+│                                                     │
+│  工具层（13 个 nail 工具）:                          │
+│  hand_detect → nail_mask → style_understanding     │
+│  prompt_builder → image_generation → quality_check  │
+│  trend_query → trend_discovery → ops_analysis      │
+│  action_proposal → preference_rag → evaluation     │
+└─────────────────────────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────┐
+│                   数据层                            │
+│  SQLite (nailflow.db)  |  ChromaDB (用户偏好)        │
+│  data/uploads/         |  data/results/             │
+└─────────────────────────────────────────────────────┘
 ```
 
-打开 `http://127.0.0.1:8008/`。
+### 技术栈
 
-## 下一步开发顺序
+| 层 | 技术 | 版本 |
+|----|------|------|
+| Agent 编排 | DeerFlow + LangGraph | 0.1.0 |
+| 后端 | FastAPI + uvicorn | 0.115+ |
+| 手部检测 | MediaPipe Tasks API | 0.10+ |
+| 向量库 | ChromaDB（进程内） | 1.5.9+ |
+| 关系数据库 | SQLite（9 张表） | built-in |
+| 定时任务 | APScheduler | 3.x |
+| 前端框架 | Next.js + React | 16 / 19 |
+| UI 组件 | shadcn/ui + Tailwind CSS | 4.x |
+| 服务端状态 | TanStack Query (React Query) | 5.x |
+| 前端 Agent SDK | @langchain/langgraph-sdk | 1.5.3+ |
 
-1. 先实现 `EvaluationAgent` 的结构化打分，哪怕业务结果先是 mock。
-2. 接入外部图像模型，跑通”手图 + 款式图 + mask + prompt -> 试戴图”。
-3. 建立本地运营知识库，用 `rg` 检索 mock 数据生成运营建议。
-4. 加长期记忆：用户偏好、门店历史、营销反馈、售后风险。
-5. 让评价 Agent 每次运行后自动产出 `next_dev_tasks`，用评分收益驱动迭代。
+---
 
-## NailFlow 快速启动
+## 快速启动
 
-### 1. 配置环境变量
+### 前置要求
 
-在 `.env` 文件中填入真实 API key：
+- Python ≥ 3.12（推荐用 [uv](https://docs.astral.sh/uv/) 管理）
+- Node.js ≥ 20 + pnpm
+- 至少一个 LLM API Key（千问/DeepSeek/豆包/Kimi 均可）
+
+### 1. 克隆项目
 
 ```bash
-OPENAI_API_KEY=your_llm_key
+git clone https://github.com/your-org/hackathon-meituan-ai.git
+cd hackathon-meituan-ai
+```
+
+### 2. 配置环境变量
+
+```bash
+cp .env.example .env
+```
+
+编辑 `.env`，填入真实值：
+
+```bash
+# LLM 接入（必填，任选其一）
+OPENAI_API_KEY=your_llm_api_key
 OPENAI_BASE_URL=https://your-llm-endpoint/v1
-NAIL_IMAGE_API_KEY=your_image_key
+
+# 生图 API（选填，不填则自动进入 mock 模式）
+NAIL_IMAGE_API_KEY=your_image_api_key
 NAIL_IMAGE_API_URL=https://your-image-api/inpaint
+
+# 安全（生产时务必修改）
+JWT_SECRET_KEY=nailflow-hackathon-secret-2026
 ```
 
-在 `config.yaml` 中配置至少一个 LLM 模型（取消注释其中一个 `models:` 条目）。
+### 3. 配置 LLM 模型
 
-### 2. 安装依赖
+编辑 `config.yaml`，取消注释并填入一个模型：
+
+```yaml
+models:
+  - name: your-model-name        # 自定义名称
+    model: your-model-id         # 模型 ID
+    api_key: $OPENAI_API_KEY      # 引用环境变量
+    base_url: $OPENAI_BASE_URL
+    use_class: ChatOpenAI
+```
+
+> 也可以在启动后进入「设置 → 模型配置」通过 UI 配置，支持千问、DeepSeek、豆包、Kimi。
+
+### 4. 安装依赖
 
 ```bash
 # 后端
-cd backend && uv sync
+cd backend
+uv sync
 uv pip install mediapipe chromadb apscheduler pillow httpx
 
 # 前端
-cd ../frontend && pnpm install
+cd ../frontend
+pnpm install
 ```
 
-### 3. 初始化数据库 + 测试账号
+### 5. 初始化数据库 + 创建测试账号
 
 ```bash
+# 必须在 backend/ 目录下执行
 cd backend
-python -c “from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()”
+python -c "from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()"
 python scripts/seed_nail_users.py
 ```
 
-### 4. 启动服务
+### 6. 启动服务
 
+**终端 1：后端**
 ```bash
-# 终端 1：后端（端口 8001）
-cd backend && uv run python -m uvicorn app.gateway.app:app --port 8001 --reload
-
-# 终端 2：前端（端口 3000）
-cd frontend && pnpm dev
+cd backend
+uv run python -m uvicorn app.gateway.app:app --port 8001 --reload
 ```
 
-### 5. 测试账号
+**终端 2：前端**
+```bash
+cd frontend
+pnpm dev
+```
 
-| 邮箱 | 密码 | 角色 | 可访问 |
-|------|------|------|--------|
-| user@nailflow.dev | nail123456 | 用户 | /workspace/nail/tryon |
-| ops@nailflow.dev | nail123456 | 运营 | 以上 + /workspace/nail/dashboard |
-| dev@nailflow.dev | nail123456 | 开发 | 以上 + /workspace/nail/evaluation |
+打开 `http://localhost:3000`，用以下账号登录：
+
+| 邮箱 | 密码 | 角色 | 可访问页面 |
+|------|------|------|----------|
+| user@nailflow.dev | nail123456 | 用户 | AI 试戴 |
+| ops@nailflow.dev | nail123456 | 运营 | 以上 + 运营看板 |
+| dev@nailflow.dev | nail123456 | 开发 | 以上 + 工具管理 + 自评 |
+
+---
+
+## 项目目录结构
+
+```
+hackathon-meituan-ai/
+├── CLAUDE.md                    # Claude 开发指南（详细架构说明）
+├── README.md                    # 本文件
+├── ARCHITECTURE.md              # 系统架构设计文档
+├── config.yaml                  # DeerFlow 模型/工具/沙箱配置
+├── .env                         # 环境变量（gitignored）
+│
+├── backend/                     # Python 后端
+│   ├── app/gateway/
+│   │   ├── routers/
+│   │   │   ├── nail_ops.py      # 试戴业务 API (/api/nail/*)
+│   │   │   ├── nail_config.py   # 模型/工具配置 API (/api/nail/config/*)
+│   │   │   ├── auth.py          # 登录/注册/JWT
+│   │   │   ├── models.py        # 模型列表（DB + config.yaml 合并）
+│   │   │   └── ...              # 15 个 DeerFlow 标准路由
+│   │   ├── auth/                # JWT 鉴权（nail_role 签发）
+│   │   └── app.py               # FastAPI 主应用
+│   └── packages/harness/deerflow/
+│       ├── agents/lead_agent/   # 主 Agent（nail_role 权限注入）
+│       └── tools/nail/          # 13 个美甲专属工具
+│           ├── base.py          # DB 连接 + 9 张表 + get_tool_model()
+│           ├── hand_detect.py   # 手部检测（MediaPipe Tasks）
+│           ├── nail_mask.py     # 甲面 Mask 生成
+│           ├── style_understanding.py  # 款式解析（LLM）
+│           ├── prompt_builder.py       # 生图 Prompt 构建
+│           ├── image_generation.py     # 生图调用（支持 mock）
+│           ├── quality_check.py        # 质量评估（LLM）
+│           ├── preference_rag.py       # 用户偏好检索（ChromaDB）
+│           ├── trend_query.py          # 运营信号聚合
+│           ├── trend_discovery.py      # 趋势洞察（LLM）
+│           ├── ops_analysis.py         # 营销方案生成（LLM）
+│           ├── customer_service.py     # 客服工具（LLM）
+│           ├── action_proposal.py      # 方案提案入库
+│           └── evaluation.py           # 赛题评分（LLM）
+│
+├── frontend/                    # Next.js 16 前端
+│   └── src/
+│       ├── app/workspace/nail/  # 四个 NailFlow 页面
+│       │   ├── tryon/           # 用户端试戴
+│       │   ├── dashboard/       # 运营看板
+│       │   ├── evaluation/      # 开发自评
+│       │   └── tools/           # 工具管理
+│       ├── components/nail/     # 6 个美甲专属组件
+│       ├── components/workspace/settings/  # 设置弹窗（含模型配置）
+│       ├── core/nail-models/    # 模型配置业务逻辑（hooks + API）
+│       └── lib/nail-auth.ts     # 权限检查工具函数
+│
+├── data/                        # 运行时数据（gitignored）
+│   ├── nailflow.db              # SQLite 数据库
+│   ├── uploads/                 # 用户上传的图片
+│   ├── results/                 # 生成的试戴结果图
+│   ├── chroma/                  # ChromaDB 持久化
+│   └── mock/ops_signals.sql     # 运营信号 mock 数据
+│
+└── agents/                      # Agent 提示词资产
+    ├── prompts/                 # 3 个 Agent Markdown 提示词
+    └── schemas/                 # 评分结果 JSON Schema
+```
+
+---
+
+## API 概览
+
+### 美甲业务接口
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/nail/dashboard` | 运营看板数据 |
+| GET | `/api/nail/proposals` | ActionProposal 列表 |
+| POST | `/api/nail/proposals/{id}/confirm` | 确认/拒绝方案 |
+| GET | `/api/nail/image` | 静态图片服务 |
+
+### 配置接口
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| GET | `/api/nail/config/models` | 列出用户配置的模型 |
+| POST | `/api/nail/config/models` | 新增模型 |
+| PUT | `/api/nail/config/models/{name}` | 更新模型 |
+| DELETE | `/api/nail/config/models/{name}` | 删除模型 |
+| GET/PUT | `/api/nail/config/agents` | Agent 模型绑定 |
+| GET | `/api/nail/config/tools` | 工具列表（13+5） |
+| PUT | `/api/nail/config/tools/{name}` | 更新工具开关/模型 |
+
+### 标准 DeerFlow 接口
+
+| 方法 | 路径 | 说明 |
+|------|------|------|
+| POST | `/api/v1/threads` | 创建对话线程 |
+| POST | `/api/v1/threads/{id}/runs/stream` | SSE 流式运行 Agent |
+| GET | `/api/models` | 可用模型列表 |
+| POST | `/api/auth/login` | 登录 |
+| GET | `/health` | 健康检查 |
+
+---
+
+## 数据库设计
+
+SQLite 数据库位于 `backend/data/nailflow.db`（相对于 `backend/` 目录），共 9 张表：
+
+| 表名 | 用途 |
+|------|------|
+| `nail_runs` | Agent 执行记录 |
+| `nail_assets` | 图片资产路径 |
+| `ops_signals` | 运营行为信号 |
+| `action_proposals` | 运营方案提案 |
+| `evaluation_results` | 评分结果 |
+| `ops_memory` | 运营历史记忆 |
+| `nail_model_configs` | 用户配置的 LLM 模型 |
+| `nail_agent_configs` | Agent 模型绑定配置 |
+| `nail_tool_overrides` | 工具级模型覆盖配置 |
+
+---
+
+## 模型配置说明
+
+NailFlow 支持三种方式配置模型，优先级从高到低：
+
+1. **UI 配置**（推荐）：「设置 → 模型配置」，支持千问/DeepSeek/豆包/Kimi/自定义
+2. **config.yaml**：静态配置，适合固定部署
+3. **环境变量**：通过 `OPENAI_API_KEY` 和 `OPENAI_BASE_URL` 配置默认模型
+
+### 支持的模型提供商
+
+| 提供商 | use_class | 参考 api_base |
+|--------|-----------|--------------|
+| 阿里云千问 | ChatOpenAI | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| DeepSeek | ChatOpenAI | `https://api.deepseek.com/v1` |
+| 字节豆包 | ChatOpenAI | `https://ark.cn-beijing.volces.com/api/v3` |
+| 月之暗面 Kimi | ChatOpenAI | `https://api.moonshot.cn/v1` |
+| 自定义 | ChatOpenAI | 任何 OpenAI 兼容接口 |
+
+---
+
+## 赛题评分对照
+
+| 评分维度 | 权重 | NailFlow 实现 |
+|---------|------|-------------|
+| 完整性 | 30% | 试戴全链路（6 步）+ 运营闭环 + 3 类异常处理 |
+| 应用效果 | 25% | inpaint 局部生图 + 质量 5 维度评估 |
+| 创新性 | 20% | DeerFlow 多 Agent + RAG 偏好 + 自评反馈 |
+| 商业价值 | 15% | ActionProposal 确认机制 + 运营记忆 |
+| 硬约束 | 10% | mock 模式保证不超时 + 三类失败降级 |
+
+用 dev 账号访问「评分面板」，运行 EvaluationAgent 查看当前得分和改进建议。
+
+---
+
+## 开发指南
+
+详细的开发规范、架构说明和常见问题请参阅 [CLAUDE.md](CLAUDE.md)。
+
+### 添加新工具
+
+1. 在 `backend/packages/harness/deerflow/tools/nail/` 创建工具文件
+2. 在 `config.yaml` 注册工具和权限组
+3. （可选）在 `backend/app/gateway/routers/nail_config.py` 的 `_NAIL_TOOL_META` 添加工具元信息供前端展示
+
+### 添加新页面
+
+1. 在 `frontend/src/app/workspace/nail/` 创建页面目录
+2. 在 `frontend/src/components/workspace/nail-nav.tsx` 添加导航项
+3. 设置 `requiredRole` 权限守卫
+
+---
+
+## 提示词资产
+
+| 文件 | 用途 |
+|------|------|
+| [agents/prompts/tryon_agent_prompt.md](agents/prompts/tryon_agent_prompt.md) | 试戴 Agent 系统提示词 |
+| [agents/prompts/ops_agent_prompt.md](agents/prompts/ops_agent_prompt.md) | 运营 Agent 系统提示词 |
+| [agents/prompts/evaluation_agent_prompt.md](agents/prompts/evaluation_agent_prompt.md) | 评分 Agent 系统提示词 |
+| [agents/schemas/evaluation_result.schema.json](agents/schemas/evaluation_result.schema.json) | 评分结果 JSON Schema |
+
+---
+
+## License
+
+本项目为美团黑客松参赛作品，基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发。
+
+---
+
+*最后更新：2026-05-29*
