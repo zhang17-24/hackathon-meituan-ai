@@ -27,6 +27,7 @@ from app.gateway.routers import (
     threads,
     uploads,
 )
+from app.gateway.routers.nail_ops import router as nail_ops_router
 from deerflow.config import app_config as deerflow_app_config
 from deerflow.config.app_config import apply_logging_level
 
@@ -195,6 +196,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             logger.info("Channel service started: %s", channel_service.get_status())
         except Exception:
             logger.exception("No IM channels configured or channel service failed to start")
+
+        # Start NailFlow APScheduler (daily trend report at 09:00)
+        try:
+            from nail_scheduler import start_scheduler
+            _nail_scheduler = start_scheduler()
+        except Exception:
+            logger.exception("NailFlow scheduler failed to start (non-fatal)")
 
         yield
 
@@ -374,6 +382,9 @@ This gateway provides runtime endpoints for agent runs plus custom endpoints for
 
     # Stateless Runs API (stream/wait without a pre-existing thread)
     app.include_router(runs.router)
+
+    # NailFlow ops API: proposals, dashboard, image serving
+    app.include_router(nail_ops_router)
 
     @app.get("/health", tags=["health"])
     async def health_check() -> dict[str, str]:
