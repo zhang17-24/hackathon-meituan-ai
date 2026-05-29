@@ -13,6 +13,7 @@ import { RecentChatList } from "./recent-chat-list";
 import { WorkspaceHeader } from "./workspace-header";
 import { WorkspaceNavChatList } from "./workspace-nav-chat-list";
 import { WorkspaceNavMenu } from "./workspace-nav-menu";
+import { NailNav } from "./nail-nav";
 
 export function WorkspaceSidebar({
   ...props
@@ -25,6 +26,7 @@ export function WorkspaceSidebar({
           <WorkspaceHeader />
         </SidebarHeader>
         <SidebarContent>
+          <NailNav />
           <WorkspaceNavChatList />
           {isSidebarOpen && <RecentChatList />}
         </SidebarContent>

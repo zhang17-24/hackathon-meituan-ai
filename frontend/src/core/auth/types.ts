@@ -6,6 +6,7 @@ export const userSchema = z.object({
   id: z.string(),
   email: z.string().email(),
   system_role: z.enum(["admin", "user"]),
+  nail_role: z.enum(["user", "ops", "dev"]).default("user"),  // NailFlow role
   needs_setup: z.boolean().optional().default(false),
 });
 
