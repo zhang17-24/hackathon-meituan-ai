@@ -187,6 +187,13 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
         # Must run AFTER langgraph_runtime so app.state.store is available for thread migration
         await _ensure_admin_user(app)
 
+        # 确保 NailFlow DB 表存在（幂等，安全多次调用）
+        try:
+            from packages.harness.deerflow.tools.nail.base import init_nail_tables
+            init_nail_tables()
+        except Exception:
+            logger.warning("NailFlow DB init failed (non-fatal)")
+
         # Start NailFlow APScheduler (daily trend report at 09:00)
         try:
             from nail_scheduler import start_scheduler
