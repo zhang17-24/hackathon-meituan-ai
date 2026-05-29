@@ -469,7 +469,7 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
 
     if is_bootstrap:
         # Special bootstrap agent with minimal prompt for initial custom agent creation flow
-        tools = get_available_tools(model_name=model_name, subagent_enabled=subagent_enabled, app_config=resolved_app_config) + [setup_agent]
+        tools = get_available_tools(model_name=model_name, groups=nail_groups, subagent_enabled=subagent_enabled, app_config=resolved_app_config) + [setup_agent]
         return create_agent(
             model=create_chat_model(name=model_name, thinking_enabled=thinking_enabled, app_config=resolved_app_config, attach_tracing=False),
             tools=filter_tools_by_skill_allowed_tools(tools, skills_for_tool_policy),
@@ -489,7 +489,7 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
     extra_tools = [update_agent] if agent_name else []
     # Merge agent tool_groups with nail_groups for NailFlow role-based tool access
     _base_groups = agent_config.tool_groups if agent_config else None
-    _effective_groups = list(dict.fromkeys((_base_groups or []) + nail_groups)) if nail_groups else _base_groups
+    _effective_groups = list(dict.fromkeys((_base_groups or []) + nail_groups))
     tools = get_available_tools(model_name=model_name, groups=_effective_groups, subagent_enabled=subagent_enabled, app_config=resolved_app_config)
     return create_agent(
         model=create_chat_model(name=model_name, thinking_enabled=thinking_enabled, reasoning_effort=reasoning_effort, app_config=resolved_app_config, attach_tracing=False),
