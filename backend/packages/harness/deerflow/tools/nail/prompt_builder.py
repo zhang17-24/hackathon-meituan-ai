@@ -75,8 +75,8 @@ def prompt_builder_tool(style_analysis_json: str, user_request: str = "") -> str
             "style_summary_zh": summary_zh,
         }, ensure_ascii=False)
 
-    except (json.JSONDecodeError, KeyError) as e:
-        logger.warning("PromptBuilder fallback (parse error): %s", e)
+    except Exception as e:
+        logger.warning("PromptBuilder fallback (parse/format error): %s", e)
         desc = user_request or "beautiful natural nail art"
         return json.dumps({
             "positive_prompt": (

@@ -62,4 +62,11 @@ def action_proposal_tool(proposal_json: str, run_id: str = "") -> str:
 
     except Exception as e:
         logger.error("ActionProposal failed: %s", e)
-        return json.dumps({"error": str(e), "proposal_id": "", "status": "failed"})
+        return json.dumps({
+            "error": str(e),
+            "proposal_id": "",
+            "status": "failed",
+            "title": "",
+            "message": f"方案创建失败：{e}",
+            "requires_human_confirm": False,
+        }, ensure_ascii=False)
