@@ -113,7 +113,7 @@ export function NailResultPanel({
   const detailScores = scores
     ? (["boundary_score", "skin_tone_score", "lighting_score", "style_match_score", "natural_score"] as const)
         .filter((k) => scores[k] !== undefined)
-        .map((k) => ({ key: k, label: SCORE_LABELS[k], value: scores[k]! }))
+        .map((k) => ({ key: k, label: SCORE_LABELS[k] ?? k, value: scores[k]! }))
     : [];
 
   return (

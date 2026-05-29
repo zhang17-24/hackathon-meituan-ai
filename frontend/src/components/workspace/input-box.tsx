@@ -862,7 +862,11 @@ export function InputBox({
 
       {isWelcomeMode && searchParams.get("mode") !== "skill" && (
         <div className="flex items-center justify-center pt-2">
-          <SuggestionList />
+          {searchParams.get("mode") === "nail" ? (
+            <NailSuggestionList />
+          ) : (
+            <SuggestionList />
+          )}
         </div>
       )}
 
@@ -956,6 +960,59 @@ function SuggestionList() {
           </DropdownMenuGroup>
         </DropdownMenuContent>
       </DropdownMenu>
+    </Suggestions>
+  );
+}
+
+/** 美甲试戴模式的快捷提示列表 */
+function NailSuggestionList() {
+  const { textInput } = usePromptInputController();
+  const handleClick = useCallback(
+    (prompt: string) => {
+      textInput.setInput(prompt);
+      setTimeout(() => {
+        document.querySelector<HTMLTextAreaElement>("textarea[name='message']")?.focus();
+      }, 100);
+    },
+    [textInput],
+  );
+
+  const nailPrompts = [
+    {
+      emoji: "💅",
+      label: "开始试戴",
+      prompt: "请帮我进行 AI 美甲试戴。请先通过附件上传手图，再描述你想要的款式（或上传款式参考图）。",
+    },
+    {
+      emoji: "🔍",
+      label: "查看爆款",
+      prompt: "帮我查看本周最受欢迎的美甲款式排行榜，哪些款式收藏量和下单量最高？",
+    },
+    {
+      emoji: "🎨",
+      label: "猫眼款试戴",
+      prompt: "我想试戴猫眼紫色美甲款式，帮我上传手图后生成试戴效果。请先用 hand_detect_tool 分析我的手型。",
+    },
+    {
+      emoji: "💬",
+      label: "咨询推荐",
+      prompt: "我是第一次做美甲，根据我的偏好（肤色偏白，手指修长）帮我推荐适合的款式风格。",
+    },
+  ];
+
+  return (
+    <Suggestions className="w-fit items-start">
+      {nailPrompts.map(({ emoji, label, prompt }) => (
+        <button
+          key={label}
+          type="button"
+          onClick={() => handleClick(prompt)}
+          className="text-muted-foreground hover:text-foreground hover:border-rose-300 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 dark:hover:border-rose-700/40 flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-normal transition-colors"
+        >
+          <span>{emoji}</span>
+          <span>{label}</span>
+        </button>
+      ))}
     </Suggestions>
   );
 }
