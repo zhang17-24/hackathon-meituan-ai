@@ -32,6 +32,9 @@ class UserRow(Base):
     # when new roles are introduced.
     system_role: Mapped[str] = mapped_column(String(16), nullable=False, default="user")
 
+    # "user" | "ops" | "dev" — NailFlow portal role
+    nail_role: Mapped[str] = mapped_column(String(16), nullable=False, default="user")
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

@@ -162,6 +162,21 @@ async def init_engine(
         else:
             raise
 
+    # Migration: add nail_role column to existing users tables (idempotent)
+    try:
+        async with _engine.begin() as conn:
+            if backend == "sqlite":
+                await conn.execute(__import__("sqlalchemy").text(
+                    "ALTER TABLE users ADD COLUMN nail_role TEXT NOT NULL DEFAULT 'user'"
+                ))
+            else:
+                await conn.execute(__import__("sqlalchemy").text(
+                    "ALTER TABLE users ADD COLUMN IF NOT EXISTS nail_role TEXT NOT NULL DEFAULT 'user'"
+                ))
+        logger.info("Migration: added nail_role column to users table")
+    except Exception:
+        pass  # Column already exists or table not yet created — both are fine
+
     logger.info("Persistence engine initialized: backend=%s", backend)
 
 

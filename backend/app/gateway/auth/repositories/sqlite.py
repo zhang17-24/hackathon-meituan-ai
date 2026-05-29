@@ -39,6 +39,7 @@ class SQLiteUserRepository(UserRepository):
             email=row.email,
             password_hash=row.password_hash,
             system_role=row.system_role,  # type: ignore[arg-type]
+            nail_role=row.nail_role,  # type: ignore[arg-type]
             # SQLite loses tzinfo on read; reattach UTC so downstream
             # code can compare timestamps reliably.
             created_at=row.created_at if row.created_at.tzinfo else row.created_at.replace(tzinfo=UTC),
@@ -55,6 +56,7 @@ class SQLiteUserRepository(UserRepository):
             email=user.email,
             password_hash=user.password_hash,
             system_role=user.system_role,
+            nail_role=user.nail_role,
             created_at=user.created_at,
             oauth_provider=user.oauth_provider,
             oauth_id=user.oauth_id,
@@ -102,6 +104,7 @@ class SQLiteUserRepository(UserRepository):
             row.email = user.email
             row.password_hash = user.password_hash
             row.system_role = user.system_role
+            row.nail_role = user.nail_role
             row.oauth_provider = user.oauth_provider
             row.oauth_id = user.oauth_id
             row.needs_setup = user.needs_setup

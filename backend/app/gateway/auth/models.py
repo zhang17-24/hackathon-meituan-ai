@@ -21,6 +21,10 @@ class User(BaseModel):
     email: EmailStr = Field(..., description="Unique email address")
     password_hash: str | None = Field(None, description="bcrypt hash, nullable for OAuth users")
     system_role: Literal["admin", "user"] = Field(default="user")
+    nail_role: Literal["user", "ops", "dev"] = Field(
+        default="user",
+        description="NailFlow portal role: user=trial, ops=operator, dev=developer"
+    )
     created_at: datetime = Field(default_factory=_utc_now)
 
     # OAuth linkage (optional)
@@ -38,4 +42,5 @@ class UserResponse(BaseModel):
     id: str
     email: str
     system_role: Literal["admin", "user"]
+    nail_role: Literal["user", "ops", "dev"] = "user"
     needs_setup: bool = False

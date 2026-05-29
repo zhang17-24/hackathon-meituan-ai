@@ -293,7 +293,7 @@ async def login_local(
         )
 
     _record_login_success(client_ip)
-    token = create_access_token(str(user.id), token_version=user.token_version)
+    token = create_access_token(str(user.id), token_version=user.token_version, nail_role=user.nail_role)
     _set_session_cookie(response, token, request)
 
     return LoginResponse(
@@ -317,10 +317,10 @@ async def register(request: Request, response: Response, body: RegisterRequest):
             detail=AuthErrorResponse(code=AuthErrorCode.EMAIL_ALREADY_EXISTS, message="Email already registered").model_dump(),
         )
 
-    token = create_access_token(str(user.id), token_version=user.token_version)
+    token = create_access_token(str(user.id), token_version=user.token_version, nail_role=user.nail_role)
     _set_session_cookie(response, token, request)
 
-    return UserResponse(id=str(user.id), email=user.email, system_role=user.system_role)
+    return UserResponse(id=str(user.id), email=user.email, system_role=user.system_role, nail_role=user.nail_role)
 
 
 @router.post("/logout", response_model=MessageResponse)
@@ -370,7 +370,7 @@ async def change_password(request: Request, response: Response, body: ChangePass
     await provider.update_user(user)
 
     # Re-issue cookie with new token_version
-    token = create_access_token(str(user.id), token_version=user.token_version)
+    token = create_access_token(str(user.id), token_version=user.token_version, nail_role=user.nail_role)
     _set_session_cookie(response, token, request)
 
     return MessageResponse(message="Password changed successfully")
@@ -380,7 +380,7 @@ async def change_password(request: Request, response: Response, body: ChangePass
 async def get_me(request: Request):
     """Get current authenticated user info."""
     user = await get_current_user_from_request(request)
-    return UserResponse(id=str(user.id), email=user.email, system_role=user.system_role, needs_setup=user.needs_setup)
+    return UserResponse(id=str(user.id), email=user.email, system_role=user.system_role, nail_role=user.nail_role, needs_setup=user.needs_setup)
 
 
 # Per-IP cache: ip → (timestamp, result_dict).
@@ -486,10 +486,10 @@ async def initialize_admin(request: Request, response: Response, body: Initializ
             detail=AuthErrorResponse(code=AuthErrorCode.SYSTEM_ALREADY_INITIALIZED, message="System already initialized").model_dump(),
         )
 
-    token = create_access_token(str(user.id), token_version=user.token_version)
+    token = create_access_token(str(user.id), token_version=user.token_version, nail_role=user.nail_role)
     _set_session_cookie(response, token, request)
 
-    return UserResponse(id=str(user.id), email=user.email, system_role=user.system_role)
+    return UserResponse(id=str(user.id), email=user.email, system_role=user.system_role, nail_role=user.nail_role)
 
 
 # ── OAuth Endpoints (Future/Placeholder) ─────────────────────────────────
