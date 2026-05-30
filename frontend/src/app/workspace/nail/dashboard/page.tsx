@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/core/auth/AuthProvider";
+import { dashboard as api } from "@/core/api/nail";
 import { canAccess, type NailRole } from "@/lib/nail-auth";
 import { cn } from "@/lib/utils";
 import { NailPageLayout } from "@/components/nail/nail-page-layout";
@@ -74,11 +75,7 @@ export default function DashboardPage() {
   }, [fetchData]);
 
   const confirm = async (id: string, status: "approved" | "rejected") => {
-    await fetch(`/api/nail/proposals/${id}/confirm`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status }),
-    });
+    await api.confirmProposal(id, status);
     setProposals(prev => prev.filter(p => p.id !== id));
     setSummary(prev => ({
       ...prev,

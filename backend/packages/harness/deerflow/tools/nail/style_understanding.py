@@ -1,69 +1,91 @@
 # backend/packages/harness/deerflow/tools/nail/style_understanding.py
-"""用 LLM Vision 解析款式图，提取颜色/纹理/甲型/饰品/风格标签。"""
+"""用 LLM Vision 解析款式图，提取像素级颜色/纹理/甲型/饰品/风格标签。"""
 import base64
 import json
 import logging
-from pathlib import Path
 
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
 
 logger = logging.getLogger(__name__)
 
-_FALLBACK = {
-    "colors": ["pink"],
-    "texture": "glossy",
-    "nail_shape": "round",
-    "decorations": [],
-    "style_tags": ["solid"],
-    "style_description_en": "glossy pink nail polish, solid color",
+# ── 超级详细的 vision 分析 prompt ──
+_STYLE_ANALYSIS_PROMPT = """You are a professional nail art analyst with expert color perception.
+
+Analyze this nail art reference image and return ONLY valid JSON. Be EXTREMELY precise:
+
+{
+  "colors": ["#FF6B8A", "#FFD700"],
+  "color_description": "warm rose pink base with metallic gold foil accents on ring finger",
+  "texture": "glossy",
+  "nail_shape": "almond",
+  "decorations": ["gold foil", "tiny pearl at cuticle"],
+  "pattern": "solid base, accent nail with full gold foil on ring finger, fine gold line on middle finger",
+  "style_tags": ["korean", "elegant", "bridal"],
+  "gradient": null,
+  "finish": "high gloss top coat",
+  "length": "medium",
+  "style_description_en": "warm rose pink almond nails with gold foil accent on ring finger, elegant bridal style",
+  "style_description_zh": "暖调玫瑰粉杏仁甲，无名指金色箔片点缀，优雅新娘风",
+  "level_of_detail": "detailed but clean"
 }
+
+RULES:
+- colors: List hex codes of ALL visible colors, most dominant first
+- color_description: Describe exact shade, warmth/cool, saturation, and placement
+- texture: glitter|matte|glossy|gradient|marble|solid|cat_eye|chrome|jelly|velvet
+- nail_shape: round|square|almond|coffin|stiletto|oval|ballerina|lipstick
+- decorations: List ALL visible decorations (rhinestone, pearl, foil, charm, sticker, glitter, chrome powder)
+- pattern: Describe the exact design pattern across all nails. Which nails are accent nails? What's on each?
+- gradient: If gradient, describe start color → end color and direction (horizontal/vertical/diagonal)
+- finish: high gloss|matte|satin|velvet
+- length: short|medium|long|extra long
+- style_description_en: ONE detailed English sentence capturing the complete look
+- style_description_zh: ONE detailed Chinese sentence
+
+Be as precise as humanly possible. Your description will be used to generate a nearly identical nail art."""
 
 
 def _encode_image(path: str) -> str:
-    with open(path, "rb") as f:
+    from .base import resolve_image_path
+    resolved = resolve_image_path(path)
+    with open(str(resolved), "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
 
 @tool
 def style_understanding_tool(style_image_path: str, user_description: str = "") -> str:
-    """解析美甲款式图，提取风格标签和英文描述（供生图模型使用）。
+    """Analisa gambar nail art reference, ekstrak warna/tekstur/bentuk/dekorasi.
 
     Args:
-        style_image_path: 款式参考图的本地路径。
-        user_description: 用户对目标款式的补充文字描述（可选）。
+        style_image_path: Path ke gambar referensi nail art.
+        user_description: Deskripsi tambahan dari user (opsional).
 
     Returns:
-        JSON 字符串，字段：
-        - colors (list): 主色列表（英文色名）
-        - texture (str): glitter/matte/glossy/gradient/marble/solid
-        - nail_shape (str): round/square/almond/coffin/stiletto/oval
-        - decorations (list): 饰品列表
-        - style_tags (list): 风格标签
-        - style_description_en (str): 一句话英文描述（用于生图 prompt）
+        JSON dengan fields: colors, color_description, texture, nail_shape,
+        decorations, pattern, style_tags, style_description_en, style_description_zh
     """
     try:
         from deerflow.models import create_chat_model
-        from .base import get_tool_model
-        _tool_model = get_tool_model("style_understanding_tool")
-        model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_tracing=False)
+        from deerflow.models.router import ModelRouter, Capability
+
+        resolution = ModelRouter.resolve("style_understanding_tool", Capability.VISION)
+        if resolution is None:
+            return json.dumps({
+                "error": "No vision model available. Add a vision-capable model (e.g. qwen-vl-max) in Settings.",
+                "colors": [], "color_description": "", "texture": "", "nail_shape": "",
+                "decorations": [], "pattern": "", "style_tags": [],
+                "style_description_en": "", "style_description_zh": "",
+            }, ensure_ascii=False)
+
+        logger.info("StyleUnderstanding using model: %s (source=%s)", resolution.name, resolution.source)
+        model = create_chat_model(name=resolution.name, thinking_enabled=False, attach_tracing=False)
 
         img_b64 = _encode_image(style_image_path)
 
-        prompt = (
-            "You are a nail art style analyst. Analyze this nail art image and return ONLY valid JSON:\n"
-            "{\n"
-            '  "colors": ["rose", "gold"],\n'
-            '  "texture": "glitter",\n'
-            '  "nail_shape": "almond",\n'
-            '  "decorations": ["rhinestone"],\n'
-            '  "style_tags": ["nail_art", "glamorous"],\n'
-            '  "style_description_en": "rose gold glitter nail art with rhinestone decorations"\n'
-            "}\n"
-            "texture options: glitter|matte|glossy|gradient|marble|solid\n"
-            "nail_shape options: round|square|almond|coffin|stiletto|oval\n"
-            f"User note: {user_description or 'none'}"
-        )
+        prompt = _STYLE_ANALYSIS_PROMPT
+        if user_description:
+            prompt += f"\n\nUser note: {user_description}"
 
         msg = HumanMessage(content=[
             {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{img_b64}"}},
@@ -83,9 +105,18 @@ def style_understanding_tool(style_image_path: str, user_description: str = "") 
         return json.dumps(result, ensure_ascii=False)
 
     except FileNotFoundError:
-        fallback = {**_FALLBACK, "style_description_en": user_description or _FALLBACK["style_description_en"]}
-        return json.dumps(fallback, ensure_ascii=False)
+        return json.dumps({
+            "error": f"Style image not found: {style_image_path}",
+            "colors": [], "color_description": "", "texture": "", "nail_shape": "",
+            "decorations": [], "pattern": "", "style_tags": [],
+            "style_description_en": "", "style_description_zh": "",
+        }, ensure_ascii=False)
     except Exception as e:
-        logger.warning("StyleUnderstanding fallback (LLM unavailable): %s", e)
-        fallback = {**_FALLBACK, "style_description_en": user_description or _FALLBACK["style_description_en"]}
-        return json.dumps(fallback, ensure_ascii=False)
+        logger.warning("StyleUnderstanding failed: %s", e)
+        return json.dumps({
+            "error": f"Style analysis failed ({type(e).__name__}): {e}. "
+                     "Please add a vision-capable model (e.g. qwen-vl-max) in Settings.",
+            "colors": [], "color_description": "", "texture": "", "nail_shape": "",
+            "decorations": [], "pattern": "", "style_tags": [],
+            "style_description_en": "", "style_description_zh": "",
+        }, ensure_ascii=False)

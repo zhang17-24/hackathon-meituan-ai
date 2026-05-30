@@ -35,9 +35,9 @@ def customer_service_tool(user_question: str, user_id: str = "") -> str:
     """
     try:
         from deerflow.models import create_chat_model
-        from .base import get_tool_model
-        _tool_model = get_tool_model("customer_service_tool")
-        model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_tracing=False)
+        from deerflow.models.router import ModelRouter, Capability
+        resolution = ModelRouter.resolve("customer_service_tool", Capability.CHAT)
+        model = create_chat_model(name=resolution.name if resolution else None, thinking_enabled=False, attach_tracing=False)
 
         prompt = (
             f"你是专业美甲门店客服，回复简洁亲切，引用规则时标注来源。\n"

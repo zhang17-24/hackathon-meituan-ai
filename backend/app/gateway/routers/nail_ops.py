@@ -113,6 +113,42 @@ async def serve_image(path: str, request: Request):
     return FileResponse(str(safe))
 
 
+# ─── 款式图库 ───────────────────────────────────────────────
+
+_STYLE_CACHE: list[dict] = []
+_STYLE_CACHE_MTIME: float = 0.0
+
+
+@router.get("/styles")
+async def list_styles():
+    """列出 data/styles/ 目录下所有可试戴的美甲款式图。"""
+    import os as _os
+    global _STYLE_CACHE, _STYLE_CACHE_MTIME
+
+    styles_dir = Path("data/styles")
+    if not styles_dir.exists():
+        return {"styles": [], "count": 0}
+
+    try:
+        mtime = _os.path.getmtime(styles_dir)
+    except OSError:
+        mtime = 0
+
+    if _STYLE_CACHE and mtime == _STYLE_CACHE_MTIME:
+        return {"styles": _STYLE_CACHE, "count": len(_STYLE_CACHE)}
+
+    _STYLE_CACHE = []
+    for f in sorted(styles_dir.glob("*.jpg")):
+        _STYLE_CACHE.append({
+            "id": f.stem,
+            "name": f"款式 {f.stem}",
+            "url": f"/api/nail/image?path=data/styles/{f.name}",
+            "filename": f.name,
+        })
+    _STYLE_CACHE_MTIME = mtime
+    return {"styles": _STYLE_CACHE, "count": len(_STYLE_CACHE)}
+
+
 # ─── 款式收藏 ───────────────────────────────────────────────
 
 class SaveStyleRequest(BaseModel):

@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,9 +15,11 @@ import {
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { NailImageUploader } from "@/components/nail/image-uploader";
+import { NailStyleGallery } from "@/components/nail/style-gallery";
 import { NailProgressSteps, TRYON_STEPS, type StepStatus } from "@/components/nail/progress-steps";
 import { NailResultPanel } from "@/components/nail/result-panel";
 import { useAuth } from "@/core/auth/AuthProvider";
+import { tryon as api } from "@/core/api/nail";
 import { type NailRole } from "@/lib/nail-auth";
 import { cn } from "@/lib/utils";
 
@@ -38,16 +41,6 @@ interface TryonResult {
   };
 }
 
-/* ── 上传文件到后端 ── */
-async function uploadFile(file: File): Promise<string> {
-  const form = new FormData();
-  form.append("file", file);
-  const res = await fetch("/api/v1/uploads", { method: "POST", body: form });
-  if (!res.ok) throw new Error(`上传失败: ${res.statusText}`);
-  const data = await res.json();
-  return data.url ?? data.file_url ?? data.path ?? "";
-}
-
 /* ── SSE 工具名 → 步骤 ID 映射 ── */
 const TOOL_TO_STEP: Record<string, string> = {
   hand_detect_tool:        "detect",
@@ -62,12 +55,34 @@ const TOOL_TO_STEP: Record<string, string> = {
 export default function TryonPage() {
   const { user } = useAuth();
   const nailRole = (user as any)?.nail_role as NailRole ?? "user";
+  const searchParams = useSearchParams();
 
   /* 图片状态 */
   const [handFile,    setHandFile]    = useState<File | null>(null);
   const [styleFile,   setStyleFile]   = useState<File | null>(null);
   const [handPreview, setHandPreview] = useState<string>("");
   const [stylePreview,setStylePreview]= useState<string>("");
+  const [galleryStylePath, setGalleryStylePath] = useState<string>("");
+  const [warehouseHandPath, setWarehouseHandPath] = useState<string>("");  // 从仓库预选的手图服务端路径
+
+  /* 从仓库跳转过来时，预填手图/款式 URL */
+  useEffect(() => {
+    const handParam = searchParams.get("hand");
+    const styleParam = searchParams.get("style");
+    if (handParam) {
+      setHandPreview(handParam);
+      const pathMatch = handParam.match(/[?&]path=([^&]+)/);
+      const p = pathMatch?.[1];
+      if (p) setWarehouseHandPath(decodeURIComponent(p));
+    }
+    if (styleParam) {
+      setStylePreview(styleParam);
+      const pathMatch = styleParam.match(/[?&]path=([^&]+)/);
+      const p = pathMatch?.[1];
+      if (p) setGalleryStylePath(decodeURIComponent(p));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* 运行状态 */
   const [loading, setLoading]   = useState(false);
@@ -75,7 +90,26 @@ export default function TryonPage() {
   const [stepStatuses, setStepStatuses] = useState<Record<string, StepStatus>>({});
   const [agentLog, setAgentLog] = useState<string[]>([]);
 
-  /* 结果 */
+  /* 工具调试日志 */
+  interface ToolLogEntry {
+    toolName: string;
+    displayName: string;
+    input: string;
+    output: string;
+    status: "running" | "done" | "error";
+    time: string;
+  }
+  const [toolLogs, setToolLogs] = useState<ToolLogEntry[]>([]);
+  const [showToolLogs, setShowToolLogs] = useState(false);
+
+  const TOOL_DISPLAY: Record<string, string> = {
+    hand_detect_tool: "🔍 手部检测",
+    nail_mask_tool: "✂️ 甲面遮罩",
+    style_understanding_tool: "🎨 款式理解",
+    prompt_builder_tool: "✍️ 提示词构建",
+    image_generation_tool: "⚡ AI 生图",
+    quality_check_tool: "✅ 质量评分",
+  };
   const [result, setResult] = useState<TryonResult | null>(null);
 
   /* 设置步骤状态的工具函数 */
@@ -85,48 +119,46 @@ export default function TryonPage() {
 
   /* ── 开始试戴 ── */
   const startTryon = async () => {
-    if (!handFile || !styleFile) return;
+    if (!handFile && !warehouseHandPath) return;
+    if (!styleFile && !galleryStylePath) return;
     setLoading(true);
     setError("");
     setResult(null);
     setAgentLog([]);
     setStepStatuses({});
+    setToolLogs([]);
+    setShowToolLogs(true);
 
     try {
-      /* 1. 上传图片 */
-      const [handUrl, styleUrl] = await Promise.all([
-        uploadFile(handFile),
-        uploadFile(styleFile),
-      ]);
+      /* 1. 创建 thread */
+      const threadId = await api.createThread();
 
-      /* 2. 创建 thread */
-      const threadRes = await fetch("/api/v1/threads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: "{}",
-      });
-      if (!threadRes.ok) throw new Error("创建会话失败");
-      const thread = await threadRes.json();
-      const threadId = thread.thread_id ?? thread.id;
+      /* 2. 上传/获取手图和款式路径 */
+      let handRef: string;
+      if (warehouseHandPath) {
+        handRef = warehouseHandPath;
+      } else {
+        handRef = await api.uploadTryonFile(threadId, handFile!);
+      }
+      let styleRef: string;
+      if (galleryStylePath) {
+        styleRef = galleryStylePath;
+      } else {
+        styleRef = await api.uploadTryonFile(threadId, styleFile!);
+      }
 
       /* 3. 发起 SSE 流式运行 */
-      const runRes = await fetch(`/api/v1/threads/${threadId}/runs/stream`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input: {
-            messages: [{
-              role: "user",
-              content: `请帮我进行 AI 美甲试戴。\n手图：${handUrl}\n款式图：${styleUrl}`,
-            }],
-          },
-          config: { configurable: { nail_role: nailRole } },
-        }),
+      const stream = await api.startAgentRun(threadId, {
+        input: {
+          messages: [{
+            role: "user",
+            content: `请帮我进行 AI 美甲试戴。\n手图：${handRef}\n款式图：${styleRef}`,
+          }],
+        },
+        config: { configurable: { nail_role: nailRole } },
       });
 
-      if (!runRes.ok) throw new Error(`Agent 启动失败: ${runRes.statusText}`);
-
-      const reader  = runRes.body!.getReader();
+      const reader = stream.getReader();
       const decoder = new TextDecoder();
 
       while (true) {
@@ -139,18 +171,31 @@ export default function TryonPage() {
           try {
             const data = JSON.parse(line.slice(6));
 
-            /* 工具调用开始 → 步骤 running */
+            /* 工具调用开始 → 步骤 running + 记录日志 */
             if (data.type === "tool_call_start" || data.type === "tool_call") {
               const toolName = data.tool_name ?? data.name ?? "";
               const stepId = TOOL_TO_STEP[toolName];
               if (stepId) setStep(stepId, "running");
+              const displayName = TOOL_DISPLAY[toolName] ?? toolName;
+              const input = typeof data.input === "string" ? data.input : JSON.stringify(data.input ?? data.args ?? {}, null, 2);
+              setToolLogs(prev => [...prev, {
+                toolName, displayName, input: input?.substring(0, 500) ?? "",
+                output: "", status: "running",
+                time: new Date().toLocaleTimeString(),
+              }]);
             }
 
-            /* 工具结果 → 步骤 done，解析关键数据 */
+            /* 工具结果 → 步骤 done + 更新日志 */
             if (data.type === "tool_result") {
               const toolName = data.tool_name ?? "";
               const stepId   = TOOL_TO_STEP[toolName];
               if (stepId) setStep(stepId, "done");
+              const output = typeof data.content === "string" ? data.content : JSON.stringify(data.content ?? "", null, 2);
+              setToolLogs(prev => prev.map(e =>
+                e.toolName === toolName && e.status === "running"
+                  ? { ...e, output: output?.substring(0, 800) ?? "", status: data.error ? "error" : "done" }
+                  : e
+              ));
 
               if (toolName === "image_generation_tool") {
                 const r = JSON.parse(data.content ?? "{}");
@@ -214,7 +259,7 @@ export default function TryonPage() {
     }
   };
 
-  const canStart = handFile && styleFile && !loading;
+  const canStart = (handFile || warehouseHandPath) && (styleFile || galleryStylePath) && !loading;
   const hasSteps = Object.keys(stepStatuses).length > 0;
   const showLog  = (nailRole === "ops" || nailRole === "dev") && agentLog.length > 0;
 
@@ -268,38 +313,50 @@ export default function TryonPage() {
             </p>
           </div>
 
-          {/* ── 上传区 ── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground pl-0.5">
-                手图 <span className="text-rose-400">*</span>
-              </p>
-              <NailImageUploader
-                label="上传手图"
-                sublabel="正面手背，光线充足"
-                icon="🤚"
-                accentColor="rose"
-                previewUrl={handPreview}
-                fileName={handFile?.name}
-                disabled={loading}
-                onFile={(file, url) => { setHandFile(file); setHandPreview(url); }}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-xs font-medium text-muted-foreground pl-0.5">
-                款式图 <span className="text-violet-400">*</span>
-              </p>
-              <NailImageUploader
-                label="上传款式图"
-                sublabel="参考美甲效果图"
-                icon="💅"
-                accentColor="lavender"
-                previewUrl={stylePreview}
-                fileName={styleFile?.name}
-                disabled={loading}
-                onFile={(file, url) => { setStyleFile(file); setStylePreview(url); }}
-              />
-            </div>
+          {/* ── 上传区：手图 ── */}
+          <div className="space-y-1.5">
+            <p className="text-xs font-medium text-muted-foreground pl-0.5">
+              手图 <span className="text-rose-400">*</span>
+            </p>
+            <NailImageUploader
+              label="上传手图"
+              sublabel="正面手背，光线充足"
+              icon="🤚"
+              accentColor="rose"
+              previewUrl={handPreview}
+              fileName={handFile?.name}
+              disabled={loading}
+              onFile={(file, url) => { setHandFile(file); setHandPreview(url); }}
+            />
+          </div>
+
+          {/* ── 款式选择区：画廊 + 手动上传 ── */}
+          <div className="rounded-xl border border-border/60 bg-muted/10 p-4 space-y-3">
+            <NailStyleGallery
+              selectedUrl={galleryStylePath ? `/api/nail/image?path=${encodeURIComponent(galleryStylePath)}` : null}
+              disabled={loading}
+              onSelect={(style) => {
+                setGalleryStylePath(style.url.replace("/api/nail/image?path=", ""));
+                setStyleFile(null);
+                setStylePreview(`/api/nail/image?path=${encodeURIComponent(style.url.replace("/api/nail/image?path=", ""))}`);
+              }}
+            />
+
+            {/* 手动上传款式图 */}
+            <NailImageUploader
+              label="上传自定义款式图"
+              sublabel="或上传你自己的美甲参考图"
+              icon="💅"
+              accentColor="lavender"
+              previewUrl={galleryStylePath ? "" : stylePreview}
+              fileName={galleryStylePath ? "" : styleFile?.name}
+              disabled={loading}
+              onFile={(file, url) => {
+                setStyleFile(file);
+                setStylePreview(url);
+                setGalleryStylePath("");
+              }}
+            />
           </div>
 
           {/* ── 操作按钮 ── */}
@@ -325,7 +382,7 @@ export default function TryonPage() {
                 </span>
               )}
             </Button>
-            {(handFile || styleFile) && !loading && (
+            {(handFile || styleFile || galleryStylePath || warehouseHandPath) && !loading && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -333,6 +390,8 @@ export default function TryonPage() {
                 onClick={() => {
                   setHandFile(null); setHandPreview("");
                   setStyleFile(null); setStylePreview("");
+                  setGalleryStylePath("");
+                  setWarehouseHandPath("");
                   setResult(null); setError(""); setStepStatuses({});
                 }}
               >
@@ -356,6 +415,55 @@ export default function TryonPage() {
             <div className="flex items-start gap-2.5 rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3">
               <span className="text-red-400 mt-0.5 shrink-0">⚠</span>
               <p className="text-sm text-red-400">{error}</p>
+            </div>
+          )}
+
+          {/* ── 工具执行日志 ── */}
+          {toolLogs.length > 0 && (
+            <div className="rounded-xl border border-border/60 bg-muted/10 overflow-hidden">
+              <button
+                className="flex w-full items-center justify-between px-4 py-2 border-b border-border/30 hover:bg-muted/20 transition-colors"
+                onClick={() => setShowToolLogs(!showToolLogs)}
+              >
+                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  🔧 工具执行日志 ({toolLogs.length})
+                </span>
+                <span className="text-[10px] text-muted-foreground">{showToolLogs ? "收起 ▲" : "展开 ▼"}</span>
+              </button>
+              {showToolLogs && (
+                <div className="max-h-80 overflow-y-auto divide-y divide-border/20">
+                  {toolLogs.map((entry, i) => (
+                    <div key={i} className="px-3 py-2 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium">{entry.displayName}</span>
+                        <span className={cn(
+                          "text-[10px] rounded-full px-1.5 py-0.5",
+                          entry.status === "running" && "bg-amber-500/10 text-amber-500",
+                          entry.status === "done" && "bg-emerald-500/10 text-emerald-500",
+                          entry.status === "error" && "bg-red-500/10 text-red-500",
+                        )}>
+                          {entry.status === "running" ? "执行中" : entry.status === "done" ? "完成" : "失败"}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/50 ml-auto">{entry.time}</span>
+                      </div>
+                      {entry.input && (
+                        <details className="text-[11px]">
+                          <summary className="cursor-pointer text-muted-foreground hover:text-foreground">输入</summary>
+                          <pre className="mt-1 whitespace-pre-wrap break-all bg-muted/30 rounded p-1.5 text-[10px] max-h-24 overflow-y-auto">{entry.input}</pre>
+                        </details>
+                      )}
+                      {entry.output && (
+                        <details className="text-[11px]" open={entry.status === "error"}>
+                          <summary className={cn("cursor-pointer hover:text-foreground", entry.status === "error" ? "text-red-400" : "text-muted-foreground")}>
+                            {entry.status === "error" ? "❌ 错误输出" : "输出"}
+                          </summary>
+                          <pre className="mt-1 whitespace-pre-wrap break-all bg-muted/30 rounded p-1.5 text-[10px] max-h-24 overflow-y-auto">{entry.output}</pre>
+                        </details>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

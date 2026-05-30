@@ -7,18 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { useNailChat, type ChatMessage, type NailPageMode } from "@/core/nail-chat";
 import { useQuery } from "@tanstack/react-query";
-
-interface PageModeConfig {
-  title: string;
-  subtitle: string;
-  suggestions: string[];
-}
-
-async function fetchPageModeConfig(mode: string): Promise<PageModeConfig> {
-  const res = await fetch(`/api/nail/config/page-mode/${mode}`);
-  if (!res.ok) throw new Error("Failed to load page mode config");
-  return res.json();
-}
+import { pageConfig as api } from "@/core/api/nail";
 
 interface NailChatPaneProps {
   pageMode: NailPageMode;
@@ -40,7 +29,7 @@ export function NailChatPane({
 
   const { data: modeConfig } = useQuery({
     queryKey: ["nail-page-mode", pageMode],
-    queryFn: () => fetchPageModeConfig(pageMode),
+    queryFn: () => api.fetchPageModeConfig(pageMode),
     staleTime: Infinity,
   });
 

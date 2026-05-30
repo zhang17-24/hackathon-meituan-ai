@@ -7,12 +7,15 @@ import { ToolTimeline } from "@/components/nail/tool-timeline";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { fetch as apiFetch } from "@/core/api/fetcher";
+import { useQuery } from "@tanstack/react-query";
 import {
   Breadcrumb, BreadcrumbItem, BreadcrumbList,
   BreadcrumbPage, BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useAuth } from "@/core/auth/AuthProvider";
+import { tryon as api } from "@/core/api/nail";
 import { canAccess, type NailRole } from "@/lib/nail-auth";
 import { cn } from "@/lib/utils";
 
@@ -93,6 +96,43 @@ export default function EvaluationPage() {
   const [loading, setLoading] = useState(false);
   const [log,     setLog]     = useState<string[]>([]);
 
+  /* ── 工具测试 ── */
+  interface ToolInfo { name: string; description: string; params: Record<string, string>; }
+  const { data: tools } = useQuery({
+    queryKey: ["testable-tools"],
+    queryFn: async () => {
+      const res = await apiFetch("/api/nail/dev/tools");
+      const d = await res.json();
+      return (d.tools ?? []) as ToolInfo[];
+    },
+    staleTime: 60_000,
+  });
+  const [testToolName, setTestToolName] = useState("");
+  const [testArgs, setTestArgs] = useState("{}");
+  const [testResult, setTestResult] = useState<{ success: boolean; result?: string; error?: string; traceback?: string } | null>(null);
+  const [testLoading, setTestLoading] = useState(false);
+
+  const runTestTool = async () => {
+    setTestLoading(true); setTestResult(null);
+    try {
+      let args: Record<string, unknown>;
+      try { args = JSON.parse(testArgs); } catch { args = {}; }
+      const res = await apiFetch("/api/nail/dev/test-tool", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tool_name: testToolName, args }),
+      });
+      const data = await res.json();
+      setTestResult(data);
+    } catch (e: unknown) {
+      setTestResult({ success: false, error: String(e) });
+    } finally {
+      setTestLoading(false);
+    }
+  };
+
+  const selectedTool = tools?.find(t => t.name === testToolName);
+
   interface RunData {
     run_id: string;
     tool_chain: Array<{ tool: string; call_index: number; duration_ms: number; success: boolean }>;
@@ -135,22 +175,12 @@ export default function EvaluationPage() {
     setLoading(true); setResult(null); setLog([]);
 
     try {
-      const threadRes = await fetch("/api/v1/threads", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+      const threadId = await api.createThread();
+      const stream = await api.startAgentRun(threadId, {
+        input: { messages: [{ role: "user", content: `请使用 evaluation_tool 对以下运行打分：\n\n${summary}` }] },
+        config: { configurable: { nail_role: "dev" } },
       });
-      const thread = await threadRes.json();
-      const threadId = thread.thread_id ?? thread.id;
-
-      const runRes = await fetch(`/api/v1/threads/${threadId}/runs/stream`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          input: { messages: [{ role: "user", content: `请使用 evaluation_tool 对以下运行打分：\n\n${summary}` }] },
-          config: { configurable: { nail_role: "dev" } },
-        }),
-      });
-
-      const reader  = runRes.body!.getReader();
+      const reader = stream.getReader();
       const decoder = new TextDecoder();
       while (true) {
         const { done, value } = await reader.read();
@@ -244,6 +274,71 @@ export default function EvaluationPage() {
               </div>
             </div>
           )}
+
+          {/* ── 工具测试台 ── */}
+          <div className="rounded-xl border border-border/60 bg-card overflow-hidden">
+            <div className="px-4 py-3 border-b border-border/40">
+              <h2 className="text-sm font-semibold">🔧 工具测试台</h2>
+              <p className="text-xs text-muted-foreground mt-0.5">直接调用单个工具进行测试，无需走完整 Agent 流程</p>
+            </div>
+            <div className="p-3 space-y-3">
+              <div className="flex items-center gap-2">
+                <select
+                  value={testToolName}
+                  onChange={e => { setTestToolName(e.target.value); setTestResult(null); }}
+                  className="flex-1 rounded-lg bg-muted/30 border border-border/40 px-3 py-1.5 text-sm focus:outline-none focus:border-blue-400/50"
+                >
+                  <option value="">选择工具...</option>
+                  {tools?.map(t => (
+                    <option key={t.name} value={t.name}>{t.name}</option>
+                  ))}
+                </select>
+                <Button
+                  size="sm"
+                  disabled={!testToolName || testLoading}
+                  onClick={runTestTool}
+                  className="bg-violet-600 hover:bg-violet-700 text-white h-8 px-4 text-xs"
+                >
+                  {testLoading ? "执行中…" : "▶ 执行"}
+                </Button>
+              </div>
+
+              {selectedTool && (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">{selectedTool.description}</p>
+                  <textarea
+                    value={testArgs}
+                    onChange={e => setTestArgs(e.target.value)}
+                    rows={4}
+                    className="w-full resize-none rounded-lg bg-muted/30 border border-border/40 px-3 py-2 text-xs font-mono focus:outline-none focus:border-violet-400/50"
+                    placeholder='{"image_path": "/path/to/image.jpg"}'
+                  />
+                </div>
+              )}
+
+              {testResult && (
+                <div className={cn(
+                  "rounded-lg border p-3 text-xs font-mono max-h-60 overflow-y-auto",
+                  testResult.success ? "border-emerald-400/30 bg-emerald-500/5" : "border-red-400/30 bg-red-500/5",
+                )}>
+                  {testResult.success
+                    ? <pre className="whitespace-pre-wrap break-all text-emerald-400/90">{testResult.result}</pre>
+                    : (
+                      <div className="space-y-1">
+                        <p className="text-red-400 font-semibold">❌ {testResult.error}</p>
+                        {testResult.traceback && (
+                          <details>
+                            <summary className="text-red-400/60 cursor-pointer">Traceback</summary>
+                            <pre className="mt-1 whitespace-pre-wrap text-red-400/50">{testResult.traceback}</pre>
+                          </details>
+                        )}
+                      </div>
+                    )
+                  }
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* 评分结果 */}
           {result && (

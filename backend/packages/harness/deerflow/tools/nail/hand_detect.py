@@ -42,7 +42,9 @@ def _load_image(image_path: str) -> tuple[np.ndarray, mp.Image]:
     Raises:
         FileNotFoundError: 当路径不存在且不像 base64 字符串时
     """
-    p = Path(image_path)
+    from .base import resolve_image_path
+
+    p = resolve_image_path(image_path)
     if p.exists():
         img = Image.open(p).convert("RGB")
     elif len(image_path) > 260 or "/" not in image_path and "\\" not in image_path and not image_path.endswith(
