@@ -94,18 +94,24 @@ def _get_runtime_config(config: RunnableConfig) -> dict:
 
 
 def _resolve_model_name(requested_model_name: str | None = None, *, app_config: AppConfig | None = None) -> str:
-    """Resolve a runtime model name safely, falling back to default if invalid. Returns None if no models are configured."""
+    """Resolve runtime model name via ModelRouter, with config.yaml fallback."""
+    from deerflow.models.router import ModelRouter, Capability
+
+    resolution = ModelRouter.resolve("lead_agent", Capability.CHAT, user_preference=requested_model_name)
+    if resolution is not None:
+        if requested_model_name and resolution.name != requested_model_name:
+            logger.warning(
+                "Model '%s' not found; resolved to '%s' (source=%s)",
+                requested_model_name, resolution.name, resolution.source,
+            )
+        return resolution.name
+
+    # Last resort: config.yaml
     app_config = app_config or get_app_config()
-    default_model_name = app_config.models[0].name if app_config.models else None
-    if default_model_name is None:
-        raise ValueError("No chat models are configured. Please configure at least one model in config.yaml.")
+    if app_config.models:
+        return app_config.models[0].name
 
-    if requested_model_name and app_config.get_model_config(requested_model_name):
-        return requested_model_name
-
-    if requested_model_name and requested_model_name != default_model_name:
-        logger.warning(f"Model '{requested_model_name}' not found in config; fallback to default model '{default_model_name}'.")
-    return default_model_name
+    raise ValueError("No chat models are configured. Please add a model in Settings or config.yaml.")
 
 
 def _create_summarization_middleware(*, app_config: AppConfig | None = None) -> DeerFlowSummarizationMiddleware | None:
@@ -351,6 +357,9 @@ def _build_middlewares(
     # Add ViewImageMiddleware only if the current model supports vision.
     # Use the resolved runtime model_name from make_lead_agent to avoid stale config values.
     model_config = resolved_app_config.get_model_config(model_name) if model_name else None
+    if model_config is None and model_name:
+        from deerflow.models.factory import _get_db_model_config
+        model_config = _get_db_model_config(model_name)
     if model_config is not None and model_config.supports_vision:
         middlewares.append(ViewImageMiddleware())
 
@@ -480,6 +489,10 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
     model_name = _resolve_model_name(requested_model_name or agent_model_name, app_config=resolved_app_config)
 
     model_config = resolved_app_config.get_model_config(model_name)
+    if model_config is None:
+        # NailFlow: fallback to DB-configured models (user-added via Settings UI)
+        from deerflow.models.factory import _get_db_model_config
+        model_config = _get_db_model_config(model_name)
 
     if model_config is None:
         raise ValueError("No chat model could be resolved. Please configure at least one model in config.yaml or provide a valid 'model_name'/'model' in the request.")

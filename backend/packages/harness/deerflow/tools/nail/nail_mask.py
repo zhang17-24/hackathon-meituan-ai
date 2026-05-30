@@ -47,7 +47,9 @@ def nail_mask_tool(image_path: str, nail_bboxes_json: str) -> str:
         if img_size and img_size.get("width") and img_size.get("height"):
             w, h = img_size["width"], img_size["height"]
         else:
-            with Image.open(image_path) as img:
+            from .base import resolve_image_path
+            resolved = resolve_image_path(image_path)
+            with Image.open(str(resolved)) as img:
                 w, h = img.size
 
         # 创建黑色底图，用椭圆绘制白色甲面区域

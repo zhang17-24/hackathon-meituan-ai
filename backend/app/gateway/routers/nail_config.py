@@ -209,11 +209,12 @@ async def update_agent_configs(body: AgentConfigUpdate, request: Request):
 # ─── 工具管理 ─────────────────────────────────────────────
 
 _NAIL_TOOL_META = [
+    ("unified_tryon_tool",       "一键试戴",   "✨", "统一试戴：自动完成手部检测→Mask→款式分析→生图，Agent 只需调用一次", "nail",     True,  True),
     ("hand_detect_tool",         "手部检测",   "🔍", "用 MediaPipe 识别手指位置和甲床 bbox，无需 API Key",              "nail",     False, False),
     ("nail_mask_tool",           "甲面遮罩",   "✂️", "根据 bbox 生成甲面 mask PNG，白色=甲面，黑色=其他",              "nail",     False, False),
     ("style_understanding_tool", "款式理解",   "🎨", "调用 LLM Vision 解析款式颜色/纹理/甲型/饰品，输出 style_tags",   "nail",     True,  True),
     ("prompt_builder_tool",      "提示词构建", "✍️", "将款式分析结果合成为生图 positive/negative prompt",             "nail",     False, False),
-    ("image_generation_tool",    "AI 生图",    "⚡", "调用字节生图 API 进行 inpaint 试戴生成",                         "nail",     False, False),
+    ("image_generation_tool",    "AI 生图",    "⚡", "调用字节生图 API 进行 inpaint 试戴生成，支持配置生图模型名",       "nail",     True,  False),
     ("quality_check_tool",       "质量评分",   "✅", "双图对比评估试戴效果：边界/肤色/光照/款式/自然度",               "nail",     True,  True),
     ("preference_rag_tool",      "偏好记忆",   "💾", "ChromaDB 存储用户喜好款式，支持个性化推荐",                      "nail",     False, False),
     ("trend_query_tool",         "趋势查询",   "📈", "查询近 N 天款式热度信号排行榜",                                  "nail",     False, False),

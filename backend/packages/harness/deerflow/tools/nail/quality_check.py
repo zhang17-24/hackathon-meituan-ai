@@ -47,7 +47,9 @@ Return ONLY valid JSON:
 
 
 def _encode(path: str) -> str:
-    with open(path, "rb") as f:
+    from .base import resolve_image_path
+    resolved = resolve_image_path(path)
+    with open(str(resolved), "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
 
@@ -84,8 +86,9 @@ def quality_check_tool(
 
     try:
         from deerflow.models import create_chat_model
-        from .base import get_tool_model
-        _tool_model = get_tool_model("quality_check_tool")
+        from deerflow.models.router import ModelRouter, Capability
+        resolution = ModelRouter.resolve("quality_check_tool", Capability.VISION)
+        _tool_model = resolution.name if resolution else None
         model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_tracing=False)
 
         orig_b64 = _encode(original_hand_path)
@@ -114,8 +117,7 @@ def quality_check_tool(
         return json.dumps(result, ensure_ascii=False)
 
     except FileNotFoundError as e:
-        _default_response["explanation_zh"] = f"图片文件不存在（{e}），跳过质量评估。"
-        return json.dumps(_default_response, ensure_ascii=False)
+        return json.dumps({"error": f"图片文件不存在：{e}", "scores": {}, "overall": 0, "fit_comment": "", "risk_comment": "", "adjustments": "", "explanation_zh": f"无法评估：文件不存在（{e}）"}, ensure_ascii=False)
     except Exception as e:
         logger.warning("QualityCheck fallback (LLM unavailable or error): %s", e)
         _default_response["explanation_zh"] = f"质量评估暂时不可用（{type(e).__name__}），请到店确认效果。"

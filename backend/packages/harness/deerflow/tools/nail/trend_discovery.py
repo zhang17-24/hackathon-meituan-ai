@@ -36,9 +36,9 @@ def trend_discovery_tool(days: int = 7) -> str:
         # LLM 生成洞察（降级时用规则）
         try:
             from deerflow.models import create_chat_model
-            from .base import get_tool_model
-            _tool_model = get_tool_model("trend_discovery_tool")
-            model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_tracing=False)
+            from deerflow.models.router import ModelRouter, Capability
+            resolution = ModelRouter.resolve("trend_discovery_tool", Capability.CHAT)
+            model = create_chat_model(name=resolution.name if resolution else None, thinking_enabled=False, attach_tracing=False)
 
             prompt = (
                 f"你是美甲门店运营分析师。根据以下 {days} 天的款式数据生成洞察报告（返回 JSON）：\n"

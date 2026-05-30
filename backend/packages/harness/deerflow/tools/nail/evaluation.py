@@ -47,9 +47,9 @@ def evaluation_tool(run_summary: str, run_id: str = "") -> str:
 
     try:
         from deerflow.models import create_chat_model
-        from .base import get_tool_model
-        _tool_model = get_tool_model("evaluation_tool")
-        model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_tracing=False)
+        from deerflow.models.router import ModelRouter, Capability
+        resolution = ModelRouter.resolve("evaluation_tool", Capability.CHAT)
+        model = create_chat_model(name=resolution.name if resolution else None, thinking_enabled=False, attach_tracing=False)
 
         prompt = (
             f"你是 NailFlow 系统的自动评测 Agent。按以下评分标准对本次运行打分，返回 JSON。\n"

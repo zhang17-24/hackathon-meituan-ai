@@ -47,6 +47,42 @@ def _enable_stream_usage_by_default(model_use_path: str, model_settings_from_con
         model_settings_from_config["stream_usage"] = True
 
 
+def _get_db_model_config(name: str) -> "ModelConfig | None":
+    """Look up a model in the nail_model_configs DB and return a ModelConfig.
+
+    Returns None if the table is unavailable or the model is not found.
+    """
+    try:
+        from deerflow.config.model_config import ModelConfig
+        from packages.harness.deerflow.tools.nail.base import get_db
+        with get_db() as conn:
+            row = conn.execute(
+                "SELECT name, model_id, display_name, api_key, api_base, use_class, "
+                "supports_vision, supports_thinking "
+                "FROM nail_model_configs WHERE name = ? AND is_active = 1",
+                (name,),
+            ).fetchone()
+        if row is None:
+            return None
+        extra: dict = {}
+        if row["api_key"]:
+            extra["api_key"] = row["api_key"]
+        if row["api_base"]:
+            extra["base_url"] = row["api_base"]
+        extra["stream_usage"] = True
+        return ModelConfig(
+            name=row["name"],
+            model=row["model_id"],
+            display_name=row["display_name"],
+            use=row["use_class"],
+            supports_vision=bool(row["supports_vision"]),
+            supports_thinking=bool(row["supports_thinking"]),
+            **extra,
+        )
+    except Exception:
+        return None
+
+
 def create_chat_model(name: str | None = None, thinking_enabled: bool = False, *, app_config: AppConfig | None = None, attach_tracing: bool = True, **kwargs) -> BaseChatModel:
     """Create a chat model instance from the config.
 
@@ -71,8 +107,14 @@ def create_chat_model(name: str | None = None, thinking_enabled: bool = False, *
     """
     config = app_config or get_app_config()
     if name is None:
-        name = config.models[0].name
+        if config.models:
+            name = config.models[0].name
+        else:
+            raise ValueError("No chat models are configured. Please add a model in Settings or config.yaml.")
     model_config = config.get_model_config(name)
+    if model_config is None:
+        # NailFlow: fallback to DB-configured models (user-added via Settings UI)
+        model_config = _get_db_model_config(name)
     if model_config is None:
         raise ValueError(f"Model {name} not found in config") from None
     model_class = resolve_class(model_config.use, BaseChatModel)

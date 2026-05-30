@@ -17,6 +17,57 @@ UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
 RESULTS_DIR.mkdir(parents=True, exist_ok=True)
 DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
+# 美甲仓库子目录
+HANDS_DIR = UPLOADS_DIR / "hands"
+STYLES_DIR = UPLOADS_DIR / "styles"
+HANDS_DIR.mkdir(parents=True, exist_ok=True)
+STYLES_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def resolve_image_path(image_path: str) -> Path:
+    """Resolve an image path that may be a virtual sandbox path or real path.
+
+    Handles:
+    - Direct filesystem paths
+    - Virtual sandbox paths like /mnt/user-data/uploads/filename.png
+    - DeerFlow thread upload paths
+    - NailFlow data/uploads/ fallback
+
+    Returns the first existing resolved path, or the original as fallback.
+    """
+    p = Path(image_path)
+    if p.exists():
+        return p
+
+    # Virtual sandbox path: /mnt/user-data/uploads/filename.png
+    filename = p.name
+    if not filename:
+        return p
+
+    # 1. Try NailFlow data/uploads/
+    alt = UPLOADS_DIR / filename
+    if alt.exists():
+        return alt
+
+    # 2. Try NailFlow data/results/
+    alt = RESULTS_DIR / filename
+    if alt.exists():
+        return alt
+
+    # 3. Search DeerFlow thread upload directories
+    deerflow_base = Path(".deer-flow")
+    if deerflow_base.exists():
+        for up_dir in deerflow_base.glob("users/*/threads/*/user-data/uploads/"):
+            candidate = up_dir / filename
+            if candidate.exists():
+                return candidate
+        for ws_dir in deerflow_base.glob("users/*/threads/*/user-data/workspace/"):
+            candidate = ws_dir / filename
+            if candidate.exists():
+                return candidate
+
+    return p
+
 
 @contextlib.contextmanager
 def get_db():
@@ -146,6 +197,29 @@ def init_nail_tables() -> None:
                 color_tags  TEXT,
                 image_path  TEXT,
                 source      TEXT DEFAULT 'static'
+            );
+
+            CREATE TABLE IF NOT EXISTS nail_hand_photos (
+                id          TEXT PRIMARY KEY,
+                user_id     TEXT NOT NULL,
+                filename    TEXT NOT NULL,
+                file_path   TEXT NOT NULL,
+                thumbnail   TEXT,
+                is_active   INTEGER DEFAULT 1,
+                created_at  TEXT DEFAULT (datetime('now'))
+            );
+
+            CREATE TABLE IF NOT EXISTS nail_style_images (
+                id          TEXT PRIMARY KEY,
+                user_id     TEXT,
+                filename    TEXT NOT NULL,
+                file_path   TEXT NOT NULL,
+                thumbnail   TEXT,
+                category    TEXT DEFAULT 'user',
+                tags        TEXT,
+                source      TEXT DEFAULT 'user',
+                is_active   INTEGER DEFAULT 1,
+                created_at  TEXT DEFAULT (datetime('now'))
             );
         """)
     try:

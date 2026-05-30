@@ -293,9 +293,17 @@ async def start_run(
         model_name = str(model_name)
 
     # Validate model against the allowlist when a model_name is provided.
+    # NailFlow: also checks nail_model_configs DB (user-configured via Settings UI).
     if model_name:
         app_config = get_app_config()
         resolved = app_config.get_model_config(model_name)
+        if resolved is None:
+            # Fallback: check nail_model_configs DB
+            try:
+                from deerflow.models.factory import _get_db_model_config
+                resolved = _get_db_model_config(model_name)
+            except Exception:
+                resolved = None
         if resolved is None:
             raise HTTPException(
                 status_code=400,
