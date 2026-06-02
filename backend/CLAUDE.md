@@ -75,6 +75,14 @@ When making code changes, you MUST update the relevant documentation:
 - Keep documentation synchronized with the codebase at all times
 - Ensure accuracy and timeliness of all documentation
 
+### NailFlow RAG Notes
+
+- `packages/harness/deerflow/tools/nail/embedding.py` now treats nail retrieval as a localized vision task, not a full-image task.
+- Query image encoding prefers `hand_detect_tool` nail bboxes, builds a subdued-background masked hand crop plus per-nail crops, and aggregates those vectors before retrieval.
+- `scripts/init_nail_styles.py` can fuse real style images from `backend/data/styles/<style_id>.(jpg|jpeg|png|webp|bmp)` with structured text when rebuilding the ChromaDB `nail_styles` collection.
+- `scripts/fetch_seed_nail_assets.py` fetches seed manicure knowledge plus openly licensed Wikimedia Commons nail images into `backend/data/knowledge/` and `backend/data/seed_images/commons/`.
+- Keep SQLite `nail_style_catalog` metadata (`image_path`, `color_group`, `pattern_type`) aligned with Chroma metadata whenever you add or re-index styles.
+
 ## Commands
 
 **Root directory** (for full application):

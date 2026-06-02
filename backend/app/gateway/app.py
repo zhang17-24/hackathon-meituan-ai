@@ -29,6 +29,7 @@ from app.gateway.routers.nail_ops import router as nail_ops_router
 from app.gateway.routers.nail_config import router as nail_config_router
 from app.gateway.routers.nail_warehouse import router as nail_warehouse_router
 from app.gateway.routers.nail_dev import router as nail_dev_router
+from app.gateway.routers.nail_data import router as nail_data_router
 from deerflow.config import app_config as deerflow_app_config
 from deerflow.config.app_config import apply_logging_level
 
@@ -364,6 +365,7 @@ This gateway provides runtime endpoints for agent runs plus custom endpoints for
     app.include_router(nail_config_router)
     app.include_router(nail_warehouse_router)
     app.include_router(nail_dev_router)
+    app.include_router(nail_data_router)
 
     @app.get("/health", tags=["health"])
     async def health_check() -> dict[str, str]:

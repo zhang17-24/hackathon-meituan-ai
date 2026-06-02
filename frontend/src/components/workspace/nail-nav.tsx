@@ -1,70 +1,35 @@
 // frontend/src/components/workspace/nail-nav.tsx
 "use client";
 
-import {
-  BoxIcon,
-  ChartNoAxesColumnIcon,
-  HeartIcon,
-  SparklesIcon,
-  WrenchIcon,
-} from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import type { ComponentType } from "react";
-
 import { useAuth } from "@/core/auth/AuthProvider";
 import { canAccess, type NailRole } from "@/lib/nail-auth";
-import { cn } from "@/lib/utils";
 
 interface NailNavItem {
   href: string;
   label: string;
-  icon: ComponentType<{ className?: string }>;
+  emoji: string;
   requiredRole: NailRole;
 }
 
 const NAV_ITEMS: NailNavItem[] = [
-  {
-    href: "/workspace/nail/tryon",
-    label: "AI 试戴",
-    icon: SparklesIcon,
-    requiredRole: "user",
-  },
-  {
-    href: "/workspace/nail/warehouse",
-    label: "美甲仓库",
-    icon: BoxIcon,
-    requiredRole: "user",
-  },
-  {
-    href: "/workspace/nail/tools",
-    label: "工具管理",
-    icon: WrenchIcon,
-    requiredRole: "user",
-  },
-  {
-    href: "/workspace/nail/dashboard",
-    label: "运营看板",
-    icon: ChartNoAxesColumnIcon,
-    requiredRole: "ops",
-  },
-  {
-    href: "/workspace/nail/evaluation",
-    label: "评分面板",
-    icon: HeartIcon,
-    requiredRole: "dev",
-  },
+  // 试戴功能进入带 nail 模式的新对话（复用 DeerFlow 对话界面）
+  { href: "/workspace/chats/new?mode=nail", label: "AI 试戴",  emoji: "💅", requiredRole: "user" },
+  { href: "/workspace/nail/warehouse",     label: "美甲仓库", emoji: "📦", requiredRole: "user" },
+  { href: "/workspace/nail/tools",          label: "工具管理", emoji: "🔧", requiredRole: "user" },
+  { href: "/workspace/nail/dashboard",      label: "运营看板", emoji: "📊", requiredRole: "ops" },
+  { href: "/workspace/nail/data",           label: "数据中心", emoji: "🗄️", requiredRole: "ops" },
+  { href: "/workspace/nail/evaluation",     label: "评分面板", emoji: "⚡", requiredRole: "dev" },
 ];
 
 export function NailNav() {
   const { user } = useAuth();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const nailRole = user?.nail_role ?? "user";
+  const nailRole = (user as any)?.nail_role as NailRole ?? "user";
 
-  const visibleItems = NAV_ITEMS.filter((item) =>
-    canAccess(nailRole, item.requiredRole),
-  );
+  const visibleItems = NAV_ITEMS.filter((item) => canAccess(nailRole, item.requiredRole));
 
   if (visibleItems.length === 0) return null;
 
@@ -83,33 +48,23 @@ export function NailNav() {
   };
 
   return (
-    <div className="px-5 py-4">
-      <p className="mb-3 px-1 text-sm font-semibold text-pink-500">NailFlow</p>
-      <div className="space-y-2">
+    <div className="px-2 py-2">
+      <p className="text-muted-foreground mb-1 px-2 text-xs font-medium">NailFlow</p>
+      <div className="space-y-0.5">
         {visibleItems.map((item) => {
           const isActive = isItemActive(item.href);
-          const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
-              className={cn(
-                "group flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-semibold transition-all",
+              className={`flex items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors ${
                 isActive
-                  ? "bg-gradient-to-r from-pink-100 to-pink-200/70 text-pink-600 shadow-lg shadow-pink-200/45"
-                  : "text-[#655767] hover:bg-pink-50/80 hover:text-pink-600",
-              )}
+                  ? "bg-accent text-accent-foreground"
+                  : "hover:bg-accent/50 text-muted-foreground hover:text-foreground"
+              }`}
             >
-              <span
-                className={cn(
-                  "flex size-7 items-center justify-center rounded-xl bg-white/55 text-pink-500 shadow-sm",
-                  isActive && "bg-white/70",
-                )}
-              >
-                <Icon className="size-4" />
-              </span>
+              <span>{item.emoji}</span>
               <span>{item.label}</span>
-              {isActive && <span className="ml-auto text-pink-300">✦</span>}
             </Link>
           );
         })}

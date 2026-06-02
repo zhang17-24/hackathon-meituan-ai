@@ -49,60 +49,30 @@ def _resolve_style_structured(style_image_path: str) -> dict:
     img_b64 = _read_b64_data_url(str(resolved))
 
     prompt = (
-        "Analyze EVERY individual fingernail in this nail art reference image. "
-        "Look at the hand from LEFT to RIGHT: thumb, index, middle, ring, pinky.\n\n"
-        "For EACH nail, report its EXACT design. Different nails may have DIFFERENT designs!\n\n"
-        "Return ONLY valid JSON, no markdown:\n"
+        "仔细分析这张美甲参考图，逐指报告每根手指的指甲设计。\n\n"
+        "只返回合法 JSON，不要 markdown 代码块：\n"
         "{\n"
         '  "same_on_all": false,\n'
-        '  "nail_shape": "square / squoval",\n'
-        '  "nail_length": "medium",\n'
-        '  "finish": "high gloss top coat",\n'
+        '  "nail_shape": "...",\n'
+        '  "nail_length": "...",\n'
+        '  "finish": "...",\n'
         '  "nails": [\n'
-        '    {\n'
-        '      "finger": "thumb",\n'
-        '      "base_color": "nude pink (hex #F5D9C3)",\n'
-        '      "tip": "white french tip, ~2mm thin line",\n'
-        '      "pattern": "none",\n'
-        '      "full_design_en": "nude pink base with white french tip, no pattern"\n'
-        '    },\n'
-        '    {\n'
-        '      "finger": "index",\n'
-        '      "base_color": "nude pink (hex #F5D9C3)",\n'
-        '      "tip": "white french tip, ~2mm thin line",\n'
-        '      "pattern": "none",\n'
-        '      "full_design_en": "nude pink base with white french tip, no pattern"\n'
-        '    },\n'
-        '    {\n'
-        '      "finger": "middle",\n'
-        '      "base_color": "pure white",\n'
-        '      "tip": "none",\n'
-        '      "pattern": "irregular black cow-print organic patches, NOT dots, unique amoeba-like contours, 3-5 patches distributed naturally",\n'
-        '      "full_design_en": "white base with irregular black cow-print patches, NO french tip"\n'
-        '    },\n'
-        '    {\n'
-        '      "finger": "ring",\n'
-        '      "base_color": "pure white",\n'
-        '      "tip": "none",\n'
-        '      "pattern": "irregular black cow-print organic patches, NOT dots, unique amoeba-like contours, 3-5 patches distributed naturally",\n'
-        '      "full_design_en": "white base with irregular black cow-print patches, NO french tip"\n'
-        '    },\n'
-        '    {\n'
-        '      "finger": "pinky",\n'
-        '      "base_color": "nude pink (hex #F5D9C3)",\n'
-        '      "tip": "white french tip, ~2mm thin line",\n'
-        '      "pattern": "none",\n'
-        '      "full_design_en": "nude pink base with white french tip, no pattern"\n'
-        '    }\n'
+        '    {"finger": "thumb",  "base_color": "...", "tip": "none", "pattern": "none", "pattern_description": "", "full_design_en": "..."},\n'
+        '    {"finger": "index",  "base_color": "...", "tip": "none", "pattern": "none", "pattern_description": "", "full_design_en": "..."},\n'
+        '    {"finger": "middle", "base_color": "...", "tip": "none", "pattern": "none", "pattern_description": "", "full_design_en": "..."},\n'
+        '    {"finger": "ring",   "base_color": "...", "tip": "none", "pattern": "none", "pattern_description": "", "full_design_en": "..."},\n'
+        '    {"finger": "pinky",  "base_color": "...", "tip": "none", "pattern": "none", "pattern_description": "", "full_design_en": "..."}\n'
         '  ],\n'
-        '  "style_description_zh": "一句中文描述完整款式"\n'
+        '  "style_description_zh": "..."\n'
         "}\n\n"
-        "CRITICAL RULES:\n"
-        "- same_on_all: true ONLY if ALL 5 nails have IDENTICAL design. If any nail is different, set false.\n"
-        "- For EACH nail, examine it individually. Do NOT assume all nails are the same.\n"
-        "- pattern: if nail has NO pattern, write 'none'. If it has pattern, describe the EXACT shapes — NEVER call them 'dots' unless perfectly circular.\n"
-        "- tip: if NO french tip, write 'none'.\n"
-        "- full_design_en: ONE sentence per nail with COMPLETE design description.\n"
+        "字段说明：\n"
+        "- same_on_all: 五根手指完全相同为 true，否则 false。\n"
+        "- base_color: 底色描述。\n"
+        "- tip: 指尖装饰描述（类型/颜色/宽度）。没有则 'none'。\n"
+        "- pattern: 图案描述。没有则 'none'。\n"
+        "- pattern_description: 图案的形状、密度、分布。\n"
+        "- full_design_en: 该指的一句完整英文设计描述。\n"
+        "- style_description_zh: 一句中文总结整体款式。\n"
     )
 
     model = create_chat_model(name=resolution.name, thinking_enabled=False, attach_tracing=False)
@@ -244,39 +214,15 @@ def unified_tryon_tool(
 
             per_finger_block = "; ".join(finger_parts)
 
-            # 权限集合
-            has_pattern = {n["finger"] for n in nails if n.get("pattern", "none") != "none"}
-            has_tip = {n["finger"] for n in nails if n.get("tip", "none") != "none"}
-            all_f = {"thumb", "index", "middle", "ring", "pinky"}
-            only_p = ", ".join(f.upper() for f in sorted(has_pattern)) if has_pattern else "NONE"
-            only_t = ", ".join(f.upper() for f in sorted(has_tip)) if has_tip else "NONE"
-            no_p = ", ".join(f.upper() for f in sorted(all_f - has_pattern))
-            no_t = ", ".join(f.upper() for f in sorted(all_f - has_tip))
-            # 需要保护的手指（有独特特征的）
-            vulnerable = [f.upper() for f in sorted((all_f - has_pattern) & has_tip)]
-            vulnerable += [f.upper() for f in sorted((all_f - has_tip) & has_pattern)]
-
             prompt_text = (
-                # 1. 手部保留（最前，权重最高）
-                f"Keep the hand in image 1 completely unchanged: exact skin tone, wrinkles, joints, lighting, background. "
-                f"Image 1 is back of hand (palm down). Image 2 is reference. Map fingers: thumb→thumb, index→index, middle→middle, ring→ring, pinky→pinky. "
-                # 2. 逐指设计（核心信息，分号分隔）
-                f"Apply nail art EXACTLY per finger: {per_finger_block}. "
-                # 3. 强权限否定（CRITICAL RULE 前缀增强注意力）
-                f"CRITICAL RULE: ONLY [{only_p}] may have black patterns. [{no_p}] must be solid color with ZERO patterns. "
-                f"CRITICAL RULE: ONLY [{only_t}] may have white french tip. [{no_t}] must have NO white line at nail tip. "
-                f"CRITICAL RULE: Do NOT copy any pattern from one finger to another. "
-                f"CRITICAL RULE: Do NOT make all nails identical. Each finger has its OWN design. "
-                + (f"CRITICAL RULE: {', '.join(vulnerable)} must keep its unique design, do NOT change it to match other fingers. " if vulnerable else "") +
-                # 4. 材质（最后，即使被忽略也不影响结构）
-                f"Photorealistic glossy gel polish, natural light, 4K beauty photo."
+                f"保持用户手部图的手部完全不变（肤色、纹理、关节、光影、背景）。"
+                f"将美甲参考图中每根手指的美甲设计，精确应用到用户手部图的对应手指，逐指匹配：{per_finger_block}。"
+                f"每根手指的美甲设计互不干扰。"
             )
         else:
             desc = nails[0].get("full_design_en", "") if nails else style.get("style_description_en", "")
             prompt_text = (
-                f"Keep the hand in image 1 completely unchanged. Image 2 is nail art reference. "
-                f"Apply the nail design from image 2 to ALL fingernails in image 1 identically: {desc}. "
-                f"Photorealistic glossy gel polish, 4K."
+                f"保持用户手部图手部完全不变。将美甲参考图的美甲设计应用到图1所有指甲：{desc}。"
             )
 
         payload = {

@@ -33,6 +33,7 @@ NailFlow 解决了美甲行业的两个核心矛盾：
 - ⚡ 智能 Prompt 构建 + 字节生图 API inpaint
 - ✅ 自动质量评估（边界/肤色/光照/款式相似度）
 - 💾 用户偏好 RAG 记忆（ChromaDB 向量检索）
+- 🔎 美甲 RAG 检索采用局部化 embedding：甲面裁剪 + 弱背景 masked view + 文本融合，降低手和背景噪声
 
 ### 运营端智能运营
 - 📈 实时聚合运营信号（点击/收藏/订单/搜索）
@@ -172,6 +173,11 @@ pnpm install
 cd backend
 python -c "from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()"
 python scripts/seed_nail_users.py
+# 可选：将真实款式图放到 backend/data/styles/，文件名使用 <style_id>.jpg/.png
+# 然后执行图片+文本融合索引初始化
+uv run python scripts/init_nail_styles.py
+# 可选：抓取一批公开授权的美甲知识与 Commons 图片种子
+uv run python scripts/fetch_seed_nail_assets.py
 ```
 
 ### 6. 启动服务
@@ -299,7 +305,7 @@ hackathon-meituan-ai/
 
 ## 数据库设计
 
-SQLite 数据库位于 `backend/data/nailflow.db`（相对于 `backend/` 目录），共 9 张表：
+SQLite 数据库位于 `backend/data/nailflow.db`（相对于 `backend/` 目录），包含运行记录、配置、素材仓库、用户画像和款式 catalog 等多张表。
 
 | 表名 | 用途 |
 |------|------|
@@ -312,6 +318,8 @@ SQLite 数据库位于 `backend/data/nailflow.db`（相对于 `backend/` 目录�
 | `nail_model_configs` | 用户配置的 LLM 模型 |
 | `nail_agent_configs` | Agent 模型绑定配置 |
 | `nail_tool_overrides` | 工具级模型覆盖配置 |
+
+`nail_style_catalog` 额外记录 `image_path`、`color_group`、`pattern_type` 等款式元数据，配合 ChromaDB 中的 Chinese-CLIP 向量做图片优先的 RAG 检索。
 
 ---
 
