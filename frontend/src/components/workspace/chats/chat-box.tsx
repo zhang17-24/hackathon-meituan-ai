@@ -113,7 +113,7 @@ const ChatBox: React.FC<{ children: React.ReactNode; threadId: string }> = ({
       <ResizableHandle
         id={`${resizableIdBase}-separator`}
         className={cn(
-          "opacity-33 hover:opacity-100",
+          "bg-pink-200/50 opacity-50 hover:opacity-100",
           !artifactPanelOpen && "pointer-events-none opacity-0",
         )}
       />
@@ -126,7 +126,7 @@ const ChatBox: React.FC<{ children: React.ReactNode; threadId: string }> = ({
       >
         <div
           className={cn(
-            "h-full p-4 transition-transform duration-300 ease-in-out",
+            "nail-shell h-full p-4 transition-transform duration-300 ease-in-out",
             artifactPanelOpen ? "translate-x-0" : "translate-x-full",
           )}
         >
@@ -142,6 +142,7 @@ const ChatBox: React.FC<{ children: React.ReactNode; threadId: string }> = ({
                 <Button
                   size="icon-sm"
                   variant="ghost"
+                  className="rounded-full text-pink-500 hover:bg-pink-100/70 hover:text-pink-600"
                   onClick={() => {
                     setArtifactsOpen(false);
                   }}
@@ -156,9 +157,11 @@ const ChatBox: React.FC<{ children: React.ReactNode; threadId: string }> = ({
                   description="Select an artifact to view its details"
                 />
               ) : (
-                <div className="flex size-full max-w-(--container-width-sm) flex-col justify-center p-4 pt-8">
+                <div className="nail-glass-card flex size-full max-w-(--container-width-sm) flex-col justify-center rounded-3xl p-4 pt-8">
                   <header className="shrink-0">
-                    <h2 className="text-lg font-medium">Artifacts</h2>
+                    <h2 className="text-lg font-bold text-[#5b1738]">
+                      Artifacts
+                    </h2>
                   </header>
                   <main className="min-h-0 grow">
                     <ArtifactFileList

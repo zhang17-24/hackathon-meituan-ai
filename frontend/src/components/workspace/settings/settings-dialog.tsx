@@ -21,10 +21,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AccountSettingsPage } from "@/components/workspace/settings/account-settings-page";
 import { AppearanceSettingsPage } from "@/components/workspace/settings/appearance-settings-page";
 import { MemorySettingsPage } from "@/components/workspace/settings/memory-settings-page";
+import { ModelSettingsPage } from "@/components/workspace/settings/model-settings-page";
 import { NotificationSettingsPage } from "@/components/workspace/settings/notification-settings-page";
 import { SkillSettingsPage } from "@/components/workspace/settings/skill-settings-page";
 import { ToolSettingsPage } from "@/components/workspace/settings/tool-settings-page";
-import { ModelSettingsPage } from "@/components/workspace/settings/model-settings-page";
 import { useI18n } from "@/core/i18n/hooks";
 import { cn } from "@/lib/utils";
 
@@ -100,18 +100,18 @@ export function SettingsDialog(props: SettingsDialogProps) {
       onOpenChange={(open) => props.onOpenChange?.(open)}
     >
       <DialogContent
-        className="flex h-[75vh] max-h-[calc(100vh-2rem)] flex-col sm:max-w-5xl md:max-w-6xl"
+        className="nail-settings-dialog nail-glass-card flex h-[75vh] max-h-[calc(100vh-2rem)] flex-col rounded-[2rem] border-pink-200/70 p-6 sm:max-w-5xl md:max-w-6xl"
         aria-describedby={undefined}
       >
         <DialogHeader className="gap-1">
-          <DialogTitle>{t.settings.title}</DialogTitle>
-          <p className="text-muted-foreground text-sm">
-            {t.settings.description}
-          </p>
+          <DialogTitle className="nail-hero-title text-2xl font-extrabold">
+            {t.settings.title}
+          </DialogTitle>
+          <p className="text-sm text-[#8f7b88]">{t.settings.description}</p>
         </DialogHeader>
         <div className="grid min-h-0 flex-1 gap-4 md:grid-cols-[220px_minmax(0,1fr)]">
-          <nav className="bg-sidebar min-h-0 overflow-y-auto rounded-lg border p-2">
-            <ul className="space-y-1 pr-1">
+          <nav className="nail-glass-soft min-h-0 overflow-y-auto rounded-3xl p-3">
+            <ul className="space-y-2 pr-1">
               {sections.map(({ id, label, icon: Icon }) => {
                 const active = activeSection === id;
                 return (
@@ -120,13 +120,20 @@ export function SettingsDialog(props: SettingsDialogProps) {
                       type="button"
                       onClick={() => setActiveSection(id as SettingsSection)}
                       className={cn(
-                        "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        "flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-semibold transition-all",
                         active
-                          ? "bg-primary text-primary-foreground shadow-sm"
-                          : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                          ? "bg-gradient-to-r from-pink-100 to-pink-200/70 text-pink-600 shadow-md shadow-pink-200/45"
+                          : "text-[#655767] hover:bg-pink-50/80 hover:text-pink-600",
                       )}
                     >
-                      <Icon className="size-4" />
+                      <span
+                        className={cn(
+                          "flex size-8 items-center justify-center rounded-xl bg-white/55 text-pink-500 shadow-sm",
+                          active && "bg-white/75",
+                        )}
+                      >
+                        <Icon className="size-4" />
+                      </span>
                       <span>{label}</span>
                     </button>
                   </li>
@@ -134,7 +141,7 @@ export function SettingsDialog(props: SettingsDialogProps) {
               })}
             </ul>
           </nav>
-          <ScrollArea className="h-full min-h-0 rounded-lg border">
+          <ScrollArea className="nail-glass-soft h-full min-h-0 rounded-3xl">
             <div className="space-y-8 p-6">
               {activeSection === "account" && <AccountSettingsPage />}
               {activeSection === "models" && <ModelSettingsPage />}

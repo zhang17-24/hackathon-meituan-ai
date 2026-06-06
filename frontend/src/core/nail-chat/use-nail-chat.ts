@@ -2,7 +2,9 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+
 import { useAuth } from "@/core/auth/AuthProvider";
+
 import type { NailPageMode } from "./use-nail-thread";
 
 export interface ChatMessage {
@@ -11,6 +13,9 @@ export interface ChatMessage {
   content: string;
   isStreaming?: boolean;
 }
+interface NailUser {
+  nail_role?: string;
+}
 
 export function useNailChat(
   pageMode: NailPageMode,
@@ -18,7 +23,7 @@ export function useNailChat(
   extraConfig?: Record<string, unknown>,
 ) {
   const { user } = useAuth();
-  const nailRole = (user as any)?.nail_role ?? "user";
+  const nailRole = (user as NailUser | null)?.nail_role ?? "user";
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +35,11 @@ export function useNailChat(
       if (!content.trim() || isLoading) return;
       setError("");
 
-      const userMsg: ChatMessage = { id: crypto.randomUUID(), role: "user", content };
+      const userMsg: ChatMessage = {
+        id: crypto.randomUUID(),
+        role: "user",
+        content,
+      };
       setMessages((prev) => [...prev, userMsg]);
 
       const assistantId = crypto.randomUUID();
@@ -85,13 +94,14 @@ export function useNailChat(
                 accumulated += text;
                 setMessages((prev) =>
                   prev.map((m) =>
-                    m.id === assistantId
-                      ? { ...m, content: accumulated }
-                      : m,
+                    m.id === assistantId ? { ...m, content: accumulated } : m,
                   ),
                 );
               }
-              if (data?.type === "tool_result" && typeof window !== "undefined") {
+              if (
+                data?.type === "tool_result" &&
+                typeof window !== "undefined"
+              ) {
                 window.dispatchEvent(new CustomEvent("nail:refresh-dashboard"));
               }
             } catch {

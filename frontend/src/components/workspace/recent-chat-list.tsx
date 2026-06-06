@@ -39,7 +39,6 @@ import {
   SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuAction,
-  SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { getAPIClient } from "@/core/api";
@@ -58,6 +57,7 @@ import type { AgentThread, AgentThreadState } from "@/core/threads/types";
 import { pathOfThread, titleOfThread } from "@/core/threads/utils";
 import { env } from "@/env";
 import { isIMEComposing } from "@/lib/ime";
+import { cn } from "@/lib/utils";
 
 export function RecentChatList() {
   const { t } = useI18n();
@@ -171,15 +171,15 @@ export function RecentChatList() {
   }
   return (
     <>
-      <SidebarGroup>
-        <SidebarGroupLabel>
+      <SidebarGroup className="px-5 pt-3">
+        <SidebarGroupLabel className="mb-2 px-1 text-sm font-semibold text-pink-500">
           {env.NEXT_PUBLIC_STATIC_WEBSITE_ONLY !== "true"
             ? t.sidebar.recentChats
             : t.sidebar.demoChats}
         </SidebarGroupLabel>
         <SidebarGroupContent className="group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:-mt-8 group-data-[collapsible=icon]:opacity-0">
           <SidebarMenu>
-            <div className="flex w-full flex-col gap-1">
+            <div className="flex w-full flex-col gap-2">
               {threads.map((thread) => {
                 const isActive = pathOfThread(thread) === pathname;
                 return (
@@ -187,10 +187,17 @@ export function RecentChatList() {
                     key={thread.thread_id}
                     className="group/side-menu-item"
                   >
-                    <SidebarMenuButton isActive={isActive} asChild>
-                      <div>
+                    <div
+                      className={cn(
+                        "relative rounded-2xl transition-all",
+                        isActive
+                          ? "bg-white/70 text-pink-600 shadow-md shadow-pink-200/35"
+                          : "text-[#655767] hover:bg-pink-50/75 hover:text-pink-600",
+                      )}
+                    >
+                      <div className="flex min-h-10 items-center">
                         <Link
-                          className="text-muted-foreground block w-full whitespace-nowrap group-hover/side-menu-item:overflow-hidden"
+                          className="block w-full truncate px-4 py-2.5 pr-9 text-sm font-medium"
                           href={pathOfThread(thread)}
                         >
                           {titleOfThread(thread)}
@@ -200,14 +207,14 @@ export function RecentChatList() {
                             <DropdownMenuTrigger asChild>
                               <SidebarMenuAction
                                 showOnHover
-                                className="bg-background/50 hover:bg-background"
+                                className="top-1/2 right-2 -translate-y-1/2 rounded-full bg-white/65 text-pink-400 hover:bg-pink-100 hover:text-pink-600"
                               >
                                 <MoreHorizontal />
                                 <span className="sr-only">{t.common.more}</span>
                               </SidebarMenuAction>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
-                              className="w-48 rounded-lg"
+                              className="w-48 rounded-2xl border-pink-200/70 bg-white/95 text-[#5b1738] shadow-xl shadow-pink-200/30"
                               side={"right"}
                               align={"start"}
                             >
@@ -219,18 +226,18 @@ export function RecentChatList() {
                                   )
                                 }
                               >
-                                <Pencil className="text-muted-foreground" />
+                                <Pencil className="text-pink-400" />
                                 <span>{t.common.rename}</span>
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 onSelect={() => handleShare(thread)}
                               >
-                                <Share2 className="text-muted-foreground" />
+                                <Share2 className="text-pink-400" />
                                 <span>{t.common.share}</span>
                               </DropdownMenuItem>
                               <DropdownMenuSub>
                                 <DropdownMenuSubTrigger>
-                                  <Download className="text-muted-foreground" />
+                                  <Download className="text-pink-400" />
                                   <span>{t.common.export}</span>
                                 </DropdownMenuSubTrigger>
                                 <DropdownMenuSubContent>
@@ -239,7 +246,7 @@ export function RecentChatList() {
                                       handleExport(thread, "markdown")
                                     }
                                   >
-                                    <FileText className="text-muted-foreground" />
+                                    <FileText className="text-pink-400" />
                                     <span>{t.common.exportAsMarkdown}</span>
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
@@ -247,7 +254,7 @@ export function RecentChatList() {
                                       handleExport(thread, "json")
                                     }
                                   >
-                                    <FileJson className="text-muted-foreground" />
+                                    <FileJson className="text-pink-400" />
                                     <span>{t.common.exportAsJSON}</span>
                                   </DropdownMenuItem>
                                 </DropdownMenuSubContent>
@@ -256,14 +263,14 @@ export function RecentChatList() {
                               <DropdownMenuItem
                                 onSelect={() => handleDelete(thread.thread_id)}
                               >
-                                <Trash2 className="text-muted-foreground" />
+                                <Trash2 className="text-rose-500" />
                                 <span>{t.common.delete}</span>
                               </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
                         )}
                       </div>
-                    </SidebarMenuButton>
+                    </div>
                   </SidebarMenuItem>
                 );
               })}
@@ -274,15 +281,18 @@ export function RecentChatList() {
 
       {/* Rename Dialog */}
       <Dialog open={renameDialogOpen} onOpenChange={setRenameDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="nail-glass-card rounded-3xl border-pink-200/70 sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>{t.common.rename}</DialogTitle>
+            <DialogTitle className="text-[#5b1738]">
+              {t.common.rename}
+            </DialogTitle>
           </DialogHeader>
           <div className="py-4">
             <Input
               value={renameValue}
               onChange={(e) => setRenameValue(e.target.value)}
               placeholder={t.common.rename}
+              className="rounded-2xl border-pink-200 bg-white/65 focus-visible:ring-pink-300"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !isIMEComposing(e)) {
                   e.preventDefault();
@@ -294,11 +304,17 @@ export function RecentChatList() {
           <DialogFooter>
             <Button
               variant="outline"
+              className="nail-outline-button rounded-full"
               onClick={() => setRenameDialogOpen(false)}
             >
               {t.common.cancel}
             </Button>
-            <Button onClick={handleRenameSubmit}>{t.common.save}</Button>
+            <Button
+              className="nail-primary-button rounded-full"
+              onClick={handleRenameSubmit}
+            >
+              {t.common.save}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

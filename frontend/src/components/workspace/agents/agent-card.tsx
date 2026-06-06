@@ -53,19 +53,22 @@ export function AgentCard({ agent }: AgentCardProps) {
 
   return (
     <>
-      <Card className="group flex flex-col transition-shadow hover:shadow-md">
+      <Card className="nail-glass-soft group flex flex-col rounded-3xl border-pink-200/70 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-pink-200/40">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between gap-2">
             <div className="flex items-center gap-2">
-              <div className="bg-primary/10 text-primary flex h-9 w-9 shrink-0 items-center justify-center rounded-lg">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-pink-100 text-pink-500 shadow-sm">
                 <BotIcon className="h-5 w-5" />
               </div>
               <div className="min-w-0">
-                <CardTitle className="truncate text-base">
+                <CardTitle className="truncate text-base text-[#5b1738]">
                   {agent.name}
                 </CardTitle>
                 {agent.model && (
-                  <Badge variant="secondary" className="mt-0.5 text-xs">
+                  <Badge
+                    variant="secondary"
+                    className="mt-0.5 rounded-full bg-pink-100 text-xs text-pink-500"
+                  >
                     {agent.model}
                   </Badge>
                 )}
@@ -73,7 +76,7 @@ export function AgentCard({ agent }: AgentCardProps) {
             </div>
           </div>
           {agent.description && (
-            <CardDescription className="mt-2 line-clamp-2 text-sm">
+            <CardDescription className="mt-2 line-clamp-2 text-sm text-[#8f7b88]">
               {agent.description}
             </CardDescription>
           )}
@@ -86,7 +89,7 @@ export function AgentCard({ agent }: AgentCardProps) {
                 <Badge
                   key={`tg:${group}`}
                   variant="outline"
-                  className="text-xs"
+                  className="rounded-full border-pink-200 text-xs text-pink-500"
                 >
                   {group}
                 </Badge>
@@ -95,7 +98,7 @@ export function AgentCard({ agent }: AgentCardProps) {
                 <Badge
                   key={`sk:${skill}`}
                   variant="secondary"
-                  className="text-xs"
+                  className="rounded-full bg-fuchsia-100 text-xs text-fuchsia-500"
                 >
                   {skill}
                 </Badge>
@@ -105,7 +108,11 @@ export function AgentCard({ agent }: AgentCardProps) {
         )}
 
         <CardFooter className="mt-auto flex items-center justify-between gap-2 pt-3">
-          <Button size="sm" className="flex-1" onClick={handleChat}>
+          <Button
+            size="sm"
+            className="nail-primary-button flex-1 rounded-full"
+            onClick={handleChat}
+          >
             <MessageSquareIcon className="mr-1.5 h-3.5 w-3.5" />
             {t.agents.chat}
           </Button>
@@ -113,7 +120,7 @@ export function AgentCard({ agent }: AgentCardProps) {
             <Button
               size="icon"
               variant="ghost"
-              className="text-destructive hover:text-destructive h-8 w-8 shrink-0"
+              className="h-8 w-8 shrink-0 rounded-full text-rose-500 hover:bg-rose-100 hover:text-rose-600"
               onClick={() => setDeleteOpen(true)}
               title={t.agents.delete}
             >
@@ -125,14 +132,19 @@ export function AgentCard({ agent }: AgentCardProps) {
 
       {/* Delete Confirm */}
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogContent>
+        <DialogContent className="nail-glass-card rounded-3xl border-pink-200/70">
           <DialogHeader>
-            <DialogTitle>{t.agents.delete}</DialogTitle>
-            <DialogDescription>{t.agents.deleteConfirm}</DialogDescription>
+            <DialogTitle className="text-[#5b1738]">
+              {t.agents.delete}
+            </DialogTitle>
+            <DialogDescription className="text-[#8f7b88]">
+              {t.agents.deleteConfirm}
+            </DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
               variant="outline"
+              className="nail-outline-button rounded-full"
               onClick={() => setDeleteOpen(false)}
               disabled={deleteAgent.isPending}
             >
@@ -140,6 +152,7 @@ export function AgentCard({ agent }: AgentCardProps) {
             </Button>
             <Button
               variant="destructive"
+              className="rounded-full"
               onClick={handleDelete}
               disabled={deleteAgent.isPending}
             >

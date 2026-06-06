@@ -1,12 +1,14 @@
 // frontend/src/components/nail/nail-page-layout.tsx
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import { BotIcon, XIcon } from "lucide-react";
-import { NailChatPane } from "./nail-chat-pane";
+import { useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import { useNailThread, type NailPageMode } from "@/core/nail-chat";
+import { cn } from "@/lib/utils";
+
+import { NailChatPane } from "./nail-chat-pane";
 
 interface NailPageLayoutProps {
   /** 页面模式，控制 Agent 提示词和工具集 */
@@ -25,10 +27,12 @@ export function NailPageLayout({
   className,
 }: NailPageLayoutProps) {
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const { threadId, ensureThread, resetThread } = useNailThread(pageMode);
+  const { ensureThread, resetThread } = useNailThread(pageMode);
 
   return (
-    <div className={cn("relative flex h-full flex-col overflow-hidden", className)}>
+    <div
+      className={cn("relative flex h-full flex-col overflow-hidden", className)}
+    >
       {/* 主内容区：面板 + Chat 滑入 */}
       <div className="flex min-h-0 flex-1">
         {/* 左侧：数据面板 */}
@@ -44,7 +48,7 @@ export function NailPageLayout({
         {/* 右侧：Chat 面板（宽度动画滑入） */}
         <div
           className={cn(
-            "flex flex-col border-l bg-background transition-all duration-300 overflow-hidden",
+            "bg-background flex flex-col overflow-hidden border-l transition-all duration-300",
             isChatOpen ? "w-[40%]" : "w-0",
           )}
         >

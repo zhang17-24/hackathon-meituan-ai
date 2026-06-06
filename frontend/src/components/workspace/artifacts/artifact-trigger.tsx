@@ -16,7 +16,7 @@ export const ArtifactTrigger = () => {
   return (
     <Tooltip content="Show artifacts of this conversation">
       <Button
-        className="text-muted-foreground hover:text-foreground"
+        className="nail-outline-button h-9 rounded-full px-3 text-xs font-semibold"
         variant="ghost"
         onClick={() => {
           setArtifactsOpen(true);

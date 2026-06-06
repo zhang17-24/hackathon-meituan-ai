@@ -29,33 +29,37 @@ export function WorkspaceHeader({ className }: { className?: string }) {
       >
         {state === "collapsed" ? (
           <div className="group-has-data-[collapsible=icon]/sidebar-wrapper:-translate-y flex w-full cursor-pointer items-center justify-center">
-            <div className="text-primary block pt-1 font-serif group-hover/workspace-header:hidden">
+            <div className="block pt-1 font-serif text-pink-500 group-hover/workspace-header:hidden">
               DF
             </div>
-            <SidebarTrigger className="hidden pl-2 group-hover/workspace-header:block" />
+            <SidebarTrigger className="hidden pl-2 text-pink-500 group-hover/workspace-header:block" />
           </div>
         ) : (
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-between gap-2 px-4 pt-3">
             {env.NEXT_PUBLIC_STATIC_WEBSITE_ONLY === "true" ? (
-              <Link href="/" className="text-primary ml-2 font-serif">
+              <Link
+                href="/"
+                className="font-serif text-3xl font-bold text-pink-500"
+              >
                 DeerFlow
               </Link>
             ) : (
-              <div className="text-primary ml-2 cursor-default font-serif">
+              <div className="cursor-default font-serif text-3xl font-bold text-pink-500">
                 DeerFlow
               </div>
             )}
-            <SidebarTrigger />
+            <SidebarTrigger className="text-pink-500 hover:bg-pink-100/70 hover:text-pink-600" />
           </div>
         )}
       </div>
-      <SidebarMenu>
+      <SidebarMenu className="px-5 pt-7">
         <SidebarMenuItem>
           <SidebarMenuButton
             isActive={pathname === "/workspace/chats/new"}
             asChild
+            className="h-12 rounded-2xl border border-pink-200/60 bg-white/45 text-pink-500 shadow-sm hover:bg-pink-50 hover:text-pink-600 data-[active=true]:bg-pink-100 data-[active=true]:text-pink-600"
           >
-            <Link className="text-muted-foreground" href="/workspace/chats/new">
+            <Link href="/workspace/chats/new">
               <MessageSquarePlus size={16} />
               <span>{t.sidebar.newChat}</span>
             </Link>

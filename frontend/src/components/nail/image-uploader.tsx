@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+
 import { cn } from "@/lib/utils";
 
 interface NailImageUploaderProps {
@@ -64,27 +65,32 @@ export function NailImageUploader({
       tabIndex={disabled ? -1 : 0}
       aria-label={`上传${label}`}
       onClick={() => !disabled && inputRef.current?.click()}
-      onKeyDown={(e) => e.key === "Enter" && !disabled && inputRef.current?.click()}
-      onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+      onKeyDown={(e) =>
+        e.key === "Enter" && !disabled && inputRef.current?.click()
+      }
+      onDragOver={(e) => {
+        e.preventDefault();
+        setIsDragging(true);
+      }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
       className={cn(
-        "group relative flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 select-none",
-        "min-h-[160px] cursor-pointer overflow-hidden",
+        "group relative flex flex-col items-center justify-center rounded-3xl border-2 border-dashed transition-all duration-200 select-none",
+        "min-h-[170px] cursor-pointer overflow-hidden bg-white/45 shadow-sm backdrop-blur-md",
         previewUrl
           ? isRose
-            ? "border-rose-400/40 bg-rose-500/5"
-            : "border-violet-400/40 bg-violet-500/5"
-          : "border-border/60 bg-muted/30",
+            ? "border-pink-400/50"
+            : "border-fuchsia-300/50"
+          : "border-pink-300/60",
         isDragging
           ? isRose
-            ? "border-rose-400 bg-rose-500/10 scale-[1.01]"
-            : "border-violet-400 bg-violet-500/10 scale-[1.01]"
+            ? "scale-[1.01] border-pink-400 bg-pink-100/60"
+            : "scale-[1.01] border-fuchsia-400 bg-fuchsia-100/50"
           : "",
         !previewUrl && !isDragging && !disabled
           ? isRose
-            ? "hover:border-rose-400/60 hover:bg-rose-500/5"
-            : "hover:border-violet-400/60 hover:bg-violet-500/5"
+            ? "hover:border-pink-400/80 hover:bg-pink-50/70"
+            : "hover:border-fuchsia-400/80 hover:bg-fuchsia-50/60"
           : "",
         disabled && "cursor-not-allowed opacity-50",
         className,
@@ -101,34 +107,34 @@ export function NailImageUploader({
 
       {previewUrl ? (
         /* ── 预览状态 ── */
-        <div className="relative w-full h-full flex flex-col">
-          <div className="relative flex-1 overflow-hidden rounded-lg m-1.5">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
+        <div className="relative flex h-full w-full flex-col">
+          <div className="relative m-2 flex-1 overflow-hidden rounded-2xl">
+            { }
             <img
               src={previewUrl}
               alt={label}
-              className="w-full h-full object-cover object-center"
+              className="h-full w-full object-cover object-center"
               style={{ maxHeight: 140 }}
             />
             {/* 悬浮覆盖层 */}
-            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
-              <span className="text-white text-xs font-medium bg-black/60 px-3 py-1 rounded-full">
+            <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-pink-950/40 opacity-0 transition-opacity group-hover:opacity-100">
+              <span className="rounded-full bg-white/85 px-3 py-1 text-xs font-semibold text-pink-600 shadow-sm">
                 点击更换
               </span>
             </div>
           </div>
           {fileName && (
-            <p className="px-3 pb-2 text-[11px] text-muted-foreground truncate text-center">
+            <p className="truncate px-3 pb-2 text-center text-[11px] text-pink-400">
               {fileName}
             </p>
           )}
           {/* 角落标签 */}
           <div
             className={cn(
-              "absolute top-2.5 left-2.5 flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-semibold",
+              "absolute top-3 left-3 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-semibold shadow-sm",
               isRose
-                ? "bg-rose-500/90 text-white"
-                : "bg-violet-500/90 text-white",
+                ? "bg-pink-500/90 text-white"
+                : "bg-fuchsia-500/85 text-white",
             )}
           >
             <span>{icon}</span>
@@ -140,11 +146,11 @@ export function NailImageUploader({
         <div className="flex flex-col items-center gap-2.5 px-4 py-6 text-center">
           <div
             className={cn(
-              "flex items-center justify-center w-11 h-11 rounded-full text-2xl transition-transform duration-200",
+              "flex h-14 w-14 items-center justify-center rounded-2xl text-3xl shadow-lg transition-transform duration-200",
               "group-hover:scale-110",
               isRose
-                ? "bg-rose-500/10 group-hover:bg-rose-500/15"
-                : "bg-violet-500/10 group-hover:bg-violet-500/15",
+                ? "bg-pink-100/80 shadow-pink-200/60 group-hover:bg-pink-100"
+                : "bg-fuchsia-100/70 shadow-fuchsia-200/50 group-hover:bg-fuchsia-100",
             )}
           >
             {icon}
@@ -152,22 +158,20 @@ export function NailImageUploader({
           <div>
             <p
               className={cn(
-                "text-sm font-medium",
-                isRose ? "text-rose-400/80" : "text-violet-400/80",
+                "text-sm font-bold",
+                isRose ? "text-pink-600" : "text-fuchsia-600",
               )}
             >
               {label}
             </p>
             {sublabel && (
-              <p className="mt-0.5 text-[11px] text-muted-foreground">
-                {sublabel}
-              </p>
+              <p className="mt-1 text-[11px] text-pink-400">{sublabel}</p>
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/60">
-            <span className="inline-block w-6 border-t border-dashed border-muted-foreground/30" />
+          <div className="flex items-center gap-1.5 text-[11px] text-pink-300">
+            <span className="inline-block w-6 border-t border-dashed border-pink-200" />
             拖放或点击上传
-            <span className="inline-block w-6 border-t border-dashed border-muted-foreground/30" />
+            <span className="inline-block w-6 border-t border-dashed border-pink-200" />
           </div>
         </div>
       )}

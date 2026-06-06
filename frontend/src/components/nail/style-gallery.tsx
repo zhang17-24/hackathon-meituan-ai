@@ -1,9 +1,10 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import { listGalleryStyles, type GalleryStyle } from "@/core/api/nail/styles";
+import { cn } from "@/lib/utils";
 
 type NailStyle = GalleryStyle;
 
@@ -20,7 +21,11 @@ export function NailStyleGallery({
   disabled = false,
   className,
 }: NailStyleGalleryProps) {
-  const { data: styles, isLoading, error } = useQuery({
+  const {
+    data: styles,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["nail-styles"],
     queryFn: listGalleryStyles,
     staleTime: 60_000,
@@ -28,33 +33,36 @@ export function NailStyleGallery({
 
   if (error) {
     return (
-      <p className="text-xs text-muted-foreground py-4 text-center">
+      <p className="py-4 text-center text-xs font-medium text-pink-400">
         款式库加载失败，请刷新重试
       </p>
     );
   }
 
   return (
-    <div className={cn("space-y-1.5", className)}>
+    <div className={cn("space-y-3", className)}>
       <div className="flex items-center gap-2">
-        <p className="text-xs font-medium text-muted-foreground pl-0.5">
-          选择美甲款式
+        <p className="pl-0.5 text-sm font-bold text-pink-600">
+          🌸 试试热门风格
         </p>
         {styles && (
-          <span className="text-[10px] text-muted-foreground/60">
+          <span className="rounded-full bg-white/55 px-2 py-0.5 text-[10px] font-semibold text-pink-400">
             {styles.length} 款可选
           </span>
         )}
       </div>
 
       {isLoading ? (
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+        <div className="grid grid-cols-3 gap-2 sm:grid-cols-5">
           {Array.from({ length: 10 }).map((_, i) => (
-            <Skeleton key={i} className="aspect-square rounded-lg" />
+            <Skeleton
+              key={i}
+              className="aspect-square rounded-2xl bg-pink-100/60"
+            />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 max-h-[320px] overflow-y-auto pr-1">
+        <div className="grid max-h-[320px] grid-cols-3 gap-2 overflow-y-auto pr-1 sm:grid-cols-5 lg:grid-cols-3 xl:grid-cols-4">
           {styles?.map((style) => {
             const isSelected = selectedUrl === style.url;
             return (
@@ -64,31 +72,31 @@ export function NailStyleGallery({
                 disabled={disabled}
                 onClick={() => onSelect(style)}
                 className={cn(
-                  "group relative aspect-square rounded-lg overflow-hidden border-2 transition-all duration-150",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                  "group relative aspect-square overflow-hidden rounded-2xl border-2 bg-white/45 transition-all duration-150",
+                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
                   isSelected
-                    ? "border-rose-400 shadow-sm shadow-rose-500/20 scale-[1.02]"
-                    : "border-border/60 hover:border-violet-400/60 hover:scale-[1.02]",
+                    ? "scale-[1.02] border-pink-400 shadow-lg shadow-pink-300/35"
+                    : "border-pink-200/70 hover:scale-[1.02] hover:border-pink-400/70 hover:shadow-md hover:shadow-pink-200/40",
                   disabled && "cursor-not-allowed opacity-50",
                 )}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
+                { }
                 <img
                   src={style.url}
                   alt={style.name}
-                  className="w-full h-full object-cover"
+                  className="h-full w-full object-cover"
                   loading="lazy"
                 />
                 {/* 选中标记 */}
                 {isSelected && (
-                  <div className="absolute inset-0 bg-rose-500/10 flex items-center justify-center">
-                    <div className="rounded-full bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 shadow">
+                  <div className="absolute inset-0 flex items-center justify-center bg-pink-500/12">
+                    <div className="rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-400 px-2.5 py-1 text-[10px] font-bold text-white shadow">
                       ✓ 已选
                     </div>
                   </div>
                 )}
                 {/* hover 效果 */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                <div className="absolute inset-0 bg-pink-950/0 transition-colors group-hover:bg-pink-950/10" />
               </button>
             );
           })}
@@ -97,9 +105,11 @@ export function NailStyleGallery({
 
       {/* 分割线：或手动上传 */}
       <div className="flex items-center gap-2 py-1">
-        <span className="h-px flex-1 bg-border/60" />
-        <span className="text-[10px] text-muted-foreground/50">或</span>
-        <span className="h-px flex-1 bg-border/60" />
+        <span className="h-px flex-1 bg-pink-200/70" />
+        <span className="text-[10px] font-semibold text-pink-300">
+          或手动上传
+        </span>
+        <span className="h-px flex-1 bg-pink-200/70" />
       </div>
     </div>
   );
