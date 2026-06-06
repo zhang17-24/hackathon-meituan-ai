@@ -1,6 +1,7 @@
 "use client";
 
 import { BotIcon, Settings2Icon } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

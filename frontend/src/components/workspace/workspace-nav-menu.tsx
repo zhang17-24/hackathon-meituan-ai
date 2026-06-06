@@ -9,7 +9,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useI18n } from "@/core/i18n/hooks";
 
 import { SettingsDialog } from "./settings";
 
@@ -17,7 +16,6 @@ export function WorkspaceNavMenu() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { open: isSidebarOpen } = useSidebar();
-  const { t } = useI18n();
 
   useEffect(() => {
     setMounted(true);
@@ -36,22 +34,22 @@ export function WorkspaceNavMenu() {
             <SidebarMenuButton
               size="lg"
               onClick={() => setSettingsOpen(true)}
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground cursor-pointer"
+              className="h-12 cursor-pointer rounded-2xl text-[#655767] hover:bg-pink-50 hover:text-pink-600 data-[state=open]:bg-pink-100 data-[state=open]:text-pink-600"
             >
               {isSidebarOpen ? (
-                <div className="text-muted-foreground flex w-full items-center gap-2 text-left text-sm">
+                <div className="flex w-full items-center gap-3 text-left text-sm font-semibold">
                   <Settings2Icon className="size-4" />
                   <span>设置</span>
                 </div>
               ) : (
                 <div className="flex size-full items-center justify-center">
-                  <Settings2Icon className="text-muted-foreground size-4" />
+                  <Settings2Icon className="size-4 text-pink-500" />
                 </div>
               )}
             </SidebarMenuButton>
           ) : (
             <SidebarMenuButton size="lg" className="pointer-events-none">
-              <div className="text-muted-foreground flex w-full items-center gap-2 text-left text-sm">
+              <div className="flex w-full items-center gap-2 text-left text-sm text-[#655767]">
                 <Settings2Icon className="size-4" />
                 <span>设置</span>
               </div>

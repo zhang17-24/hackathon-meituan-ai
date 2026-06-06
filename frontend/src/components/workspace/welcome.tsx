@@ -1,9 +1,8 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
-import { useI18n } from "@/core/i18n/hooks";
 import { cn } from "@/lib/utils";
 
 import { AuroraText } from "../ui/aurora-text";
@@ -23,8 +22,9 @@ function NailWelcome() {
       </div>
 
       {/* 副标题 */}
-      <p className="text-muted-foreground text-sm max-w-sm text-center leading-relaxed">
-        上传手图和款式图，AI 将自动分析手型、生成甲面遮罩、理解款式风格，最终生成精准试戴效果。
+      <p className="text-muted-foreground max-w-sm text-center text-sm leading-relaxed">
+        上传手图和款式图，AI
+        将自动分析手型、生成甲面遮罩、理解款式风格，最终生成精准试戴效果。
       </p>
 
       {/* 操作提示 */}
@@ -34,12 +34,12 @@ function NailWelcome() {
           <span>点击输入框的附件按钮上传手图和款式图，然后发送消息</span>
         </div>
         <p className="text-muted-foreground/60 text-[11px]">
-          也可以直接输入"帮我试戴猫眼款式"，AI 会引导你上传图片
+          也可以直接输入「帮我试戴猫眼款式」，AI 会引导你上传图片
         </p>
       </div>
 
       {/* 工具链说明 */}
-      <div className="mt-2 grid grid-cols-3 gap-2 text-center text-[11px] text-muted-foreground/70">
+      <div className="text-muted-foreground/70 mt-2 grid grid-cols-3 gap-2 text-center text-[11px]">
         {[
           { icon: "🔍", label: "手部检测" },
           { icon: "✂️", label: "生成 mask" },
@@ -50,7 +50,7 @@ function NailWelcome() {
         ].map(({ icon, label }) => (
           <div
             key={label}
-            className="flex items-center gap-1 rounded-md bg-muted/40 px-2 py-1"
+            className="bg-muted/40 flex items-center gap-1 rounded-md px-2 py-1"
           >
             <span>{icon}</span>
             <span>{label}</span>
@@ -68,16 +68,8 @@ export function Welcome({
   className?: string;
   mode?: "ultra" | "pro" | "thinking" | "flash";
 }) {
-  const { t } = useI18n();
   const searchParams = useSearchParams();
   const isNailMode = searchParams.get("mode") === "nail";
-  const isUltra = useMemo(() => mode === "ultra", [mode]);
-  const colors = useMemo(() => {
-    if (isUltra) {
-      return ["#efefbb", "#e9c665", "#e3a812"];
-    }
-    return ["var(--color-foreground)"];
-  }, [isUltra]);
   useEffect(() => {
     waved = true;
   }, []);
@@ -99,41 +91,35 @@ export function Welcome({
   return (
     <div
       className={cn(
-        "mx-auto flex w-full flex-col items-center justify-center gap-2 px-8 py-4 text-center",
+        "mx-auto flex w-full flex-col items-center justify-center gap-4 px-8 py-4 text-center",
         className,
       )}
     >
-      <div className="text-2xl font-bold">
+      <div className="text-4xl font-extrabold tracking-normal md:text-5xl">
         {searchParams.get("mode") === "skill" ? (
-          `✨ ${t.welcome.createYourOwnSkill} ✨`
+          <span className="nail-hero-title">✨ 创建你的专属 Skill ✨</span>
         ) : (
           <div className="flex items-center gap-2">
             <div className={cn("inline-block", !waved ? "animate-wave" : "")}>
-              {isUltra ? "🚀" : "👋"}
+              {mode === "ultra" ? "🚀" : "👋"}
             </div>
-            <AuroraText colors={colors}>{t.welcome.greeting}</AuroraText>
+            <span className="nail-hero-title">你好，欢迎回来！</span>
           </div>
         )}
       </div>
       {searchParams.get("mode") === "skill" ? (
-        <div className="text-muted-foreground text-sm">
-          {t.welcome.createYourOwnSkillDescription.includes("\n") ? (
-            <pre className="font-sans whitespace-pre">
-              {t.welcome.createYourOwnSkillDescription}
-            </pre>
-          ) : (
-            <p>{t.welcome.createYourOwnSkillDescription}</p>
-          )}
+        <div className="max-w-2xl text-sm leading-7 text-[#8b7180]">
+          <p>
+            用自然语言描述你想要的能力，DeerFlow 会帮助你整理成可复用的 Skill。
+          </p>
         </div>
       ) : (
-        <div className="text-muted-foreground text-sm">
-          {t.welcome.description.includes("\n") ? (
-            <pre className="font-sans whitespace-pre">
-              {t.welcome.description}
-            </pre>
-          ) : (
-            <p>{t.welcome.description}</p>
-          )}
+        <div className="max-w-2xl text-sm leading-7 text-[#8b7180]">
+          <p>
+            欢迎使用 DeerFlow，一个完全开源的超级智能体。通过内置和自定义的
+            Skills，DeerFlow 可以帮你搜索网络、分析数据，还能为你生成幻灯片、
+            图片、视频、播客及网页等，几乎可以做任何事情。
+          </p>
         </div>
       )}
     </div>

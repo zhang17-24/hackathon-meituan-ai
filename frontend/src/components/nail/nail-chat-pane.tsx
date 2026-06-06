@@ -1,13 +1,18 @@
 // frontend/src/components/nail/nail-chat-pane.tsx
 "use client";
 
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
+
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
-import { useNailChat, type ChatMessage, type NailPageMode } from "@/core/nail-chat";
-import { useQuery } from "@tanstack/react-query";
 import { pageConfig as api } from "@/core/api/nail";
+import {
+  useNailChat,
+  type ChatMessage,
+  type NailPageMode,
+} from "@/core/nail-chat";
+import { cn } from "@/lib/utils";
 
 interface NailChatPaneProps {
   pageMode: NailPageMode;
@@ -44,7 +49,7 @@ export function NailChatPane({
 
   const handleSend = () => {
     if (!input.trim() || isLoading) return;
-    sendMessage(input.trim());
+    void sendMessage(input.trim());
     setInput("");
   };
 
@@ -56,18 +61,25 @@ export function NailChatPane({
   };
 
   return (
-    <div className={cn("flex h-full flex-col bg-background", className)}>
+    <div className={cn("bg-background flex h-full flex-col", className)}>
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-2">
         <div>
-          <p className="text-sm font-semibold">{modeConfig?.title ?? "AI 分析"}</p>
-          <p className="text-xs text-muted-foreground">{modeConfig?.subtitle ?? ""}</p>
+          <p className="text-sm font-semibold">
+            {modeConfig?.title ?? "AI 分析"}
+          </p>
+          <p className="text-muted-foreground text-xs">
+            {modeConfig?.subtitle ?? ""}
+          </p>
         </div>
         <Button
           variant="ghost"
           size="sm"
           className="h-7 text-xs"
-          onClick={() => { clearMessages(); resetThread(); }}
+          onClick={() => {
+            clearMessages();
+            resetThread();
+          }}
         >
           重置
         </Button>
@@ -78,12 +90,14 @@ export function NailChatPane({
         <div ref={scrollRef}>
           {messages.length === 0 && modeConfig?.suggestions && (
             <div className="space-y-2">
-              <p className="text-xs text-muted-foreground mb-3">试试这些问题：</p>
+              <p className="text-muted-foreground mb-3 text-xs">
+                试试这些问题：
+              </p>
               {modeConfig.suggestions.map((s) => (
                 <button
                   key={s}
-                  onClick={() => sendMessage(s)}
-                  className="w-full rounded-lg border px-3 py-2 text-left text-xs hover:bg-accent transition-colors"
+                  onClick={() => void sendMessage(s)}
+                  className="hover:bg-accent w-full rounded-lg border px-3 py-2 text-left text-xs transition-colors"
                 >
                   {s}
                 </button>
@@ -91,7 +105,7 @@ export function NailChatPane({
             </div>
           )}
 
-          <div className="space-y-3 mt-2">
+          <div className="mt-2 space-y-3">
             {messages.map((msg) => (
               <MessageBubble key={msg.id} message={msg} />
             ))}
@@ -109,7 +123,7 @@ export function NailChatPane({
       <div className="border-t p-3">
         <div className="flex gap-2">
           <textarea
-            className="flex-1 resize-none rounded-lg border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+            className="bg-background placeholder:text-muted-foreground focus:ring-ring flex-1 resize-none rounded-lg border px-3 py-2 text-sm focus:ring-1 focus:outline-none"
             rows={2}
             placeholder="输入消息… (Enter 发送)"
             value={input}
@@ -119,7 +133,12 @@ export function NailChatPane({
           />
           <div className="flex flex-col gap-1">
             {isLoading ? (
-              <Button size="sm" variant="outline" onClick={stopStream} className="h-full text-xs">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={stopStream}
+                className="h-full text-xs"
+              >
                 停止
               </Button>
             ) : (
@@ -151,7 +170,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
             : "bg-muted text-foreground",
         )}
       >
-        <p className="whitespace-pre-wrap break-words">{message.content}</p>
+        <p className="break-words whitespace-pre-wrap">{message.content}</p>
         {message.isStreaming && (
           <span className="ml-1 inline-block h-3 w-1 animate-pulse bg-current opacity-70" />
         )}

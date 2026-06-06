@@ -76,22 +76,23 @@ export function ArtifactFileList({
       {files.map((file) => (
         <Card
           key={file}
-          className="relative cursor-pointer p-3"
+          className="nail-glass-soft relative cursor-pointer rounded-2xl border-pink-200/70 p-3 transition hover:-translate-y-0.5 hover:bg-white/72"
           onClick={() => handleClick(file)}
         >
           <CardHeader className="grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 pr-2 pl-1">
-            <CardTitle className="relative min-w-0 pl-8 leading-tight [overflow-wrap:anywhere] break-words">
+            <CardTitle className="relative min-w-0 pl-8 leading-tight [overflow-wrap:anywhere] break-words text-[#5b1738]">
               <div className="min-w-0">{getFileName(file)}</div>
               <div className="absolute top-2 -left-0.5">
                 {getFileIcon(file, "size-6")}
               </div>
             </CardTitle>
-            <CardDescription className="min-w-0 pl-8 text-xs">
+            <CardDescription className="min-w-0 pl-8 text-xs text-[#b08a9e]">
               {getFileExtensionDisplayName(file)} file
             </CardDescription>
             <CardAction className="row-span-1 self-center">
               {file.endsWith(".skill") && (
                 <Button
+                  className="nail-outline-button rounded-full text-xs"
                   variant="ghost"
                   disabled={installingFile === file}
                   onClick={(e) => handleInstallSkill(e, file)}
@@ -104,7 +105,11 @@ export function ArtifactFileList({
                   {t.common.install}
                 </Button>
               )}
-              <Button variant="ghost" asChild>
+              <Button
+                className="nail-outline-button rounded-full text-xs"
+                variant="ghost"
+                asChild
+              >
                 <a
                   href={urlOfArtifact({
                     filepath: file,

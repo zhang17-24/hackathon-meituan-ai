@@ -58,7 +58,7 @@ export function ExportTrigger({ threadId }: { threadId: string }) {
       <Tooltip content={t.common.export}>
         <DropdownMenuTrigger asChild>
           <Button
-            className="text-muted-foreground hover:text-foreground"
+            className="nail-outline-button h-9 rounded-full px-3 text-xs font-semibold"
             variant="ghost"
           >
             <Download />
@@ -66,13 +66,16 @@ export function ExportTrigger({ threadId }: { threadId: string }) {
           </Button>
         </DropdownMenuTrigger>
       </Tooltip>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent
+        align="end"
+        className="nail-glass-card rounded-2xl border-pink-200/80 text-[#5b1738]"
+      >
         <DropdownMenuItem onSelect={() => handleExport("markdown")}>
-          <FileText className="text-muted-foreground" />
+          <FileText className="text-pink-400" />
           <span>{t.common.exportAsMarkdown}</span>
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => handleExport("json")}>
-          <FileJson className="text-muted-foreground" />
+          <FileJson className="text-pink-400" />
           <span>{t.common.exportAsJSON}</span>
         </DropdownMenuItem>
       </DropdownMenuContent>

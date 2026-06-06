@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { PlusIcon, Trash2Icon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
+
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,6 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useModels } from "@/core/models/hooks";
 import {
   useNailModels,
   useAgentConfigs,
@@ -19,9 +21,9 @@ import {
   useDeleteNailModel,
   useUpdateAgentConfigs,
 } from "@/core/nail-models";
-import { useModels } from "@/core/models/hooks";
-import { ModelFormDialog } from "./model-form-dialog";
 import type { NailModelCreate } from "@/core/nail-models";
+
+import { ModelFormDialog } from "./model-form-dialog";
 
 export function ModelSettingsPage() {
   const { data: nailModels = [], isLoading } = useNailModels();

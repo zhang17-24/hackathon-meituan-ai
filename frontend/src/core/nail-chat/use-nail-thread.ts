@@ -2,13 +2,17 @@
 "use client";
 
 import { useCallback, useState } from "react";
+
 import { useAuth } from "@/core/auth/AuthProvider";
 
 export type NailPageMode = "tryon" | "ops" | "eval";
+interface NailUser {
+  id?: string;
+}
 
 export function useNailThread(pageMode: NailPageMode) {
   const { user } = useAuth();
-  const userId = (user as any)?.id ?? "anon";
+  const userId = (user as NailUser | null)?.id ?? "anon";
   const storageKey = `nail_thread_${pageMode}_${userId}`;
 
   const [threadId, setThreadId] = useState<string>(() => {

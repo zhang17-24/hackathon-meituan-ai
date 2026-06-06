@@ -1,6 +1,7 @@
 // frontend/src/core/nail-models/api.ts
 import { fetch } from "@/core/api/fetcher";
 import { getBackendBaseURL } from "@/core/config";
+
 import type { NailModelConfig, NailModelCreate, AgentConfigs, ToolsResponse } from "./types";
 
 const base = () => `${getBackendBaseURL()}/api/nail/config`;

@@ -193,7 +193,10 @@ function MessageImage({
 }) {
   if (!src) return null;
 
-  const imgClassName = cn("overflow-hidden rounded-lg", `max-w-[${maxWidth}]`);
+  const imgClassName = cn(
+    "overflow-hidden rounded-2xl border border-pink-100/80 shadow-sm",
+    `max-w-[${maxWidth}]`,
+  );
 
   if (typeof src !== "string") {
     return <img className={imgClassName} src={src} alt={alt} {...props} />;
@@ -274,11 +277,13 @@ function MessageContent_({
   // Uploading state: mock AI message shown while files upload
   if (message.additional_kwargs?.element === "task") {
     return (
-      <AIElementMessageContent className={className}>
+      <AIElementMessageContent
+        className={cn("nail-message-assistant", className)}
+      >
         <Task defaultOpen={false}>
           <TaskTrigger title="">
-            <div className="text-muted-foreground flex w-full cursor-default items-center gap-2 text-sm select-none">
-              <Loader className="size-4" />
+            <div className="flex w-full cursor-default items-center gap-2 text-sm text-[#a56b86] select-none">
+              <Loader className="size-4 text-pink-400" />
               <span>{contentToDisplay}</span>
             </div>
           </TaskTrigger>
@@ -290,7 +295,9 @@ function MessageContent_({
   // Reasoning-only AI message (no main response content yet)
   if (!isHuman && reasoningContent && !rawContent) {
     return (
-      <AIElementMessageContent className={className}>
+      <AIElementMessageContent
+        className={cn("nail-message-assistant", className)}
+      >
         <Reasoning isStreaming={isLoading}>
           <ReasoningTrigger />
           <ReasoningContent>{reasoningContent}</ReasoningContent>
@@ -314,7 +321,7 @@ function MessageContent_({
       <div className={cn("ml-auto flex flex-col gap-2", className)}>
         {filesList}
         {messageResponse && (
-          <AIElementMessageContent className="w-fit">
+          <AIElementMessageContent className="nail-message-human w-fit">
             {messageResponse}
           </AIElementMessageContent>
         )}
@@ -323,13 +330,15 @@ function MessageContent_({
   }
 
   return (
-    <AIElementMessageContent className={className}>
+    <AIElementMessageContent
+      className={cn("nail-message-assistant", className)}
+    >
       {filesList}
       <MarkdownContent
         content={contentToDisplay}
         isLoading={isLoading}
         rehypePlugins={[...rehypePlugins, [rehypeKatex, { output: "html" }]]}
-        className="my-3"
+        className="my-2"
         components={components}
       />
     </AIElementMessageContent>
@@ -429,11 +438,11 @@ function RichFileCard({
 
   if (isUploading) {
     return (
-      <div className="bg-background border-border/40 flex max-w-50 min-w-30 flex-col gap-1 rounded-lg border p-3 opacity-60 shadow-sm">
+      <div className="nail-glass-soft flex max-w-50 min-w-30 flex-col gap-1 rounded-2xl p-3 opacity-70">
         <div className="flex items-start gap-2">
-          <Loader2Icon className="text-muted-foreground mt-0.5 size-4 shrink-0 animate-spin" />
+          <Loader2Icon className="mt-0.5 size-4 shrink-0 animate-spin text-pink-400" />
           <span
-            className="text-foreground truncate text-sm font-medium"
+            className="truncate text-sm font-medium text-[#5b1738]"
             title={file.filename}
           >
             {file.filename}
@@ -442,11 +451,11 @@ function RichFileCard({
         <div className="flex items-center justify-between gap-2">
           <Badge
             variant="secondary"
-            className="rounded px-1.5 py-0.5 text-[10px] font-normal"
+            className="rounded-full bg-pink-100/80 px-1.5 py-0.5 text-[10px] font-normal text-pink-500"
           >
             {getFileTypeLabel(file.filename)}
           </Badge>
-          <span className="text-muted-foreground text-[10px]">
+          <span className="text-[10px] text-[#b48b9f]">
             {t.uploads.uploading}
           </span>
         </div>
@@ -464,7 +473,7 @@ function RichFileCard({
         href={fileUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="group border-border/40 relative block overflow-hidden rounded-lg border"
+        className="group relative block overflow-hidden rounded-2xl border border-pink-100/80 shadow-sm"
       >
         <img
           src={fileUrl}
@@ -476,11 +485,11 @@ function RichFileCard({
   }
 
   return (
-    <div className="bg-background border-border/40 flex max-w-50 min-w-30 flex-col gap-1 rounded-lg border p-3 shadow-sm">
+    <div className="nail-glass-soft flex max-w-50 min-w-30 flex-col gap-1 rounded-2xl p-3">
       <div className="flex items-start gap-2">
-        <FileIcon className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+        <FileIcon className="mt-0.5 size-4 shrink-0 text-pink-400" />
         <span
-          className="text-foreground truncate text-sm font-medium"
+          className="truncate text-sm font-medium text-[#5b1738]"
           title={file.filename}
         >
           {file.filename}
@@ -489,11 +498,11 @@ function RichFileCard({
       <div className="flex items-center justify-between gap-2">
         <Badge
           variant="secondary"
-          className="rounded px-1.5 py-0.5 text-[10px] font-normal"
+          className="rounded-full bg-pink-100/80 px-1.5 py-0.5 text-[10px] font-normal text-pink-500"
         >
           {getFileTypeLabel(file.filename)}
         </Badge>
-        <span className="text-muted-foreground text-[10px]">
+        <span className="text-[10px] text-[#b48b9f]">
           {formatBytes(file.size)}
         </span>
       </div>

@@ -136,7 +136,7 @@ function LoadMoreHistoryIndicator({
         type="button"
         variant="ghost"
         size="sm"
-        className="text-muted-foreground hover:text-foreground rounded-full px-3"
+        className="nail-outline-button rounded-full px-4 text-xs font-semibold"
         disabled={(isLoading ?? false) || !hasMore}
         onClick={throttledLoadMore}
       >
@@ -267,7 +267,7 @@ export function MessageList({
     <Conversation
       className={cn("flex size-full flex-col justify-center", className)}
     >
-      <ConversationContent className="mx-auto w-full max-w-(--container-width-md) gap-8 pt-8">
+      <ConversationContent className="mx-auto w-full max-w-(--container-width-md) gap-6 px-4 pt-8">
         <LoadMoreHistoryIndicator
           isLoading={isHistoryLoading}
           hasMore={hasMoreHistory}

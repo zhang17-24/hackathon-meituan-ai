@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { type PromptInputMessage } from "@/components/ai-elements/prompt-input";
+import { NailModelPicker } from "@/components/nail/nail-model-picker";
 import { ArtifactTrigger } from "@/components/workspace/artifacts";
 import {
   ChatBox,
@@ -20,7 +21,6 @@ import { ThreadTitle } from "@/components/workspace/thread-title";
 import { TodoList } from "@/components/workspace/todo-list";
 import { TokenUsageIndicator } from "@/components/workspace/token-usage-indicator";
 import { Welcome } from "@/components/workspace/welcome";
-import { NailModelPicker } from "@/components/nail/nail-model-picker";
 import { useI18n } from "@/core/i18n/hooks";
 import { useModels } from "@/core/models/hooks";
 import { useNotification } from "@/core/notification/hooks";
@@ -130,28 +130,47 @@ export default function ChatPage() {
   return (
     <ThreadContext.Provider value={{ thread, isMock }}>
       <ChatBox threadId={threadId}>
-        <div className="relative flex size-full min-h-0 justify-between">
+        <div
+          className={cn(
+            "nail-shell relative flex size-full min-h-0 justify-between overflow-hidden",
+          )}
+        >
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="nail-sparkle nail-sparkle-a">✦</div>
+            <div className="nail-sparkle nail-sparkle-b">♡</div>
+            <div className="nail-sparkle nail-sparkle-c">✧</div>
+            <div className="absolute right-[-6rem] bottom-[-7rem] h-72 w-[42rem] rotate-[-10deg] rounded-[100%] border border-pink-200/40 bg-pink-200/30 blur-2xl" />
+            <div className="absolute right-[-2rem] bottom-[-4rem] h-44 w-[34rem] rotate-[-8deg] rounded-[100%] border border-white/70 bg-white/35 blur-xl" />
+          </div>
           <header
             className={cn(
               "absolute top-0 right-0 left-0 z-30 flex h-12 shrink-0 items-center px-4",
               isWelcomeMode
-                ? "bg-background/0 backdrop-blur-none"
-                : "bg-background/80 shadow-xs backdrop-blur",
+                ? "bg-background/0 pt-6 backdrop-blur-none"
+                : "nail-topbar mx-4 mt-4 h-14 rounded-3xl px-4",
             )}
           >
-            <div className="flex w-full items-center text-sm font-medium">
+            <div
+              className={cn(
+                "flex w-full items-center text-sm font-semibold text-[#5b1738]",
+                isWelcomeMode && "opacity-0",
+              )}
+            >
               <ThreadTitle threadId={threadId} thread={thread} />
             </div>
             <div className="flex items-center gap-2">
-              <NailModelPicker
-                value={settings.context.model_name}
-                onChange={(model) =>
-                  setSettings("context", {
-                    ...settings.context,
-                    model_name: model,
-                  })
-                }
-              />
+              {!isWelcomeMode && (
+                <NailModelPicker
+                  className="nail-outline-button h-9 rounded-full border-pink-200/70 px-3 text-pink-500"
+                  value={settings.context.model_name}
+                  onChange={(model) =>
+                    setSettings("context", {
+                      ...settings.context,
+                      model_name: model,
+                    })
+                  }
+                />
+              )}
               <TokenUsageIndicator
                 threadId={isNewThread ? undefined : threadId}
                 backendUsage={backendTokenUsage}
@@ -162,15 +181,23 @@ export default function ChatPage() {
                 onPreferencesChange={(preferences) =>
                   setLocalSettings("tokenUsage", preferences)
                 }
+                className="nail-pill h-9 border-pink-200/70 px-3 py-2 text-sm font-semibold text-[#8a4c6f] hover:bg-white/70"
               />
-              <ExportTrigger threadId={threadId} />
-              <ArtifactTrigger />
+              {!isWelcomeMode && (
+                <>
+                  <ExportTrigger threadId={threadId} />
+                  <ArtifactTrigger />
+                </>
+              )}
             </div>
           </header>
           <main className="flex min-h-0 max-w-full grow flex-col">
             <div className="flex min-h-0 flex-1 justify-center">
               <MessageList
-                className={cn("size-full", !isWelcomeMode && "pt-10")}
+                className={cn(
+                  "size-full",
+                  !isWelcomeMode && "chat-pink-message-list pt-20",
+                )}
                 threadId={threadId}
                 thread={thread}
                 paddingBottom={MESSAGE_LIST_DEFAULT_PADDING_BOTTOM}
@@ -189,10 +216,8 @@ export default function ChatPage() {
               <div
                 className={cn(
                   "relative w-full",
-                  isWelcomeMode && "-translate-y-[calc(50vh-96px)]",
-                  isWelcomeMode
-                    ? "max-w-(--container-width-sm)"
-                    : "max-w-(--container-width-md)",
+                  isWelcomeMode && "-translate-y-[calc(50vh-80px)]",
+                  isWelcomeMode ? "max-w-3xl" : "max-w-(--container-width-md)",
                 )}
               >
                 {hasTodos && (
@@ -209,7 +234,7 @@ export default function ChatPage() {
                       )}
                     >
                       <TodoList
-                        className="bg-background/5"
+                        className="nail-chat-todo"
                         todos={thread.values.todos ?? []}
                         hidden={false}
                       />
@@ -219,8 +244,9 @@ export default function ChatPage() {
                 {mountedRef.current ? (
                   <InputBox
                     className={cn(
-                      "bg-background/5 w-full",
-                      isWelcomeMode && "-translate-y-4",
+                      "w-full",
+                      isWelcomeMode && "new-chat-welcome-input -translate-y-4",
+                      !isWelcomeMode && "chat-detail-input",
                     )}
                     isWelcomeMode={isWelcomeMode}
                     threadId={threadId}

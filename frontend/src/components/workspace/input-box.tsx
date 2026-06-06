@@ -450,7 +450,7 @@ export function InputBox({
         <div className="flex items-center justify-center pb-1">
           <div className="flex items-center gap-2">
             {followupsLoading ? (
-              <div className="text-muted-foreground bg-background/80 rounded-full border px-4 py-1.5 text-xs backdrop-blur-sm">
+              <div className="nail-pill rounded-full px-4 py-1.5 text-xs font-medium text-[#a44773]">
                 {t.inputBox.followupLoading}
               </div>
             ) : (
@@ -458,14 +458,14 @@ export function InputBox({
                 {followups.map((s) => (
                   <Suggestion
                     key={s}
-                    className="py-1.5"
+                    className="nail-outline-button rounded-full px-4 py-1.5 text-xs font-medium"
                     suggestion={s}
                     onClick={() => handleFollowupClick(s)}
                   />
                 ))}
                 <Button
                   aria-label={t.common.close}
-                  className="text-muted-foreground h-auto cursor-pointer rounded-full px-2.5 py-1.5 text-xs font-normal"
+                  className="nail-outline-button h-auto cursor-pointer rounded-full px-2.5 py-1.5 text-xs font-normal"
                   variant="outline"
                   size="sm"
                   type="button"
@@ -480,7 +480,9 @@ export function InputBox({
       )}
       <PromptInput
         className={cn(
-          "bg-background/85 rounded-2xl backdrop-blur-sm transition-all duration-300 ease-out *:data-[slot='input-group']:rounded-2xl",
+          "rounded-2xl bg-white/60 text-[#5b1738] shadow-lg shadow-pink-200/20 backdrop-blur-sm transition-all duration-300 ease-out *:data-[slot='input-group']:rounded-2xl",
+          isWelcomeMode &&
+            "new-chat-input-glass min-h-44 rounded-[2rem] border-pink-200/80 bg-white/55 shadow-2xl shadow-pink-200/45 *:data-[slot='input-group']:rounded-[2rem]",
           className,
         )}
         disabled={disabled}
@@ -501,14 +503,21 @@ export function InputBox({
         </PromptInputAttachments>
         <PromptInputBody className="absolute top-0 right-0 left-0 z-3">
           <PromptInputTextarea
-            className={cn("size-full")}
+            className={cn(
+              "size-full text-[#5b1738] placeholder:text-[#b9a8b2]",
+              isWelcomeMode && "px-7 pt-6 text-base",
+            )}
             disabled={disabled}
-            placeholder={t.inputBox.placeholder}
+            placeholder={
+              isWelcomeMode ? "今天我能为你做些什么？" : t.inputBox.placeholder
+            }
             autoFocus={autoFocus}
             defaultValue={initialValue}
           />
         </PromptInputBody>
-        <PromptInputFooter className="flex">
+        <PromptInputFooter
+          className={cn("flex", isWelcomeMode && "items-end px-5 pb-5")}
+        >
           <PromptInputTools>
             {/* TODO: Add more connectors here
           <PromptInputActionMenu>
@@ -519,7 +528,13 @@ export function InputBox({
               />
             </PromptInputActionMenuContent>
           </PromptInputActionMenu> */}
-            <AddAttachmentsButton className="px-2!" />
+            <AddAttachmentsButton
+              className={cn(
+                "rounded-full px-2! text-pink-400 hover:bg-pink-50 hover:text-pink-600",
+                isWelcomeMode &&
+                  "size-10 rounded-full bg-pink-50 text-pink-400 hover:bg-pink-100 hover:text-pink-600",
+              )}
+            />
             <PromptInputActionMenu>
               <ModeHoverGuide
                 mode={
@@ -531,7 +546,13 @@ export function InputBox({
                     : "flash"
                 }
               >
-                <PromptInputActionMenuTrigger className="gap-1! px-2!">
+                <PromptInputActionMenuTrigger
+                  className={cn(
+                    "gap-1! rounded-full px-2! text-pink-400 hover:bg-pink-50 hover:text-pink-600",
+                    isWelcomeMode &&
+                      "rounded-full text-pink-400 hover:bg-pink-50 hover:text-pink-600",
+                  )}
+                >
                   <div>
                     {context.mode === "flash" && <ZapIcon className="size-3" />}
                     {context.mode === "thinking" && (
@@ -693,7 +714,13 @@ export function InputBox({
             </PromptInputActionMenu>
             {supportReasoningEffort && context.mode !== "flash" && (
               <PromptInputActionMenu>
-                <PromptInputActionMenuTrigger className="gap-1! px-2!">
+                <PromptInputActionMenuTrigger
+                  className={cn(
+                    "gap-1! rounded-full px-2! text-pink-400 hover:bg-pink-50 hover:text-pink-600",
+                    isWelcomeMode &&
+                      "rounded-full text-pink-400 hover:bg-pink-50 hover:text-pink-600",
+                  )}
+                >
                   <div className="text-xs font-normal">
                     {t.inputBox.reasoningEffort}:
                     {context.reasoning_effort === "minimal" &&
@@ -814,7 +841,13 @@ export function InputBox({
               onOpenChange={setModelDialogOpen}
             >
               <ModelSelectorTrigger asChild>
-                <PromptInputButton>
+                <PromptInputButton
+                  className={cn(
+                    "rounded-full text-pink-400 hover:bg-pink-50 hover:text-pink-600",
+                    isWelcomeMode &&
+                      "rounded-full text-pink-400 hover:bg-pink-50 hover:text-pink-600",
+                  )}
+                >
                   <div className="flex min-w-0 flex-col items-start text-left">
                     <ModelSelectorName className="text-xs font-normal">
                       {selectedModel?.display_name}
@@ -848,15 +881,19 @@ export function InputBox({
               </ModelSelectorContent>
             </ModelSelector>
             <PromptInputSubmit
-              className="rounded-full"
+              className={cn(
+                "rounded-full border-pink-200/80 text-pink-500 hover:bg-pink-50 hover:text-pink-600",
+                isWelcomeMode &&
+                  "size-12 border-0 bg-gradient-to-br from-pink-400 to-fuchsia-400 text-white shadow-lg shadow-pink-300/60 hover:from-pink-500 hover:to-fuchsia-500",
+              )}
               disabled={disabled}
-              variant="outline"
+              variant={isWelcomeMode ? "default" : "outline"}
               status={status}
             />
           </PromptInputTools>
         </PromptInputFooter>
         {!isWelcomeMode && (
-          <div className="bg-background absolute right-0 -bottom-[17px] left-0 z-0 h-4"></div>
+          <div className="absolute right-0 -bottom-[17px] left-0 z-0 h-4 bg-transparent"></div>
         )}
       </PromptInput>
 
@@ -871,21 +908,34 @@ export function InputBox({
       )}
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent>
+        <DialogContent className="nail-settings-dialog nail-glass-card border-pink-200/80 text-[#5b1738]">
           <DialogHeader>
-            <DialogTitle>{t.inputBox.followupConfirmTitle}</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-[#5b1738]">
+              {t.inputBox.followupConfirmTitle}
+            </DialogTitle>
+            <DialogDescription className="text-[#a98799]">
               {t.inputBox.followupConfirmDescription}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmOpen(false)}>
+            <Button
+              className="nail-outline-button rounded-full"
+              variant="outline"
+              onClick={() => setConfirmOpen(false)}
+            >
               {t.common.cancel}
             </Button>
-            <Button variant="secondary" onClick={confirmAppendAndSend}>
+            <Button
+              className="nail-outline-button rounded-full"
+              variant="secondary"
+              onClick={confirmAppendAndSend}
+            >
               {t.inputBox.followupConfirmAppend}
             </Button>
-            <Button onClick={confirmReplaceAndSend}>
+            <Button
+              className="nail-primary-button rounded-full"
+              onClick={confirmReplaceAndSend}
+            >
               {t.inputBox.followupConfirmReplace}
             </Button>
           </DialogFooter>
@@ -919,18 +969,19 @@ function SuggestionList() {
     [textInput],
   );
   return (
-    <Suggestions className="min-h-16 w-fit items-start">
+    <Suggestions className="min-h-16 w-fit items-start gap-3">
       <ConfettiButton
-        className="text-muted-foreground cursor-pointer rounded-full px-4 text-xs font-normal"
+        className="nail-outline-button h-12 cursor-pointer rounded-full px-5 text-sm font-semibold"
         variant="outline"
         size="sm"
         onClick={() => handleSuggestionClick(t.inputBox.surpriseMePrompt)}
       >
-        <SparklesIcon className="size-4" /> {t.inputBox.surpriseMe}
+        <SparklesIcon className="size-5 text-fuchsia-500" /> 小惊喜
       </ConfettiButton>
       {t.inputBox.suggestions.map((suggestion) => (
         <Suggestion
           key={suggestion.suggestion}
+          className="nail-outline-button h-12 cursor-pointer rounded-full px-5 text-sm font-semibold"
           icon={suggestion.icon}
           suggestion={suggestion.suggestion}
           onClick={() => handleSuggestionClick(suggestion.prompt)}
@@ -938,7 +989,11 @@ function SuggestionList() {
       ))}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Suggestion icon={PlusIcon} suggestion={t.common.create} />
+          <Suggestion
+            className="nail-outline-button h-12 cursor-pointer rounded-full px-5 text-sm font-semibold"
+            icon={PlusIcon}
+            suggestion={t.common.create}
+          />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
           <DropdownMenuGroup>
@@ -971,7 +1026,9 @@ function NailSuggestionList() {
     (prompt: string) => {
       textInput.setInput(prompt);
       setTimeout(() => {
-        document.querySelector<HTMLTextAreaElement>("textarea[name='message']")?.focus();
+        document
+          .querySelector<HTMLTextAreaElement>("textarea[name='message']")
+          ?.focus();
       }, 100);
     },
     [textInput],
@@ -981,22 +1038,26 @@ function NailSuggestionList() {
     {
       emoji: "💅",
       label: "开始试戴",
-      prompt: "请帮我进行 AI 美甲试戴。请先通过附件上传手图，再描述你想要的款式（或上传款式参考图）。",
+      prompt:
+        "请帮我进行 AI 美甲试戴。请先通过附件上传手图，再描述你想要的款式（或上传款式参考图）。",
     },
     {
       emoji: "🔍",
       label: "查看爆款",
-      prompt: "帮我查看本周最受欢迎的美甲款式排行榜，哪些款式收藏量和下单量最高？",
+      prompt:
+        "帮我查看本周最受欢迎的美甲款式排行榜，哪些款式收藏量和下单量最高？",
     },
     {
       emoji: "🎨",
       label: "猫眼款试戴",
-      prompt: "我想试戴猫眼紫色美甲款式，帮我上传手图后生成试戴效果。请先用 hand_detect_tool 分析我的手型。",
+      prompt:
+        "我想试戴猫眼紫色美甲款式，帮我上传手图后生成试戴效果。请先用 hand_detect_tool 分析我的手型。",
     },
     {
       emoji: "💬",
       label: "咨询推荐",
-      prompt: "我是第一次做美甲，根据我的偏好（肤色偏白，手指修长）帮我推荐适合的款式风格。",
+      prompt:
+        "我是第一次做美甲，根据我的偏好（肤色偏白，手指修长）帮我推荐适合的款式风格。",
     },
   ];
 
@@ -1007,7 +1068,7 @@ function NailSuggestionList() {
           key={label}
           type="button"
           onClick={() => handleClick(prompt)}
-          className="text-muted-foreground hover:text-foreground hover:border-rose-300 hover:bg-rose-50/50 dark:hover:bg-rose-950/20 dark:hover:border-rose-700/40 flex cursor-pointer items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-normal transition-colors"
+          className="nail-outline-button flex cursor-pointer items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-semibold transition"
         >
           <span>{emoji}</span>
           <span>{label}</span>

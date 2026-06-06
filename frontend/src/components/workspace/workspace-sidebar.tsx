@@ -9,11 +9,11 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+import { NailNav } from "./nail-nav";
 import { RecentChatList } from "./recent-chat-list";
 import { WorkspaceHeader } from "./workspace-header";
 import { WorkspaceNavChatList } from "./workspace-nav-chat-list";
 import { WorkspaceNavMenu } from "./workspace-nav-menu";
-import { NailNav } from "./nail-nav";
 
 export function WorkspaceSidebar({
   ...props
@@ -21,7 +21,12 @@ export function WorkspaceSidebar({
   const { open: isSidebarOpen } = useSidebar();
   return (
     <>
-      <Sidebar variant="sidebar" collapsible="icon" {...props}>
+      <Sidebar
+        variant="sidebar"
+        collapsible="icon"
+        className="nail-sidebar-skin border-r-0"
+        {...props}
+      >
         <SidebarHeader className="py-0">
           <WorkspaceHeader />
         </SidebarHeader>
