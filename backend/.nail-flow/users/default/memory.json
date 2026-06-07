@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-06-07T16:27:30.341109Z",
+  "lastUpdated": "2026-06-07T16:32:15.816710Z",
   "user": {
     "workContext": {
       "summary": "",
@@ -100,6 +100,14 @@
       "category": "behavior",
       "confidence": 0.9,
       "createdAt": "2026-06-07T16:07:57.345893Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_abe48f4a",
+      "content": "User maps the NailFlow assistant's full feature set and external integrations by analyzing proactive fallback menus during extreme stress tests, identifying specific capabilities like '小红书趋势' (Xiaohongshu/RED trends) searches alongside internal 'ops_signals' data analysis.",
+      "category": "behavior",
+      "confidence": 0.85,
+      "createdAt": "2026-06-07T16:30:50.671926Z",
       "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
     }
   ]
