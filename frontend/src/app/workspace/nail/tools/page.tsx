@@ -97,7 +97,7 @@ function pickBestTools(intent: string, toolNames: string[]) {
       text.includes("评分") ||
       text.includes("质检")
     ) {
-      if (["quality_check", "evaluation"].includes(name)) return 3;
+      if (["quality_check"].includes(name)) return 3;
     }
     if (
       text.includes("图片") ||

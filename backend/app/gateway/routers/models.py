@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.gateway.deps import get_config
-from deerflow.config.app_config import AppConfig
+from nailflow.config.app_config import AppConfig
 
 router = APIRouter(prefix="/api", tags=["models"])
 
@@ -79,7 +79,7 @@ async def list_models(config: AppConfig = Depends(get_config)) -> ModelsListResp
     db_models: list[ModelResponse] = []
     db_names: set[str] = set()
     try:
-        from packages.harness.deerflow.tools.nail.base import get_db
+        from packages.harness.nailflow.tools.nail.base import get_db
         with get_db() as conn:
             rows = conn.execute(
                 "SELECT name, model_id, display_name, supports_vision, supports_thinking "

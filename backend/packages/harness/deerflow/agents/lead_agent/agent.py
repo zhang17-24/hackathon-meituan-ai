@@ -458,7 +458,6 @@ def _make_lead_agent(config: RunnableConfig, *, app_config: AppConfig):
     _MODE_TOOL_GROUPS = {
         "tryon": ["nail"],
         "ops":   ["nail", "nail_ops"],
-        "eval":  ["nail", "nail_ops", "nail_dev"],
     }
     mode_groups = _MODE_TOOL_GROUPS.get(nail_page_mode, ["nail"])
     # 取交集：mode 要求的组 ∩ nail_role 有权访问的组

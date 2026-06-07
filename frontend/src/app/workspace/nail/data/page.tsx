@@ -218,7 +218,7 @@ function Header() {
       <Separator orientation="vertical" className="mr-2 h-4" />
       <Breadcrumb>
         <BreadcrumbList>
-          <BreadcrumbItem className="hidden sm:block text-muted-foreground">NailFlow</BreadcrumbItem>
+          <BreadcrumbItem className="hidden sm:block text-muted-foreground">nailflow</BreadcrumbItem>
           <BreadcrumbSeparator className="hidden sm:block" />
           <BreadcrumbItem>
             <BreadcrumbPage>数据中心</BreadcrumbPage>

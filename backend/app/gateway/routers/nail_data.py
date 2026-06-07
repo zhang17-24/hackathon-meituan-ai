@@ -1,5 +1,5 @@
 # backend/app/gateway/routers/nail_data.py
-"""NailFlow 数据中心 — 自然语言查询接口。"""
+"""nailflow 数据中心 — 自然语言查询接口。"""
 import json
 import logging
 import re
@@ -10,7 +10,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from app.gateway.authz import require_auth
-from packages.harness.deerflow.tools.nail.base import get_db, DB_PATH
+from packages.harness.nailflow.tools.nail.base import get_db, DB_PATH
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/nail/data", tags=["nail-data"])
@@ -224,7 +224,7 @@ async def natural_query(body: QueryRequest, request: Request):
     schema_ctx = _build_schema_context()
 
     try:
-        from deerflow.models import create_chat_model
+        from nailflow.models import create_chat_model
         from langchain_core.messages import HumanMessage
 
         prompt = (

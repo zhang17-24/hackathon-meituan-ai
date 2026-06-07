@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 
 import { NailImageUploader } from "@/components/nail/image-uploader";
@@ -16,6 +16,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { tryon as api } from "@/core/api/nail";
 import { useAuth } from "@/core/auth/AuthProvider";
+import type { FileInMessage } from "@/core/messages/utils";
+import { uploadFiles } from "@/core/uploads/api";
 import { cn } from "@/lib/utils";
 
 interface TryonResult {
@@ -44,24 +46,6 @@ interface ToolLogEntry {
   time: string;
 }
 
-const TOOL_TO_STEP: Record<string, string> = {
-  hand_detect_tool: "detect",
-  nail_mask_tool: "mask",
-  style_understanding_tool: "style",
-  prompt_builder_tool: "prompt",
-  image_generation_tool: "generate",
-  quality_check_tool: "quality",
-};
-
-const TOOL_DISPLAY: Record<string, string> = {
-  hand_detect_tool: "手部检测",
-  nail_mask_tool: "生成 mask",
-  style_understanding_tool: "款式理解",
-  prompt_builder_tool: "构建提示词",
-  image_generation_tool: "AI 生图",
-  quality_check_tool: "质量评分",
-};
-
 const FEATURE_STEPS = [
   ["🖐️", "手部检测"],
   ["✂️", "生成 mask"],
@@ -78,19 +62,25 @@ const ACTIONS = [
   ["💬", "咨询推荐"],
 ] as const;
 
-function getText(data: Record<string, unknown>, key: string) {
-  const value = data[key];
-  return typeof value === "string" ? value : "";
-}
+const NAIL_TRYON_PROMPT =
+  "请直接调用 unified_tryon_tool 进行一键 AI 美甲试戴，并尽快返回最终试戴结果图。以下两张附件分别是手图和款式图，请自动识别并完成试戴。";
 
-function stringifyPreview(value: unknown) {
-  if (typeof value === "string") return value;
-  return JSON.stringify(value ?? {}, null, 2);
+const PENDING_NAIL_TRYON_STORAGE_KEY = "nail-pending-chat-tryon";
+
+interface PendingChatTryonPayload {
+  threadId: string;
+  text: string;
+  files: FileInMessage[];
+  extraContext: {
+    nail_role: string;
+    nail_page_mode: "tryon";
+  };
 }
 
 export default function TryonPage() {
   const { user } = useAuth();
   const nailRole = user?.nail_role ?? "user";
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [handFile, setHandFile] = useState<File | null>(null);
@@ -127,9 +117,19 @@ export default function TryonPage() {
   const [showToolLogs, setShowToolLogs] = useState(false);
   const [result, setResult] = useState<TryonResult | null>(null);
 
-  const setStep = useCallback((stepId: string, status: StepStatus) => {
-    setStepStatuses((prev) => ({ ...prev, [stepId]: status }));
-  }, []);
+  const fileFromPreviewUrl = useCallback(
+    async (url: string, fallbackName: string) => {
+      const response = await window.fetch(url);
+      if (!response.ok) {
+        throw new Error("加载图片失败，请重试");
+      }
+      const blob = await response.blob();
+      return new File([blob], fallbackName, {
+        type: blob.type || "image/jpeg",
+      });
+    },
+    [],
+  );
 
   const startTryon = async () => {
     if (!handFile && !warehouseHandPath) return;
@@ -144,151 +144,39 @@ export default function TryonPage() {
 
     try {
       const threadId = await api.createThread();
-      const handRef = warehouseHandPath
-        ? warehouseHandPath
-        : await api.uploadTryonFile(threadId, handFile!);
-      const styleRef = galleryStylePath
-        ? galleryStylePath
-        : await api.uploadTryonFile(threadId, styleFile!);
+      const resolvedHandFile =
+        handFile ??
+        (await fileFromPreviewUrl(handPreview, "hand-image.jpg"));
+      const resolvedStyleFile =
+        styleFile ??
+        (await fileFromPreviewUrl(stylePreview, "style-image.jpg"));
 
-      const stream = await api.startAgentRun(threadId, {
-        input: {
-          messages: [
-            {
-              role: "user",
-              content: `请帮我进行 AI 美甲试戴。\n手图：${handRef}\n款式图：${styleRef}`,
-            },
-          ],
+      const uploadResponse = await uploadFiles(threadId, [
+        resolvedHandFile,
+        resolvedStyleFile,
+      ]);
+
+      const pendingPayload: PendingChatTryonPayload = {
+        threadId,
+        text: NAIL_TRYON_PROMPT,
+        files: uploadResponse.files.map((info) => ({
+          filename: info.filename,
+          size: info.size,
+          path: info.virtual_path,
+          status: "uploaded" as const,
+        })),
+        extraContext: {
+          nail_role: nailRole,
+          nail_page_mode: "tryon",
         },
-        config: { configurable: { nail_role: nailRole } },
-      });
+      };
 
-      const reader = stream.getReader();
-      const decoder = new TextDecoder();
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        const chunk = decoder.decode(value);
-        for (const line of chunk.split("\n")) {
-          if (!line.startsWith("data: ")) continue;
-          try {
-            const data = JSON.parse(line.slice(6)) as Record<string, unknown>;
-            const type = getText(data, "type");
-
-            if (type === "tool_call_start" || type === "tool_call") {
-              const toolName =
-                getText(data, "tool_name") || getText(data, "name");
-              const stepId = TOOL_TO_STEP[toolName];
-              if (stepId) setStep(stepId, "running");
-              const input = stringifyPreview(data.input ?? data.args);
-              setToolLogs((prev) => [
-                ...prev,
-                {
-                  toolName,
-                  displayName: TOOL_DISPLAY[toolName] ?? toolName,
-                  input: input.substring(0, 500),
-                  output: "",
-                  status: "running",
-                  time: new Date().toLocaleTimeString(),
-                },
-              ]);
-            }
-
-            if (type === "tool_result") {
-              const toolName = getText(data, "tool_name");
-              const stepId = TOOL_TO_STEP[toolName];
-              if (stepId) setStep(stepId, "done");
-              const output = stringifyPreview(data.content);
-              setToolLogs((prev) =>
-                prev.map((entry) =>
-                  entry.toolName === toolName && entry.status === "running"
-                    ? {
-                        ...entry,
-                        output: output.substring(0, 800),
-                        status: data.error ? "error" : "done",
-                      }
-                    : entry,
-                ),
-              );
-
-              if (toolName === "image_generation_tool") {
-                const r = JSON.parse(
-                  getText(data, "content") || "{}",
-                ) as Record<string, unknown>;
-                const resultPath = getText(r, "result_path");
-                if (resultPath) {
-                  setResult((prev) => ({
-                    resultPath: `/api/nail/image?path=${encodeURIComponent(resultPath)}`,
-                    isMock: Boolean(r.is_mock ?? false),
-                    styleSummaryZh: prev?.styleSummaryZh,
-                  }));
-                }
-              }
-
-              if (toolName === "quality_check_tool") {
-                try {
-                  const q = JSON.parse(
-                    getText(data, "content") || "{}",
-                  ) as Record<string, unknown>;
-                  const scores =
-                    typeof q.scores === "object" && q.scores !== null
-                      ? (q.scores as Partial<TryonResult["scores"]>)
-                      : {};
-                  setResult((prev) =>
-                    prev
-                      ? {
-                          ...prev,
-                          scores: {
-                            overall: Number(q.overall ?? 0),
-                            ...scores,
-                          },
-                          fitComment: getText(q, "fit_comment"),
-                          riskComment: getText(q, "risk_comment"),
-                          explanation: getText(q, "explanation_zh"),
-                        }
-                      : prev,
-                  );
-                } catch {
-                  /* ignore */
-                }
-              }
-
-              if (toolName === "prompt_builder_tool") {
-                try {
-                  const p = JSON.parse(
-                    getText(data, "content") || "{}",
-                  ) as Record<string, unknown>;
-                  const styleSummaryZh = getText(p, "style_summary_zh");
-                  setResult((prev) =>
-                    prev
-                      ? { ...prev, styleSummaryZh }
-                      : { resultPath: "", isMock: false, styleSummaryZh },
-                  );
-                } catch {
-                  /* ignore */
-                }
-              }
-            }
-
-            const content =
-              getText(data, "content") ||
-              getText(data, "text") ||
-              getText(data, "delta");
-            if (content.trim()) {
-              setAgentLog((prev) => [
-                ...prev.slice(-30),
-                content.substring(0, 300),
-              ]);
-            }
-          } catch {
-            /* ignore */
-          }
-        }
-      }
-
-      setResult((prev) => prev ?? { resultPath: "", isMock: true });
+      window.sessionStorage.setItem(
+        PENDING_NAIL_TRYON_STORAGE_KEY,
+        JSON.stringify(pendingPayload),
+      );
+      router.push(`/workspace/chats/${threadId}?mode=nail`);
+      return;
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "试戴失败，请重试");
       setStepStatuses((prev) => {

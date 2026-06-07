@@ -1,0 +1,144 @@
+log_level: info
+models: []
+sandbox:
+  use: nailflow.sandbox.local.local_sandbox_provider:LocalSandboxProvider
+  allow_host_bash: true
+tools:
+- name: unified_tryon_tool
+  group: nail
+  use: nailflow.tools.nail.unified_tryon:unified_tryon_tool
+- name: image_search_tool
+  group: nail
+  use: nailflow.tools.nail.image_search:image_search_tool
+- name: hand_detect_tool
+  group: nail
+  use: nailflow.tools.nail.hand_detect:hand_detect_tool
+- name: nail_mask_tool
+  group: nail
+  use: nailflow.tools.nail.nail_mask:nail_mask_tool
+- name: style_understanding_tool
+  group: nail
+  use: nailflow.tools.nail.style_understanding:style_understanding_tool
+- name: prompt_builder_tool
+  group: nail
+  use: nailflow.tools.nail.prompt_builder:prompt_builder_tool
+- name: image_generation_tool
+  group: nail
+  use: nailflow.tools.nail.image_generation:image_generation_tool
+- name: quality_check_tool
+  group: nail
+  use: nailflow.tools.nail.quality_check:quality_check_tool
+- name: preference_rag_tool
+  group: nail
+  use: nailflow.tools.nail.preference_rag:preference_rag_tool
+- name: trend_query_tool
+  group: nail
+  use: nailflow.tools.nail.trend_query:trend_query_tool
+- name: nail_style_recommend_tool
+  group: nail
+  use: nailflow.tools.nail.nail_style_recommend:nail_style_recommend_tool
+- name: nail_run_query_tool
+  group: nail
+  use: nailflow.tools.nail.nail_run_query:nail_run_query_tool
+- name: user_pref_analytics_tool
+  group: nail
+  use: nailflow.tools.nail.user_pref_analytics:user_pref_analytics_tool
+- name: query_rewrite_tool
+  group: nail
+  use: nailflow.tools.nail.query_rewrite:query_rewrite_tool
+- name: knowledge_retrieval_tool
+  group: nail
+  use: nailflow.tools.nail.knowledge_retrieval:knowledge_retrieval_tool
+- name: nail_consult_tool
+  group: nail
+  use: nailflow.tools.nail.nail_consult:nail_consult_tool
+- name: trend_discovery_tool
+  group: nail_ops
+  use: nailflow.tools.nail.trend_discovery:trend_discovery_tool
+- name: ops_analysis_tool
+  group: nail_ops
+  use: nailflow.tools.nail.ops_analysis:ops_analysis_tool
+- name: customer_service_tool
+  group: nail_ops
+  use: nailflow.tools.nail.customer_service:customer_service_tool
+- name: action_proposal_tool
+  group: nail_ops
+  use: nailflow.tools.nail.action_proposal:action_proposal_tool
+- name: xiaohongshu_search_tool
+  group: nail_ops
+  use: nailflow.tools.nail.xiaohongshu_search:xiaohongshu_search_tool
+- name: evaluation_tool
+  group: nail_dev
+  use: nailflow.tools.nail.evaluation:evaluation_tool
+- name: ls
+  group: nail
+  use: nailflow.sandbox.tools:ls_tool
+- name: read_file
+  group: nail
+  use: nailflow.sandbox.tools:read_file_tool
+- name: write_file
+  group: nail
+  use: nailflow.sandbox.tools:write_file_tool
+- name: str_replace
+  group: nail
+  use: nailflow.sandbox.tools:str_replace_tool
+tool_groups:
+- name: nail
+  description: 基础美甲工具：手部检测、甲面Mask、试戴生图、质量评估、偏好推荐
+- name: nail_ops
+  description: 运营工具：趋势洞察、营销方案、客服、方案提案
+- name: nail_dev
+  description: 开发工具：赛题评分自评、开发任务推荐
+title:
+  enabled: false
+summarization:
+  enabled: false
+memory:
+  enabled: true
+  model_name: qwen3.7-max
+  debounce_seconds: 10
+  injection_enabled: true
+  max_facts: 100
+  max_injection_tokens: 2000
+subagents:
+  enabled: false
+checkpointer:
+  type: sqlite
+  connection_string: .nail-flow/checkpoints.db
+nail_ops_channel:
+  enabled: true
+  timezone: Asia/Shanghai
+  jobs:
+    daily_report:
+      enabled: true
+      schedule: "0922"
+    trend_alert:
+      enabled: true
+      threshold: 3.0
+  delivery:
+    channels:
+      feishu:
+        adapter: ops_channel.delivery.adapters.feishu:FeishuAdapter
+        enabled: true
+        config:
+          webhook_url: $FEISHU_OPS_WEBHOOK_URL
+      file:
+        adapter: packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter:FileAdapter
+        enabled: true
+        config:
+          output_dir: data/reports
+      web_push:
+        adapter: ops_channel.delivery.adapters.web_push:WebPushAdapter
+        enabled: true
+        config: {}
+  sessions:
+    ttl_minutes: 30
+    max_per_channel: 50
+nail_feishu:
+  enabled: true
+  app_id: $FEISHU_APP_ID
+  app_secret: $FEISHU_APP_SECRET
+  mention_only: true
+nail_xiaohongshu:
+  enabled: true
+  cookie: $XIAOHONGSHU_COOKIE

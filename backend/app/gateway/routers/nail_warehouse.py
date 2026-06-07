@@ -1,5 +1,5 @@
 # backend/app/gateway/routers/nail_warehouse.py
-"""NailFlow 美甲仓库 — 手图管理与款式图库。"""
+"""nailflow 美甲仓库 — 手图管理与款式图库。"""
 import json
 import logging
 import shutil
@@ -12,7 +12,7 @@ from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 from app.gateway.authz import require_auth
-from packages.harness.deerflow.tools.nail.base import get_db, HANDS_DIR, STYLES_DIR, UPLOADS_DIR
+from packages.harness.nailflow.tools.nail.base import get_db, HANDS_DIR, STYLES_DIR, UPLOADS_DIR
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/nail/warehouse", tags=["nail-warehouse"])

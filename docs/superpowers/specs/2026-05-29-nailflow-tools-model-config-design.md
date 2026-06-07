@@ -185,7 +185,7 @@ account → 模型配置(new) → appearance → memory → tools → skills →
 |--------|-----------|----------|----------|
 | **千问** | `langchain_openai:ChatOpenAI` | `https://dashscope.aliyuncs.com/compatible-mode/v1` | qwen-max, qwen-plus, qwen-turbo, qwen-vl-max(视觉) |
 | **DeepSeek** | `langchain_openai:ChatOpenAI` | `https://api.deepseek.com/v1` | deepseek-chat, deepseek-reasoner(思考) |
-| **豆包** | `deerflow.models.patched_deepseek:PatchedChatDeepSeek` | `https://ark.cn-beijing.volces.com/api/v3` | doubao-seed-1.8(视觉+思考), doubao-pro-32k |
+| **豆包** | `nailflow.models.patched_deepseek:PatchedChatDeepSeek` | `https://ark.cn-beijing.volces.com/api/v3` | doubao-seed-1.8(视觉+思考), doubao-pro-32k |
 | **Kimi** | `langchain_openai:ChatOpenAI` | `https://api.moonshot.cn/v1` | moonshot-v1-8k, moonshot-v1-32k, moonshot-v1-128k |
 | **自定义** | 手动输入 | 手动输入 | 手动输入 |
 
@@ -385,7 +385,7 @@ frontend/src/app/workspace/chats/[thread_id]/page.tsx  ← 在 header 区插入�
 ### 8.1 后端修改点
 
 ```python
-# 1. backend/packages/harness/deerflow/tools/nail/base.py
+# 1. backend/packages/harness/nailflow/tools/nail/base.py
 #    init_nail_tables() 添加三张新表
 
 # 2. backend/app/gateway/routers/nail_config.py  ← 新建
@@ -397,10 +397,10 @@ frontend/src/app/workspace/chats/[thread_id]/page.tsx  ← 在 header 区插入�
 # 4. backend/app/gateway/routers/models.py
 #    GET /api/models 合并 DB + config.yaml
 
-# 5. backend/packages/harness/deerflow/agents/lead_agent/agent.py
+# 5. backend/packages/harness/nailflow/agents/lead_agent/agent.py
 #    _make_lead_agent() 读 nail_agent_configs["main_agent"] 覆盖 model_name
 
-# 6. backend/packages/harness/deerflow/tools/nail/{style_understanding,quality_check,...}.py
+# 6. backend/packages/harness/nailflow/tools/nail/{style_understanding,quality_check,...}.py
 #    create_chat_model() 调用前读 nail_tool_overrides 获取 model_name
 ```
 
@@ -411,17 +411,17 @@ frontend/src/app/workspace/chats/[thread_id]/page.tsx  ← 在 header 区插入�
 ### 后端新增/修改
 
 ```
-backend/packages/harness/deerflow/tools/nail/base.py     ← 添加3张新表到 init_nail_tables()
+backend/packages/harness/nailflow/tools/nail/base.py     ← 添加3张新表到 init_nail_tables()
 backend/app/gateway/routers/nail_config.py               ← 新建：模型/Agent/工具 CRUD API
 backend/app/gateway/routers/models.py                    ← 修改：合并 DB + config.yaml
 backend/app/gateway/app.py                               ← 注册 nail_config_router
-backend/packages/harness/deerflow/agents/lead_agent/agent.py  ← 读 nail_agent_configs
-backend/packages/harness/deerflow/tools/nail/style_understanding.py  ← 读 nail_tool_overrides
-backend/packages/harness/deerflow/tools/nail/quality_check.py        ← 同上
-backend/packages/harness/deerflow/tools/nail/ops_analysis.py         ← 同上
-backend/packages/harness/deerflow/tools/nail/customer_service.py     ← 同上
-backend/packages/harness/deerflow/tools/nail/trend_discovery.py      ← 同上
-backend/packages/harness/deerflow/tools/nail/evaluation.py           ← 同上
+backend/packages/harness/nailflow/agents/lead_agent/agent.py  ← 读 nail_agent_configs
+backend/packages/harness/nailflow/tools/nail/style_understanding.py  ← 读 nail_tool_overrides
+backend/packages/harness/nailflow/tools/nail/quality_check.py        ← 同上
+backend/packages/harness/nailflow/tools/nail/ops_analysis.py         ← 同上
+backend/packages/harness/nailflow/tools/nail/customer_service.py     ← 同上
+backend/packages/harness/nailflow/tools/nail/trend_discovery.py      ← 同上
+backend/packages/harness/nailflow/tools/nail/evaluation.py           ← 同上
 ```
 
 ### 前端新增/修改

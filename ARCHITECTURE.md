@@ -1,4 +1,4 @@
-# NailFlow 代码架构建议
+# nailflow 代码架构建议
 
 ## Monorepo
 
@@ -9,7 +9,7 @@ nailflow/
     api/                 # FastAPI 或 Node BFF，任务状态、文件、鉴权、SSE
     worker/              # 视觉模型任务、批处理、队列消费
   packages/
-    agents/              # DeerFlow graph 与子 Agent 定义
+    agents/              # nailflow graph 与子 Agent 定义
       planner/
       vision/
       stylist/
@@ -55,7 +55,7 @@ User Intent
 ## 技术路线
 
 - 前端：React Router + SSE/WebSocket 展示 Agent 日志，上传区和画布区分离。
-- 后端：优先复用 DeerFlow 的 sub-agent、memory、sandbox、skills 思路。
+- 后端：优先复用 nailflow 的 sub-agent、memory、sandbox、skills 思路。
 - 视觉：MediaPipe Hands 定位手部，SAM 做甲面 mask，局部扩散模型做试戴。
 - 运营：向量库 + 规则约束 + 工具调用，客服回复必须引用门店事实或 mock 事实。
 - 评测：由 `EvaluationAgent` 生成质量分、运营转化指标、异常处理覆盖数，映射到赛题评分标准，并作为开发优先级输入。

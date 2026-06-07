@@ -28,7 +28,7 @@ interface NailGlassShellProps {
 export function NailGlassShell({
   title,
   subtitle,
-  eyebrow = "NailFlow",
+  eyebrow = "nailflow",
   children,
   actions,
   headerRight,

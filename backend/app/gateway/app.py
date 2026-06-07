@@ -30,8 +30,8 @@ from app.gateway.routers.nail_config import router as nail_config_router
 from app.gateway.routers.nail_warehouse import router as nail_warehouse_router
 from app.gateway.routers.nail_dev import router as nail_dev_router
 from app.gateway.routers.nail_data import router as nail_data_router
-from deerflow.config import app_config as deerflow_app_config
-from deerflow.config.app_config import apply_logging_level
+from nailflow.config import app_config as deerflow_app_config
+from nailflow.config.app_config import apply_logging_level
 
 AppConfig = deerflow_app_config.AppConfig
 get_app_config = deerflow_app_config.get_app_config
@@ -75,8 +75,8 @@ async def _ensure_admin_user(app: FastAPI) -> None:
     from sqlalchemy import select
 
     from app.gateway.deps import get_local_provider
-    from deerflow.persistence.engine import get_session_factory
-    from deerflow.persistence.user.model import UserRow
+    from nailflow.persistence.engine import get_session_factory
+    from nailflow.persistence.user.model import UserRow
 
     try:
         provider = get_local_provider()

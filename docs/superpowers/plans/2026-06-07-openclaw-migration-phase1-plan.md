@@ -23,7 +23,7 @@
 
 ```
 新建:
-  backend/packages/harness/deerflow/ops/
+  backend/packages/harness/nailflow/ops/
   ├── __init__.py                        # 统一导出
   ├── skills/
   │   ├── __init__.py
@@ -38,13 +38,13 @@
   data/skills/
   └── daily_report.skill.md              # 第一个技能文件
 
-  backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/
+  backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/
   └── dingtalk.py                        # 钉钉适配器
 
 修改:
-  backend/packages/harness/deerflow/agents/lead_agent/agent.py   # 注入 skill 上下文
-  backend/packages/harness/deerflow/tools/nail/base.py            # init_nail_tables() 加表
-  backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/__init__.py  # 导出 DingTalkAdapter
+  backend/packages/harness/nailflow/agents/lead_agent/agent.py   # 注入 skill 上下文
+  backend/packages/harness/nailflow/tools/nail/base.py            # init_nail_tables() 加表
+  backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/__init__.py  # 导出 DingTalkAdapter
 
 测试:
   backend/tests/test_ops_skills.py        # 技能系统单测
@@ -55,20 +55,20 @@
 ### Task 1: Skill 数据模型
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/ops/__init__.py`
-- Create: `backend/packages/harness/deerflow/ops/skills/__init__.py`
-- Create: `backend/packages/harness/deerflow/ops/skills/models.py`
+- Create: `backend/packages/harness/nailflow/ops/__init__.py`
+- Create: `backend/packages/harness/nailflow/ops/skills/__init__.py`
+- Create: `backend/packages/harness/nailflow/ops/skills/models.py`
 
 - [ ] **Step 1: 创建目录结构和 Skill 数据类**
 
 ```bash
-mkdir -p backend/packages/harness/deerflow/ops/skills
-mkdir -p backend/packages/harness/deerflow/ops/approval
-mkdir -p backend/packages/harness/deerflow/ops/memory
+mkdir -p backend/packages/harness/nailflow/ops/skills
+mkdir -p backend/packages/harness/nailflow/ops/approval
+mkdir -p backend/packages/harness/nailflow/ops/memory
 ```
 
 ```python
-# backend/packages/harness/deerflow/ops/__init__.py
+# backend/packages/harness/nailflow/ops/__init__.py
 """NailFlow Ops — OpenClaw 能力迁移层。
 
 Skills / Memory / Approval 三大系统，Python 原生实现。
@@ -76,7 +76,7 @@ Skills / Memory / Approval 三大系统，Python 原生实现。
 ```
 
 ```python
-# backend/packages/harness/deerflow/ops/skills/__init__.py
+# backend/packages/harness/nailflow/ops/skills/__init__.py
 from .models import Skill
 from .loader import SkillLoader
 from .manager import SkillManager
@@ -85,7 +85,7 @@ __all__ = ["Skill", "SkillLoader", "SkillManager"]
 ```
 
 ```python
-# backend/packages/harness/deerflow/ops/skills/models.py
+# backend/packages/harness/nailflow/ops/skills/models.py
 """Skill 数据模型 — 对齐 OpenClaw 的 SKILL.md frontmatter 格式。"""
 from __future__ import annotations
 
@@ -111,11 +111,11 @@ class Skill:
 - [ ] **Step 2: 提交**
 
 ```bash
-git add backend/packages/harness/deerflow/ops/__init__.py \
-        backend/packages/harness/deerflow/ops/skills/__init__.py \
-        backend/packages/harness/deerflow/ops/skills/models.py \
-        backend/packages/harness/deerflow/ops/approval/__init__.py \
-        backend/packages/harness/deerflow/ops/memory/__init__.py
+git add backend/packages/harness/nailflow/ops/__init__.py \
+        backend/packages/harness/nailflow/ops/skills/__init__.py \
+        backend/packages/harness/nailflow/ops/skills/models.py \
+        backend/packages/harness/nailflow/ops/approval/__init__.py \
+        backend/packages/harness/nailflow/ops/memory/__init__.py
 git commit -m "feat(ops): add Skill data model and ops/ directory skeleton"
 ```
 
@@ -124,13 +124,13 @@ git commit -m "feat(ops): add Skill data model and ops/ directory skeleton"
 ### Task 2: Skill 加载器
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/ops/skills/loader.py`
+- Create: `backend/packages/harness/nailflow/ops/skills/loader.py`
 - Create: `data/skills/daily_report.skill.md`
 
 - [ ] **Step 1: 写加载器**
 
 ```python
-# backend/packages/harness/deerflow/ops/skills/loader.py
+# backend/packages/harness/nailflow/ops/skills/loader.py
 """SKILL.md 文件扫描与 YAML frontmatter 解析。"""
 from __future__ import annotations
 
@@ -276,7 +276,7 @@ tools:
 - [ ] **Step 3: 提交**
 
 ```bash
-git add backend/packages/harness/deerflow/ops/skills/loader.py data/skills/daily_report.skill.md
+git add backend/packages/harness/nailflow/ops/skills/loader.py data/skills/daily_report.skill.md
 git commit -m "feat(ops): add SkillLoader and first daily_report skill"
 ```
 
@@ -285,12 +285,12 @@ git commit -m "feat(ops): add SkillLoader and first daily_report skill"
 ### Task 3: SkillManager
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/ops/skills/manager.py`
+- Create: `backend/packages/harness/nailflow/ops/skills/manager.py`
 
 - [ ] **Step 1: 写 SkillManager**
 
 ```python
-# backend/packages/harness/deerflow/ops/skills/manager.py
+# backend/packages/harness/nailflow/ops/skills/manager.py
 """SkillManager — 技能生命周期管理 + Agent 上下文注入。"""
 from __future__ import annotations
 
@@ -371,7 +371,7 @@ class SkillManager:
         execution_id = str(uuid.uuid4())
         now = datetime.now(timezone.utc).isoformat()
         try:
-            from deerflow.tools.nail.base import get_db
+            from nailflow.tools.nail.base import get_db
             with get_db() as conn:
                 conn.execute(
                     """INSERT INTO skill_executions (id, skill_name, run_id, status, result, error, started_at, completed_at)
@@ -394,7 +394,7 @@ class SkillManager:
 - [ ] **Step 2: 提交**
 
 ```bash
-git add backend/packages/harness/deerflow/ops/skills/manager.py
+git add backend/packages/harness/nailflow/ops/skills/manager.py
 git commit -m "feat(ops): add SkillManager with agent context injection"
 ```
 
@@ -403,7 +403,7 @@ git commit -m "feat(ops): add SkillManager with agent context injection"
 ### Task 4: 添加 skill_executions 表
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/base.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/base.py`
 
 - [ ] **Step 1: 在 init_nail_tables() 中添加新表**
 
@@ -446,7 +446,7 @@ conn.executescript("""
 
 ```bash
 cd backend && python -c "
-from packages.harness.deerflow.tools.nail.base import init_nail_tables, get_db
+from packages.harness.nailflow.tools.nail.base import init_nail_tables, get_db
 init_nail_tables()
 with get_db() as conn:
     tables = conn.execute(\"SELECT name FROM sqlite_master WHERE type='table'\").fetchall()
@@ -460,7 +460,7 @@ with get_db() as conn:
 - [ ] **Step 3: 提交**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/base.py
+git add backend/packages/harness/nailflow/tools/nail/base.py
 git commit -m "feat(ops): add skill_executions and approval_records tables"
 ```
 
@@ -469,7 +469,7 @@ git commit -m "feat(ops): add skill_executions and approval_records tables"
 ### Task 5: 在 Agent 中注入 Skill 上下文
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/agents/lead_agent/agent.py`
+- Modify: `backend/packages/harness/nailflow/agents/lead_agent/agent.py`
 
 - [ ] **Step 1: 在 _build_system_prompt 或等效位置注入技能**
 
@@ -478,7 +478,7 @@ git commit -m "feat(ops): add skill_executions and approval_records tables"
 ```python
 # 在 make_lead_agent() 函数中，system_prompt 构建完成后追加:
 
-from deerflow.ops.skills.manager import SkillManager
+from nailflow.ops.skills.manager import SkillManager
 
 # NailFlow: 注入技能上下文
 nail_role = cfg.get("nail_role", "user")
@@ -502,7 +502,7 @@ except Exception:
 - [ ] **Step 2: 提交**
 
 ```bash
-git add backend/packages/harness/deerflow/agents/lead_agent/agent.py
+git add backend/packages/harness/nailflow/agents/lead_agent/agent.py
 git commit -m "feat(ops): inject skill context into agent system prompt"
 ```
 
@@ -511,8 +511,8 @@ git commit -m "feat(ops): inject skill context into agent system prompt"
 ### Task 6: DingTalk 适配器
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/dingtalk.py`
-- Modify: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/__init__.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/dingtalk.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/__init__.py`
 
 - [ ] **Step 1: 写 DingTalk 适配器**
 
@@ -619,8 +619,8 @@ from .dingtalk import DingTalkAdapter
 - [ ] **Step 3: 提交**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/dingtalk.py \
-        backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/__init__.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/dingtalk.py \
+        backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/__init__.py
 git commit -m "feat(ops): add DingTalk webhook adapter"
 ```
 
@@ -646,9 +646,9 @@ import pytest
 # 确保 backend/ 在 sys.path 中
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from packages.harness.deerflow.ops.skills.models import Skill
-from packages.harness.deerflow.ops.skills.loader import SkillLoader
-from packages.harness.deerflow.ops.skills.manager import SkillManager
+from packages.harness.nailflow.ops.skills.models import Skill
+from packages.harness.nailflow.ops.skills.loader import SkillLoader
+from packages.harness.nailflow.ops.skills.manager import SkillManager
 
 
 SAMPLE_SKILL_MD = """---
@@ -766,7 +766,7 @@ git commit -m "test(ops): add skill system unit tests"
 
 ```bash
 cd backend && python -c "
-from packages.harness.deerflow.ops.skills.loader import SkillLoader
+from packages.harness.nailflow.ops.skills.loader import SkillLoader
 loader = SkillLoader()
 skills = loader.load_all()
 print(f'Loaded {len(skills)} skills:')
@@ -783,7 +783,7 @@ Expected: 至少输出 `daily_report (nail_ops) [builtin]`
 
 ```bash
 cd backend && python -c "
-from packages.harness.deerflow.ops.skills.manager import SkillManager
+from packages.harness.nailflow.ops.skills.manager import SkillManager
 mgr = SkillManager()
 skills = mgr.load_skills(groups=['nail_ops'])
 ctx = mgr.inject_context(skills)
@@ -799,15 +799,15 @@ Expected: 输出格式化的 XML 上下文，含 daily_report 技能信息
 ```bash
 cd backend && python -c "
 import asyncio
-from packages.harness.deerflow.tools.nail.ops_channel.ops_runner import run_job
-from packages.harness.deerflow.tools.nail.ops_channel.job_store import OpsJob, TaskSpec
+from packages.harness.nailflow.tools.nail.ops_channel.ops_runner import run_job
+from packages.harness.nailflow.tools.nail.ops_channel.job_store import OpsJob, TaskSpec
 
 job = OpsJob(job_id='test_daily', task=TaskSpec(type='daily_report'))
 result = asyncio.run(run_job(job, {'days': 7}))
 print(f'ok={result[\"ok\"]}')
 print(f'message type={type(result[\"message\"]).__name__}')
 if result['ok']:
-    from packages.harness.deerflow.tools.nail.ops_channel.delivery.messages.base import CardMessage
+    from packages.harness.nailflow.tools.nail.ops_channel.delivery.messages.base import CardMessage
     if isinstance(result['message'], CardMessage):
         print(f'Card title: {result[\"message\"].header_title}')
 "

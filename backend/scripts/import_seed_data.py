@@ -15,8 +15,8 @@ from pathlib import Path
 # 设置项目根目录到 sys.path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from packages.harness.deerflow.tools.nail.base import get_db, init_nail_tables
-from packages.harness.deerflow.tools.nail.embedding import encode_text, fused_style_embedding
+from packages.harness.nailflow.tools.nail.base import get_db, init_nail_tables
+from packages.harness.nailflow.tools.nail.embedding import encode_text, fused_style_embedding
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')

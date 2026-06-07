@@ -70,7 +70,7 @@
 
 ### 2.1 后端：nail_page_mode 注入
 
-**文件：** `backend/packages/harness/deerflow/agents/lead_agent/agent.py`
+**文件：** `backend/packages/harness/nailflow/agents/lead_agent/agent.py`
 
 在已有 `nail_role` 提取逻辑之后，增加 `nail_page_mode` 读取：
 
@@ -95,7 +95,7 @@ tools = get_available_tools(
 )
 ```
 
-**文件：** `backend/packages/harness/deerflow/agents/lead_agent/prompt.py`
+**文件：** `backend/packages/harness/nailflow/agents/lead_agent/prompt.py`
 
 新增 mode → prompt prefix 映射：
 ```python
@@ -280,7 +280,7 @@ CREATE TABLE IF NOT EXISTS nail_user_prefs (
 
 ### 3.2 偏好向量更新算法
 
-**文件：** `backend/packages/harness/deerflow/tools/nail/preference_rag.py`（重构）
+**文件：** `backend/packages/harness/nailflow/tools/nail/preference_rag.py`（重构）
 
 ```python
 SIGNAL_WEIGHT = {"tryon": 1.0, "save": 3.0, "search": 2.0}
@@ -329,7 +329,7 @@ def update_user_pref_vector(user_id: str, style_id: str, signal_type: str):
 
 ### 3.3 推荐工具：`nail_style_recommend_tool`
 
-**文件：** `backend/packages/harness/deerflow/tools/nail/nail_style_recommend.py`（新建）
+**文件：** `backend/packages/harness/nailflow/tools/nail/nail_style_recommend.py`（新建）
 
 ```python
 @tool
@@ -450,7 +450,7 @@ C 方案：数据面板默认展示，点击「🤖 AI 分析」后 chat 从右�
 - 新增：`nail_style_recommend_tool`（查看某用户推荐）
 - 新增：`user_pref_analytics_tool`（全体用户偏好聚合）
 
-**新文件：** `backend/packages/harness/deerflow/tools/nail/user_pref_analytics.py`
+**新文件：** `backend/packages/harness/nailflow/tools/nail/user_pref_analytics.py`
 
 ```python
 @tool
@@ -502,7 +502,7 @@ CREATE TABLE IF NOT EXISTS tool_call_log (
 
 **写入时机：** 在 lead_agent 中间件层拦截每次工具调用事件（SSE `tool_call` + `tool_result` 事件对），自动写入，对工具代码零侵入。
 
-**写入位置：** `backend/packages/harness/deerflow/agents/lead_agent/agent.py` 的工具调用拦截点：
+**写入位置：** `backend/packages/harness/nailflow/agents/lead_agent/agent.py` 的工具调用拦截点：
 
 ```python
 # 在工具执行 wrapper 中记录
@@ -520,7 +520,7 @@ async def tool_call_middleware(tool_name, input_data, call_fn):
 
 ### 5.3 新增工具：nail_run_query_tool
 
-**新文件：** `backend/packages/harness/deerflow/tools/nail/nail_run_query.py`
+**新文件：** `backend/packages/harness/nailflow/tools/nail/nail_run_query.py`
 
 ```python
 @tool

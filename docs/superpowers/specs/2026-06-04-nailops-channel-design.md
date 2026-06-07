@@ -144,7 +144,7 @@ IM消息 → Webhook(POST /api/nail/ops/channel/{channel_id})
 ### 新增（17 文件，全部在 `ops_channel/` 包内）
 
 ```
-backend/packages/harness/deerflow/tools/nail/ops_channel/
+backend/packages/harness/nailflow/tools/nail/ops_channel/
 ├── __init__.py
 ├── ops_scheduler.py          # Cron层：触发调度
 ├── ops_runner.py             # Agent层：任务路由+工具调用

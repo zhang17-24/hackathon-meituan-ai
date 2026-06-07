@@ -1,5 +1,5 @@
 # backend/app/gateway/routers/nail_ops.py
-"""NailFlow 运营端接口：ActionProposal 确认/拒绝，运营看板，图片服务。"""
+"""nailflow 运营端接口：ActionProposal 确认/拒绝，运营看板，图片服务。"""
 import logging
 from datetime import datetime, UTC
 from pathlib import Path
@@ -27,7 +27,7 @@ async def confirm_proposal(proposal_id: str, body: ProposalActionBody, request: 
     if body.status not in ("approved", "rejected"):
         raise HTTPException(status_code=400, detail="status 必须是 'approved' 或 'rejected'")
 
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
 
     with get_db() as conn:
         row = conn.execute("SELECT id FROM action_proposals WHERE id = ?", (proposal_id,)).fetchone()
@@ -47,7 +47,7 @@ async def confirm_proposal(proposal_id: str, body: ProposalActionBody, request: 
 @require_auth
 async def list_proposals(request: Request, status: str = "pending", limit: int = 20):
     """查询 ActionProposal 列表。"""
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
 
     with get_db() as conn:
         rows = conn.execute(
@@ -63,7 +63,7 @@ async def list_proposals(request: Request, status: str = "pending", limit: int =
 @require_auth
 async def get_dashboard(request: Request, days: int = 7):
     """运营看板：趋势信号聚合 + ActionProposal 状态汇总。"""
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
 
     with get_db() as conn:
         signals = conn.execute("""
@@ -159,7 +159,7 @@ class SaveStyleRequest(BaseModel):
 @require_auth
 async def save_style(style_id: str, body: SaveStyleRequest, request: Request):
     """用户收藏款式：更新用户偏好向量 + 写入 ops_signals。"""
-    from packages.harness.deerflow.tools.nail.base import update_user_pref_vector, get_db
+    from packages.harness.nailflow.tools.nail.base import update_user_pref_vector, get_db
     user = request.state.user
     user_id = str(user.id)
 
@@ -180,7 +180,7 @@ async def save_style(style_id: str, body: SaveStyleRequest, request: Request):
 @require_auth
 async def get_pref_distribution(request: Request):
     """返回全体用户偏好风格分布（供运营看板饼图使用）。"""
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
     with get_db() as conn:
         rows = conn.execute("""
             SELECT s.style_id,
@@ -209,7 +209,7 @@ async def get_pref_distribution(request: Request):
 @require_auth
 async def get_latest_run(request: Request):
     """返回当前用户最近一次 nail_run 的工具调用链数据，供前端 ToolTimeline 展示。"""
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
     user = request.state.user
     user_id = str(user.id)
 

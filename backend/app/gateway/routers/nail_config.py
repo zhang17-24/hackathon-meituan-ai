@@ -1,5 +1,5 @@
 # backend/app/gateway/routers/nail_config.py
-"""NailFlow 配置 API：模型 CRUD、Agent 绑定、工具开关管理。"""
+"""nailflow 配置 API：模型 CRUD、Agent 绑定、工具开关管理。"""
 import json
 import logging
 import uuid
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/api/nail/config", tags=["nail-config"])
 
 
 def _get_db():
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
     return get_db()
 
 

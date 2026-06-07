@@ -1,0 +1,49 @@
+{
+  "version": "2026-06-02",
+  "source": "Wikimedia Commons Search",
+  "keyword_count": 1,
+  "image_count": 2,
+  "license_notice": "请结合各条记录中的 license_short_name 与 license_url 做兼容性检查后再用于商用。",
+  "images": [
+    {
+      "title": "Frenchmanicurewiki.jpg",
+      "search_query": "french manicure nails",
+      "source": "Wikimedia Commons",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Frenchmanicurewiki.jpg",
+      "style_hint": "french",
+      "color_group": "light",
+      "pattern_type": "french",
+      "downloaded": false,
+      "local_path": "/Users/xinyiji/Desktop/美团黑客松ai美甲/hackathon-meituan-ai/backend/data/seed_images/commons/Frenchmanicurewiki.jpg",
+      "license_short_name": "CC BY-SA 3.0",
+      "license_url": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "artist": "The original uploader was <a href=\"https://en.wikipedia.org/wiki/User:ImGz\" class=\"extiw\" title=\"wikipedia:User:ImGz\">ImGz</a> at <a href=\"https://en.wikipedia.org/wiki/\" class=\"extiw\" title=\"wikipedia:\">English Wikipedia</a>.",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/2/22/Frenchmanicurewiki.jpg",
+      "image_description": "An example of a French Manicure, acrylic nails with white tips.",
+      "canonical_title": "File:Frenchmanicurewiki.jpg",
+      "date_time": "2007-05-14 12:17:36",
+      "credit": "<bdi lang=\"en\" dir=\"ltr\">Transferred from <span class=\"plainlinks\"><a class=\"external text\" data-mw-original-href=\"//en.wikipedia.org\" href=\"https://en.wikipedia.org\">en.wikipedia</a></span> to Commons.</bdi>",
+      "license_compatible": true
+    },
+    {
+      "title": "French Manicure with Glitter nail art on ring finger.jpg",
+      "search_query": "french manicure nails",
+      "source": "Wikimedia Commons",
+      "source_url": "https://commons.wikimedia.org/wiki/File:French_Manicure_with_Glitter_nail_art_on_ring_finger.jpg",
+      "style_hint": "french",
+      "color_group": "light",
+      "pattern_type": "french",
+      "downloaded": false,
+      "local_path": "/Users/xinyiji/Desktop/美团黑客松ai美甲/hackathon-meituan-ai/backend/data/seed_images/commons/French Manicure with Glitter nail art on ring finger.jpg",
+      "license_short_name": "CC BY-SA 4.0",
+      "license_url": "https://creativecommons.org/licenses/by-sa/4.0",
+      "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Theknowhau&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Theknowhau (page does not exist)\">Theknowhau</a>",
+      "download_url": "https://upload.wikimedia.org/wikipedia/commons/3/3b/French_Manicure_with_Glitter_nail_art_on_ring_finger.jpg",
+      "image_description": "French Manicure with Glitter nail art on ring finger.",
+      "canonical_title": "File:French Manicure with Glitter nail art on ring finger.jpg",
+      "date_time": "2021-03-25 16:46:43",
+      "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+      "license_compatible": true
+    }
+  ]
+}

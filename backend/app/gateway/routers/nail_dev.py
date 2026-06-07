@@ -32,7 +32,6 @@ _TOOL_REGISTRY = {
     "ops_analysis_tool":       "deerflow.tools.nail.ops_analysis:ops_analysis_tool",
     "customer_service_tool":   "deerflow.tools.nail.customer_service:customer_service_tool",
     "action_proposal_tool":    "deerflow.tools.nail.action_proposal:action_proposal_tool",
-    "evaluation_tool":         "deerflow.tools.nail.evaluation:evaluation_tool",
     "preference_rag_tool":     "deerflow.tools.nail.preference_rag:preference_rag_tool",
     "nail_style_recommend_tool":"deerflow.tools.nail.nail_style_recommend:nail_style_recommend_tool",
     "nail_run_query_tool":     "deerflow.tools.nail.nail_run_query:nail_run_query_tool",

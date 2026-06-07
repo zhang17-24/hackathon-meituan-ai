@@ -13,25 +13,25 @@
 ### Task 1: 包骨架 + 消息类型 + Card 组件
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/__init__.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/__init__.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/messages/__init__.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/messages/base.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/messages/card.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/__init__.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/__init__.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/__init__.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/__init__.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/messages/__init__.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/messages/base.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/messages/card.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/__init__.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/__init__.py`
 
 - [ ] **Step 1: Create directory structure**
 
 ```bash
-mkdir -p backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/messages
-mkdir -p backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters
-mkdir -p backend/packages/harness/deerflow/tools/nail/ops_channel/formatters
-touch backend/packages/harness/deerflow/tools/nail/ops_channel/__init__.py
-touch backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/__init__.py
-touch backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/messages/__init__.py
-touch backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/__init__.py
-touch backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/__init__.py
+mkdir -p backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/messages
+mkdir -p backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters
+mkdir -p backend/packages/harness/nailflow/tools/nail/ops_channel/formatters
+touch backend/packages/harness/nailflow/tools/nail/ops_channel/__init__.py
+touch backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/__init__.py
+touch backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/messages/__init__.py
+touch backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/__init__.py
+touch backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/__init__.py
 ```
 
 - [ ] **Step 2: Write messages/base.py — message type hierarchy**
@@ -154,8 +154,8 @@ class CardButton:
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.messages.base import TextMessage, CardMessage, MarkdownMessage
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.messages.card import CardSection, CardButton
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.messages.base import TextMessage, CardMessage, MarkdownMessage
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.messages.card import CardSection, CardButton
 m = TextMessage('hello'); print(m.to_primitive())
 c = CardMessage('test', sections=[CardSection(title='S1', lines=['line1'])])
 print(c.to_primitive())
@@ -166,7 +166,7 @@ Expected: `{'kind': 'text', 'content': 'hello'}` then card dict
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/
 git commit -m "feat(ops-channel): add package scaffold + message type hierarchy + card builder"
 ```
 
@@ -175,7 +175,7 @@ git commit -m "feat(ops-channel): add package scaffold + message type hierarchy 
 ### Task 2: Delivery 基座类型
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/base.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/base.py`
 
 - [ ] **Step 1: Write delivery/base.py**
 
@@ -240,7 +240,7 @@ class AbstractChannelAdapter(ABC):
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.base import ChannelCapability, DeliveryTarget, DeliveryResult, AbstractChannelAdapter
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.base import ChannelCapability, DeliveryTarget, DeliveryResult, AbstractChannelAdapter
 print(ChannelCapability.CARD | ChannelCapability.TEXT)
 "
 ```
@@ -249,7 +249,7 @@ Expected: `ChannelCapability.TEXT|CARD`
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/base.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/base.py
 git commit -m "feat(ops-channel): add delivery base types (ChannelCapability, DeliveryTarget, AbstractChannelAdapter)"
 ```
 
@@ -258,9 +258,9 @@ git commit -m "feat(ops-channel): add delivery base types (ChannelCapability, De
 ### Task 3: Delivery Registry + Router + Result Tracker
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/registry.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/router.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/result_tracker.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/registry.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/router.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/result_tracker.py`
 
 - [ ] **Step 1: Write delivery/registry.py**
 
@@ -312,7 +312,7 @@ class AdapterRegistry:
                 module_path, class_name = adapter_path.split(":")
                 # resolve relative path to absolute
                 if module_path.startswith("ops_channel."):
-                    module_path = "packages.harness.deerflow.tools.nail." + module_path
+                    module_path = "packages.harness.nailflow.tools.nail." + module_path
                 mod = importlib.import_module(module_path)
                 adapter_cls = getattr(mod, class_name)
                 adapter = adapter_cls(config=cfg.get("config", {}))
@@ -433,9 +433,9 @@ def record_delivery(run_id: str, channel: str, result: "DeliveryResult") -> None
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.registry import AdapterRegistry
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.router import ChannelRouter
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.result_tracker import record_delivery
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.registry import AdapterRegistry
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.router import ChannelRouter
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.result_tracker import record_delivery
 print('Delivery layer OK')
 "
 ```
@@ -444,7 +444,7 @@ Expected: `Delivery layer OK`
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/registry.py backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/router.py backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/result_tracker.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/registry.py backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/router.py backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/result_tracker.py
 git commit -m "feat(ops-channel): add delivery registry, router with auto-degrade, result tracker"
 ```
 
@@ -453,12 +453,12 @@ git commit -m "feat(ops-channel): add delivery registry, router with auto-degrad
 ### Task 4: Job Store — 持久化 + 乐观锁 + ops_job_runs 表
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/job_store.py`
-- Modify: `backend/packages/harness/deerflow/tools/nail/base.py` — `init_nail_tables()` 新增表
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/job_store.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/base.py` — `init_nail_tables()` 新增表
 
 - [ ] **Step 1: Add ops_job_runs table to init_nail_tables()**
 
-In `backend/packages/harness/deerflow/tools/nail/base.py`, inside `init_nail_tables()` method, inside the `conn.executescript("""...""")` call, add after the last `CREATE INDEX` statement and before the closing `"""`:
+In `backend/packages/harness/nailflow/tools/nail/base.py`, inside `init_nail_tables()` method, inside the `conn.executescript("""...""")` call, add after the last `CREATE INDEX` statement and before the closing `"""`:
 
 ```sql
 
@@ -586,8 +586,8 @@ def get_baseline_signal_count(style_id: str, days: int = 7) -> float:
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()
-from packages.harness.deerflow.tools.nail.ops_channel.job_store import create_run, acquire_run, complete_run, TriggerType
+from packages.harness.nailflow.tools.nail.base import init_nail_tables; init_nail_tables()
+from packages.harness.nailflow.tools.nail.ops_channel.job_store import create_run, acquire_run, complete_run, TriggerType
 rid = create_run('daily_report', TriggerType.CRON)
 assert rid
 assert acquire_run(rid)
@@ -600,7 +600,7 @@ Expected: `JobStore OK`
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/job_store.py backend/packages/harness/deerflow/tools/nail/base.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/job_store.py backend/packages/harness/nailflow/tools/nail/base.py
 git commit -m "feat(ops-channel): add job_store with ops_job_runs table + optimistic locking"
 ```
 
@@ -609,7 +609,7 @@ git commit -m "feat(ops-channel): add job_store with ops_job_runs table + optimi
 ### Task 5: Feishu Adapter
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/feishu.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/feishu.py`
 
 - [ ] **Step 1: Write feishu.py**
 
@@ -709,7 +709,7 @@ class FeishuAdapter(AbstractChannelAdapter):
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.feishu import FeishuAdapter
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.feishu import FeishuAdapter
 a = FeishuAdapter(config={'webhook_url': 'https://example.test'})
 assert a.channel_id == 'feishu'
 print('Feishu adapter OK')
@@ -719,7 +719,7 @@ print('Feishu adapter OK')
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/feishu.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/feishu.py
 git commit -m "feat(ops-channel): add feishu adapter (card + text via webhook)"
 ```
 
@@ -728,7 +728,7 @@ git commit -m "feat(ops-channel): add feishu adapter (card + text via webhook)"
 ### Task 6: WebPush Adapter (内存队列)
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/web_push.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/web_push.py`
 
 - [ ] **Step 1: Write web_push.py**
 
@@ -786,7 +786,7 @@ class WebPushAdapter(AbstractChannelAdapter):
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.web_push import WebPushAdapter, get_recent_messages
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.web_push import WebPushAdapter, get_recent_messages
 a = WebPushAdapter()
 assert a.channel_id == 'web_push'
 print('WebPush adapter OK')
@@ -796,7 +796,7 @@ print('WebPush adapter OK')
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/web_push.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/web_push.py
 git commit -m "feat(ops-channel): add web_push adapter (in-memory queue for WebSocket)"
 ```
 
@@ -805,8 +805,8 @@ git commit -m "feat(ops-channel): add web_push adapter (in-memory queue for WebS
 ### Task 7: Formatters — 日报 + 告警
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/daily_report.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/alert_card.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/daily_report.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/alert_card.py`
 
 - [ ] **Step 1: Write formatters/daily_report.py**
 
@@ -889,8 +889,8 @@ def format_trend_alert(style_id: str, current_count: int, baseline: float, multi
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.formatters.daily_report import format_daily_report
-from packages.harness.deerflow.tools.nail.ops_channel.formatters.alert_card import format_trend_alert
+from packages.harness.nailflow.tools.nail.ops_channel.formatters.daily_report import format_daily_report
+from packages.harness.nailflow.tools.nail.ops_channel.formatters.alert_card import format_trend_alert
 trend = {'hot_styles': [{'style_id':'cow_french','reason':'收藏+12','suggested_action':'限时套餐'}], 'cold_styles': [], 'trend_summary': 'test', 'data_source': 'test'}
 actions = {'marketing_actions': [{'title':'限时套餐','reason':'高信号','expected_metric':'+15%'}]}
 card = format_daily_report(trend, actions)
@@ -905,7 +905,7 @@ Expected: card title + alert title + `Formatters OK`
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/
 git commit -m "feat(ops-channel): add daily_report + alert_card formatters"
 ```
 
@@ -914,7 +914,7 @@ git commit -m "feat(ops-channel): add daily_report + alert_card formatters"
 ### Task 8: Ops Runner — Agent 层任务路由器
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/ops_runner.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/ops_runner.py`
 
 - [ ] **Step 1: Write ops_runner.py**
 
@@ -1015,7 +1015,7 @@ async def _run_manual_ops(ctx: dict) -> dict[str, Any]:
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.ops_runner import run_job
+from packages.harness.nailflow.tools.nail.ops_channel.ops_runner import run_job
 print('OpsRunner imported OK')
 "
 ```
@@ -1023,7 +1023,7 @@ print('OpsRunner imported OK')
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/ops_runner.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/ops_runner.py
 git commit -m "feat(ops-channel): add ops_runner — task router for daily_report/trend_alert/manual_ops"
 ```
 
@@ -1032,7 +1032,7 @@ git commit -m "feat(ops-channel): add ops_runner — task router for daily_repor
 ### Task 9: Ops Scheduler — Cron 层主进程
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/ops_scheduler.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/ops_scheduler.py`
 
 - [ ] **Step 1: Write ops_scheduler.py**
 
@@ -1146,7 +1146,7 @@ class OpsScheduler:
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.ops_scheduler import OpsScheduler
+from packages.harness.nailflow.tools.nail.ops_channel.ops_scheduler import OpsScheduler
 print('OpsScheduler imported OK')
 "
 ```
@@ -1154,7 +1154,7 @@ print('OpsScheduler imported OK')
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/ops_scheduler.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/ops_scheduler.py
 git commit -m "feat(ops-channel): add ops_scheduler — cron trigger → agent execute → delivery loop"
 ```
 
@@ -1166,7 +1166,7 @@ git commit -m "feat(ops-channel): add ops_scheduler — cron trigger → agent e
 - Modify: `backend/app/gateway/app.py` — lifespan section
 - Modify: `config.yaml` — add `nail_ops_channel` config
 - Modify: `backend/app/gateway/routers/nail_ops.py` — add endpoints
-- Modify: `backend/packages/harness/deerflow/tools/nail/ops_channel/__init__.py` — public API
+- Modify: `backend/packages/harness/nailflow/tools/nail/ops_channel/__init__.py` — public API
 
 - [ ] **Step 1: Update __init__.py**
 
@@ -1228,11 +1228,11 @@ In `backend/app/gateway/app.py`, replace lines 201-206 and the yield+shutdown wi
                 pass
 
             if ops_cfg.get("enabled", True):
-                from packages.harness.deerflow.tools.nail.ops_channel import (
+                from packages.harness.nailflow.tools.nail.ops_channel import (
                     OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec,
                     AdapterRegistry, ChannelRouter, run_job,
                 )
-                import packages.harness.deerflow.tools.nail.ops_channel.job_store as _js
+                import packages.harness.nailflow.tools.nail.ops_channel.job_store as _js
 
                 feishu_cfg = ops_cfg.get("delivery", {}).get("channels", {}).get("feishu", {})
                 feishu_webhook = feishu_cfg.get("config", {}).get("webhook_url", "") if feishu_cfg.get("enabled") else ""
@@ -1292,7 +1292,7 @@ Append to `backend/app/gateway/routers/nail_ops.py`:
 @require_auth
 async def trigger_ops_job(job_id: str, request: Request):
     """手动触发运营 Job。"""
-    from packages.harness.deerflow.tools.nail.ops_channel import OpsScheduler
+    from packages.harness.nailflow.tools.nail.ops_channel import OpsScheduler
     sched = getattr(request.app.state, "ops_scheduler", None)
     if sched is None:
         raise HTTPException(status_code=503, detail="OpsScheduler not running")
@@ -1305,7 +1305,7 @@ async def trigger_ops_job(job_id: str, request: Request):
 @router.get("/ops/messages")
 async def get_ops_messages(since: float = 0):
     """拉取 WebPush 消息（HTTP 轮询 / WebSocket 降级）。"""
-    from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.web_push import get_recent_messages
+    from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.web_push import get_recent_messages
     return {"messages": get_recent_messages(since)}
 ```
 
@@ -1313,7 +1313,7 @@ async def get_ops_messages(since: float = 0):
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel import OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec, AdapterRegistry, ChannelRouter, run_job
+from packages.harness.nailflow.tools.nail.ops_channel import OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec, AdapterRegistry, ChannelRouter, run_job
 print('Full integration import OK')
 "
 ```
@@ -1323,18 +1323,18 @@ print('Full integration import OK')
 ```bash
 cd backend && uv run python -c "
 import asyncio
-from packages.harness.deerflow.tools.nail.ops_channel import OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec, AdapterRegistry, ChannelRouter, run_job
-import packages.harness.deerflow.tools.nail.ops_channel.job_store as _js
+from packages.harness.nailflow.tools.nail.ops_channel import OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec, AdapterRegistry, ChannelRouter, run_job
+import packages.harness.nailflow.tools.nail.ops_channel.job_store as _js
 
 job = OpsJob(job_id='test_report', trigger=Trigger(type=TriggerType.CRON, cron_expr='0 9 * * *'), task=TaskSpec(type='daily_report'), delivery=DeliverySpec(targets=[{'channel':'web_push','recipient':'all'}]))
 registry = AdapterRegistry()
-registry.load_from_config({'web_push': {'adapter': 'packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.web_push:WebPushAdapter', 'enabled': True, 'config': {}}})
+registry.load_from_config({'web_push': {'adapter': 'packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.web_push:WebPushAdapter', 'enabled': True, 'config': {}}})
 router = ChannelRouter(registry)
 scheduler = OpsScheduler(runner=run_job, router=router, job_store=_js, jobs=[job])
 # 手动触发一次
 scheduler.trigger('test_report', {'trigger_type': 'manual', 'days': 1})
 await asyncio.sleep(2)
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.web_push import get_recent_messages
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.web_push import get_recent_messages
 msgs = get_recent_messages()
 print(f'Messages in web_push inbox: {len(msgs)}')
 for m in msgs:
@@ -1347,7 +1347,7 @@ Expected: report with title in web_push inbox
 - [ ] **Step 7: Commit**
 
 ```bash
-git add backend/app/gateway/app.py config.yaml backend/app/gateway/routers/nail_ops.py backend/packages/harness/deerflow/tools/nail/ops_channel/__init__.py
+git add backend/app/gateway/app.py config.yaml backend/app/gateway/routers/nail_ops.py backend/packages/harness/nailflow/tools/nail/ops_channel/__init__.py
 git commit -m "feat(ops-channel): integrate OpsScheduler into app.py lifespan + config + API endpoints"
 ```
 
@@ -1355,7 +1355,7 @@ git commit -m "feat(ops-channel): integrate OpsScheduler into app.py lifespan + 
 
 ## Verification Checklist (post-implementation)
 
-- [ ] `cd backend && uv run python -c "from packages.harness.deerflow.tools.nail.ops_channel import *"` — all imports clean
+- [ ] `cd backend && uv run python -c "from packages.harness.nailflow.tools.nail.ops_channel import *"` — all imports clean
 - [ ] `ops_job_runs` table exists after `init_nail_tables()`
 - [ ] Manual trigger via `POST /api/nail/ops/trigger/daily_report` returns 200
 - [ ] `GET /api/nail/ops/messages` returns pushed messages from web_push inbox

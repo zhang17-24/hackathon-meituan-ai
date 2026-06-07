@@ -1,0 +1,114 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-07T14:40:37.408972Z",
+  "user": {
+    "workContext": {
+      "summary": "用户从事美甲行业的运营或管理工作，使用 nailflow 智能运营助手进行业务数据分析。主要关注美甲款式的试戴、收藏、下单等转化数据以及小红书等外部市场趋势。",
+      "updatedAt": "2026-06-07T14:19:38.645083Z"
+    },
+    "personalContext": {
+      "summary": "主要使用中文进行沟通。对美甲审美趋势有较高关注度，偏好温柔氛围感、精致细节感、浅色系和光泽感等风格。",
+      "updatedAt": "2026-06-07T14:19:38.645083Z"
+    },
+    "topOfMind": {
+      "summary": "用户当前正将其 nailflow 系统的自动化压测推向更为极端的边界。在本次长会话中，用户在短暂的“你好”与“查询运营数据”交替测试后，实施了单次会话内连续近80次纯粹发送“你好”的超大规模极限轰炸。这表明其测试脚本正在深度验证系统在面临超长连续重复请求、上下文窗口溢出截断、以及防刷限流机制触发时的鲁棒性、资源隔离能力和响应降级策略。",
+      "updatedAt": "2026-06-07T14:40:37.407729Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "用户近期频繁使用 nailflow 助手查询美甲运营数据，分析近7天的款式表现，重点追踪了星空猫眼等10款美甲的转化情况，并制定了相应的运营调整策略。更为显著的是，用户在近期交互中持续进行极大规模的指令循环压测。除了“你好”与“查询运营数据”的长序列交替发送外，用户还在单次会话内实施了连续近80次无间断发送“你好”的极端轰炸测试。这强烈表明其正在深度调试自动化测试工具，全面验证系统接口在极端单一指令重复、超长上下文堆积、防刷限流机制及响应降级策略下的稳定性与防崩溃能力。",
+      "updatedAt": "2026-06-07T14:40:37.407729Z"
+    },
+    "earlierContext": {
+      "summary": "用户建立了依赖数据驱动的美甲款式管理工作流，习惯通过追踪信号量、收藏率和下单率等核心指标来评估款式热度，并结合外部市场趋势（如小红书）进行交叉验证。",
+      "updatedAt": "2026-06-07T14:19:38.645083Z"
+    },
+    "longTermBackground": {
+      "summary": "用户是美甲行业的运营或管理人员，负责美甲款式的生命周期管理、营销方案制定和每日运营数据复盘，注重数据洞察与业务策略的结合。",
+      "updatedAt": "2026-06-07T14:19:38.645083Z"
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_528c07b4",
+      "content": "用户是 nailflow 智能运营助手的使用者，从事美甲行业的运营或管理工作。",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-07T14:19:38.645083Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_c86d9bd9",
+      "content": "用户关注的核心业务指标包括：追踪款式数、试戴次数、收藏次数、下单次数、搜索次数、活跃用户数及转化率。",
+      "category": "knowledge",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T14:19:38.645083Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_febdd6b6",
+      "content": "用户管理的美甲款式包括：星空猫眼(cat-eye-starry)、闪粉玫瑰(glitter-rose)、渐变日落(gradient-sunset)、纯色裸色(solid-nude)、春日花卉(spring-floral)、丝绒海军蓝(velvet-navy)、海洋波纹(ocean-wave)、霓虹珊瑚(neon-coral)等。",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T14:19:38.645083Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_ef428039",
+      "content": "用户习惯使用中文与助手交流，并关注小红书等外部平台的美甲市场趋势。",
+      "category": "preference",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T14:19:38.645083Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_6cf72778",
+      "content": "用户当前重点关注的运营问题是解决'春日花卉(spring-floral)'款式高收藏率(50%)但零下单的转化瓶颈。",
+      "category": "goal",
+      "confidence": 0.85,
+      "createdAt": "2026-06-07T14:19:38.645083Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_edf5d3bc",
+      "content": "用户管理的美甲款式列表中还包括 marble-jade (大理石翡翠)，目前处于观察状态。",
+      "category": "context",
+      "confidence": 0.8,
+      "createdAt": "2026-06-07T14:30:28.702227Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_78fecc25",
+      "content": "用户在交互中持续、高频地循环发送完全相同的指令（如'@_user_1 你好'、'@_user_1 查询运营数据'），高度确认其正在进行系统接口自动化测试、压测或脚本调试。",
+      "category": "behavior",
+      "confidence": 0.95,
+      "createdAt": "2026-06-07T14:34:49.603602Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_e3e0d929",
+      "content": "用户的自动化压测行为包含对单一基础指令（如“你好”）的极限连续循环发送（单次会话内数十次），旨在测试系统的响应一致性、防刷机制及上下文状态保持能力。",
+      "category": "behavior",
+      "confidence": 0.95,
+      "createdAt": "2026-06-07T14:37:15.131180Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_b0190e69",
+      "content": "用户的自动化压测脚本已演进出更复杂的混合负载模式，包含“你好”与“查询运营数据”两种指令的长序列交替发送，旨在测试系统在多轮上下文切换和高频请求交织下的状态保持与资源管理能力。",
+      "category": "behavior",
+      "confidence": 0.95,
+      "createdAt": "2026-06-07T14:37:56.535720Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_04ab540d",
+      "content": "用户的自动化压测脚本包含单次会话内连续数十次至上百次纯粹发送基础指令（如“你好”）的极限轰炸模式，旨在深度测试系统的防刷限流机制、超长上下文窗口处理能力、内存泄漏防护及响应降级策略。",
+      "category": "behavior",
+      "confidence": 0.95,
+      "createdAt": "2026-06-07T14:38:42.674053Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    }
+  ]
+}

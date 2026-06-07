@@ -34,7 +34,7 @@
 ### Task 1: Add feishu_sessions table to database
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/base.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/base.py`
 
 - [ ] **Step 1: Add feishu_sessions DDL to init_nail_tables()**
 
@@ -52,7 +52,7 @@ Find the `init_nail_tables()` function in `base.py`. After the existing `skill_e
 
 - [ ] **Step 2: Run init to verify table creation**
 
-Run: `cd backend && python -c "from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables(); print('OK')"`
+Run: `cd backend && python -c "from packages.harness.nailflow.tools.nail.base import init_nail_tables; init_nail_tables(); print('OK')"`
 Expected: `OK` (no errors)
 
 - [ ] **Step 3: Verify table exists in SQLite**
@@ -63,7 +63,7 @@ Expected: shows CREATE TABLE feishu_sessions
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/base.py
+git add backend/packages/harness/nailflow/tools/nail/base.py
 git commit -m "feat: add feishu_sessions table for bidirectional chat session mapping
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -74,7 +74,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 2: Create feishu_session.py — session CRUD
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/feishu_session.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/feishu_session.py`
 
 - [ ] **Step 1: Write feishu_session.py**
 
@@ -163,13 +163,13 @@ async def _async_create() -> str:
 
 - [ ] **Step 2: Verify import works**
 
-Run: `cd backend && python -c "from packages.harness.deerflow.tools.nail.ops_channel.feishu_session import get_or_create_thread, get_thread_id; print('import OK')"`
+Run: `cd backend && python -c "from packages.harness.nailflow.tools.nail.ops_channel.feishu_session import get_or_create_thread, get_thread_id; print('import OK')"`
 Expected: `import OK`
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/feishu_session.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/feishu_session.py
 git commit -m "feat: add feishu_session.py — chat_id ↔ thread_id mapping CRUD
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -180,7 +180,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 3: Create feishu_reply.py — message sending via Feishu Open API
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/feishu_reply.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/feishu_reply.py`
 
 - [ ] **Step 1: Write feishu_reply.py**
 
@@ -297,13 +297,13 @@ def _split_long_text(text: str) -> list[str]:
 
 - [ ] **Step 2: Verify import works**
 
-Run: `cd backend && python -c "from packages.harness.deerflow.tools.nail.ops_channel.feishu_reply import FeishuReplySender; print('import OK')"`
+Run: `cd backend && python -c "from packages.harness.nailflow.tools.nail.ops_channel.feishu_reply import FeishuReplySender; print('import OK')"`
 Expected: `import OK`
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/feishu_reply.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/feishu_reply.py
 git commit -m "feat: add feishu_reply.py — Open API message reply/send with token management
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -314,7 +314,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 4: Create feishu_monitor.py — WebSocket event loop
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/feishu_monitor.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/feishu_monitor.py`
 
 - [ ] **Step 1: Write feishu_monitor.py**
 
@@ -535,7 +535,7 @@ If missing: `uv add websockets`
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/feishu_monitor.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/feishu_monitor.py
 git commit -m "feat: add feishu_monitor.py — WebSocket event loop for bidirectional chat
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -563,7 +563,7 @@ In `app.py`, after the OpsScheduler startup block (line ~255), before `yield`, a
                 pass
 
             if feishu_cfg.get("enabled", False) and feishu_cfg.get("app_id") and feishu_cfg.get("app_secret"):
-                from packages.harness.deerflow.tools.nail.ops_channel.feishu_monitor import FeishuMonitor
+                from packages.harness.nailflow.tools.nail.ops_channel.feishu_monitor import FeishuMonitor
                 import asyncio as _asyncio
 
                 _feishu_monitor = FeishuMonitor(
@@ -609,7 +609,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 6: Add proactive_chat support to ops_runner.py
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/ops_channel/ops_runner.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/ops_channel/ops_runner.py`
 
 - [ ] **Step 1: Add _run_proactive_chat() and route it in run_job()**
 
@@ -707,7 +707,7 @@ async def _run_proactive_chat(job: OpsJob, ctx: dict) -> dict[str, Any]:
 - [ ] **Step 2: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/ops_runner.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/ops_runner.py
 git commit -m "feat: add proactive_chat task type to ops_runner for cron-triggered agent conversations
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -718,7 +718,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 7: Register proactive_chat jobs in ops_scheduler.py
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/ops_channel/ops_scheduler.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/ops_channel/ops_scheduler.py`
 
 - [ ] **Step 1: Add proactive_chat job registration**
 
@@ -757,7 +757,7 @@ In `start()`, after the existing cron job loop (after the `self._apscheduler.add
 - [ ] **Step 2: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/ops_scheduler.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/ops_scheduler.py
 git commit -m "feat: register proactive_chat jobs from config in ops_scheduler
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -768,7 +768,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 8: Create xhs_client.py — XHS-Downloader wrapper + search
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/xhs_client.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/xhs_client.py`
 
 - [ ] **Step 1: Install XHS-Downloader as editable package**
 
@@ -917,7 +917,7 @@ def _parse_int(val: str) -> int:
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/xhs_client.py
+git add backend/packages/harness/nailflow/tools/nail/xhs_client.py
 git commit -m "feat: add xhs_client.py — XHS-Downloader wrapper with search engine URL discovery
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -928,7 +928,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 9: Create xiaohongshu_search.py — the @tool
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/xiaohongshu_search.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/xiaohongshu_search.py`
 
 - [ ] **Step 1: Write xiaohongshu_search.py**
 
@@ -1019,7 +1019,7 @@ def xiaohongshu_search_tool(
 - [ ] **Step 2: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/xiaohongshu_search.py
+git add backend/packages/harness/nailflow/tools/nail/xiaohongshu_search.py
 git commit -m "feat: add xiaohongshu_search_tool — LangChain tool for XHS post search
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -1030,7 +1030,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 10: Register xiaohongshu_search_tool in config and registries
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/router_config.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/router_config.py`
 - Modify: `backend/app/gateway/routers/nail_config.py`
 - Modify: `backend/app/gateway/routers/nail_dev.py`
 
@@ -1055,7 +1055,7 @@ In `_NAIL_TOOL_META`, add after the `preference_rag_tool` entry:
 In `_TOOL_REGISTRY`, add:
 
 ```python
-    "xiaohongshu_search_tool":  "deerflow.tools.nail.xiaohongshu_search:xiaohongshu_search_tool",
+    "xiaohongshu_search_tool":  "nailflow.tools.nail.xiaohongshu_search:xiaohongshu_search_tool",
 ```
 
 In `_TOOL_DESCRIPTIONS`, add:
@@ -1069,13 +1069,13 @@ In `_TOOL_DESCRIPTIONS`, add:
 
 - [ ] **Step 4: Verify imports**
 
-Run: `cd backend && python -c "from packages.harness.deerflow.tools.nail.xiaohongshu_search import xiaohongshu_search_tool; print('import OK')"`
+Run: `cd backend && python -c "from packages.harness.nailflow.tools.nail.xiaohongshu_search import xiaohongshu_search_tool; print('import OK')"`
 Expected: `import OK`
 
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/router_config.py backend/app/gateway/routers/nail_config.py backend/app/gateway/routers/nail_dev.py
+git add backend/packages/harness/nailflow/tools/nail/router_config.py backend/app/gateway/routers/nail_config.py backend/app/gateway/routers/nail_dev.py
 git commit -m "feat: register xiaohongshu_search_tool in capability registry, tool meta, and dev registry
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -1095,7 +1095,7 @@ In the `tools:` section of config.yaml, add after the last `nail_ops` group tool
 ```yaml
   - name: xiaohongshu_search_tool
     group: nail_ops
-    use: deerflow.tools.nail.xiaohongshu_search:xiaohongshu_search_tool
+    use: nailflow.tools.nail.xiaohongshu_search:xiaohongshu_search_tool
 ```
 
 - [ ] **Step 2: Add config sections**
@@ -1131,7 +1131,7 @@ Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
 ### Task 12: Update Agent prompts for XHS search + Feishu chat
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/agents/lead_agent/prompt.py`
+- Modify: `backend/packages/harness/nailflow/agents/lead_agent/prompt.py`
 
 - [ ] **Step 1: Update _NAIL_ROLE_PREFIX["ops"]**
 
@@ -1168,7 +1168,7 @@ Append the XHS search guideline to the `"ops"` page mode prefix (after the exist
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/agents/lead_agent/prompt.py
+git add backend/packages/harness/nailflow/agents/lead_agent/prompt.py
 git commit -m "feat: update ops agent prompts — Feishu bidirectional chat + XHS search guidance
 
 Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>"
@@ -1199,11 +1199,11 @@ Expected: All existing tests pass
 
 ```bash
 cd backend && python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.feishu_session import get_or_create_thread, get_thread_id
-from packages.harness.deerflow.tools.nail.ops_channel.feishu_reply import FeishuReplySender
-from packages.harness.deerflow.tools.nail.ops_channel.feishu_monitor import FeishuMonitor
-from packages.harness.deerflow.tools.nail.xhs_client import search_posts
-from packages.harness.deerflow.tools.nail.xiaohongshu_search import xiaohongshu_search_tool
+from packages.harness.nailflow.tools.nail.ops_channel.feishu_session import get_or_create_thread, get_thread_id
+from packages.harness.nailflow.tools.nail.ops_channel.feishu_reply import FeishuReplySender
+from packages.harness.nailflow.tools.nail.ops_channel.feishu_monitor import FeishuMonitor
+from packages.harness.nailflow.tools.nail.xhs_client import search_posts
+from packages.harness.nailflow.tools.nail.xiaohongshu_search import xiaohongshu_search_tool
 print('All imports OK')
 "
 ```
@@ -1213,7 +1213,7 @@ Expected: `All imports OK`
 
 ```bash
 cd backend && python -c "
-from deerflow.config.app_config import AppConfig
+from nailflow.config.app_config import AppConfig
 cfg = AppConfig.from_file()
 print('Config loaded OK, nail_feishu:', hasattr(cfg, 'nail_feishu'), 'nail_xiaohongshu:', hasattr(cfg, 'nail_xiaohongshu'))
 "

@@ -6,10 +6,10 @@ import os
 import secrets
 from types import SimpleNamespace
 
-from deerflow.runtime.user_context import DEFAULT_USER_ID
+from nailflow.runtime.user_context import DEFAULT_USER_ID
 
-INTERNAL_AUTH_HEADER_NAME = "X-DeerFlow-Internal-Token"
-INTERNAL_AUTH_ENV_VAR = "DEER_FLOW_INTERNAL_AUTH_TOKEN"
+INTERNAL_AUTH_HEADER_NAME = "X-nailflow-Internal-Token"
+INTERNAL_AUTH_ENV_VAR = "NAILFLOW_INTERNAL_AUTH_TOKEN"
 
 
 def _load_internal_auth_token() -> str:

@@ -203,7 +203,7 @@ KNOWLEDGE_TOPICS = [
 
 def _http_get_json(url: str) -> dict:
     context = ssl.create_default_context()
-    req = urllib.request.Request(url, headers={"User-Agent": "NailFlowSeedFetcher/1.0"})
+    req = urllib.request.Request(url, headers={"User-Agent": "nailflowSeedFetcher/1.0"})
     with urllib.request.urlopen(req, context=context, timeout=30) as resp:
         return json.loads(resp.read().decode("utf-8"))
 
@@ -213,7 +213,7 @@ def _download_file(url: str, dest: Path, retries: int = 4) -> None:
     last_error = None
     for attempt in range(retries):
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "NailFlowSeedFetcher/1.0"})
+            req = urllib.request.Request(url, headers={"User-Agent": "nailflowSeedFetcher/1.0"})
             with urllib.request.urlopen(req, context=context, timeout=60) as resp:
                 dest.write_bytes(resp.read())
             return
@@ -240,7 +240,7 @@ def write_knowledge_files() -> None:
     lines = [
         "# 美甲专业知识种子库",
         "",
-        "该文件用于补充 NailFlow 的美甲 RAG 知识侧数据，内容整理自公开网页，便于后续转成标签体系、门店 SOP 和 prompt 增强。",
+        "该文件用于补充 nailflow 的美甲 RAG 知识侧数据，内容整理自公开网页，便于后续转成标签体系、门店 SOP 和 prompt 增强。",
         "",
     ]
     for topic in KNOWLEDGE_TOPICS:

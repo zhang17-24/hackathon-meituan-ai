@@ -13,7 +13,7 @@
 ### Task 1: Install dependencies + FileMessage 类型
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/messages/base.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/messages/base.py`
 
 - [ ] **Step 1: Install pip dependencies**
 
@@ -63,7 +63,7 @@ class MessageKind(Enum):
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.messages.base import FileMessage, MessageKind
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.messages.base import FileMessage, MessageKind
 m = FileMessage(b'hello', 'test.txt', 'text/plain')
 assert m.kind == MessageKind.FILE
 assert m.filename == 'test.txt'
@@ -75,7 +75,7 @@ Expected: `FileMessage OK`
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/messages/base.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/messages/base.py
 git commit -m "feat(pdf-report): add FileMessage type + install matplotlib/seaborn/reportlab"
 ```
 
@@ -84,14 +84,14 @@ git commit -m "feat(pdf-report): add FileMessage type + install matplotlib/seabo
 ### Task 2: report_data.py — 数据聚合层
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report/__init__.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report/report_data.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report/__init__.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report/report_data.py`
 
 - [ ] **Step 1: Create directory**
 
 ```bash
-mkdir -p backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report
-touch backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report/__init__.py
+mkdir -p backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report
+touch backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report/__init__.py
 ```
 
 - [ ] **Step 2: Write report_data.py**
@@ -337,7 +337,7 @@ def _get_strategy_text(days: int) -> str:
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import gather_report_data, ReportData
+from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import gather_report_data, ReportData
 r = gather_report_data(days=1)
 print(f'Report: date={r.date}, metrics={r.metrics.total_signals} signals, {len(r.trend_series)} trend points')
 print('report_data OK')
@@ -348,7 +348,7 @@ Expected: `Report: date=... metrics=0 signals, ... report_data OK`
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report/
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report/
 git commit -m "feat(pdf-report): add report_data.py — SQL aggregation + LLM strategy"
 ```
 
@@ -357,7 +357,7 @@ git commit -m "feat(pdf-report): add report_data.py — SQL aggregation + LLM st
 ### Task 3: charts.py — matplotlib 图表渲染
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report/charts.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report/charts.py`
 
 - [ ] **Step 1: Write charts.py**
 
@@ -522,7 +522,7 @@ def render_behavior_bar(distribution: list["BehaviorPct"]) -> BytesIO | None:
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_trend_chart, render_style_donut, render_behavior_bar
+from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_trend_chart, render_style_donut, render_behavior_bar
 print('charts.py imported OK')
 "
 ```
@@ -531,7 +531,7 @@ Expected: `charts.py imported OK`
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report/charts.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report/charts.py
 git commit -m "feat(pdf-report): add charts.py — matplotlib trend/ donut/ bar charts"
 ```
 
@@ -540,7 +540,7 @@ git commit -m "feat(pdf-report): add charts.py — matplotlib trend/ donut/ bar 
 ### Task 4: builder.py — ReportLab PDF 拼装
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report/builder.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report/builder.py`
 
 - [ ] **Step 1: Write builder.py**
 
@@ -788,7 +788,7 @@ def _build_fallback_pdf(report: "ReportData", error_msg: str) -> bytes:
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
+from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
 print('builder.py imported OK')
 "
 ```
@@ -798,8 +798,8 @@ Expected: `builder.py imported OK`
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import ReportData, Metrics
-from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
+from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import ReportData, Metrics
+from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
 r = ReportData(date='2026-06-07', days=7, strategy_text='测试策略文本\n第二行')
 pdf = build_daily_report_pdf(r, {})
 assert len(pdf) > 100, f'PDF too small: {len(pdf)} bytes'
@@ -813,7 +813,7 @@ Expected: `PDF generated: ... bytes`
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/formatters/pdf_report/builder.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/formatters/pdf_report/builder.py
 git commit -m "feat(pdf-report): add builder.py — ReportLab PDF assembly with fallback"
 ```
 
@@ -822,7 +822,7 @@ git commit -m "feat(pdf-report): add builder.py — ReportLab PDF assembly with 
 ### Task 5: file_adapter.py — 文件输出适配器
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/file_adapter.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/file_adapter.py`
 
 - [ ] **Step 1: Write file_adapter.py**
 
@@ -880,7 +880,7 @@ class FileAdapter(AbstractChannelAdapter):
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
 a = FileAdapter(config={'output_dir': '/tmp/test_reports'})
 assert a.channel_id == 'file'
 print('file_adapter OK')
@@ -890,7 +890,7 @@ print('file_adapter OK')
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/delivery/adapters/file_adapter.py
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/delivery/adapters/file_adapter.py
 git commit -m "feat(pdf-report): add file_adapter.py — file output channel adapter"
 ```
 
@@ -899,8 +899,8 @@ git commit -m "feat(pdf-report): add file_adapter.py — file output channel ada
 ### Task 6: Integration — ops_runner + scheduler + app.py + nail_ops.py + config
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/ops_channel/ops_runner.py`
-- Modify: `backend/packages/harness/deerflow/tools/nail/ops_channel/ops_scheduler.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/ops_channel/ops_runner.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/ops_channel/ops_scheduler.py`
 - Modify: `backend/app/gateway/app.py`
 - Modify: `backend/app/gateway/routers/nail_ops.py`
 - Modify: `config.yaml`
@@ -1025,7 +1025,7 @@ In `config.yaml`, under `nail_ops_channel.delivery.channels`, add after `web_pus
 
 ```yaml
       file:
-        adapter: "packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.file_adapter:FileAdapter"
+        adapter: "packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter:FileAdapter"
         enabled: true
         config:
           output_dir: "data/reports"
@@ -1035,9 +1035,9 @@ In `config.yaml`, under `nail_ops_channel.delivery.channels`, add after `web_pus
 
 ```bash
 cd backend && uv run python -c "
-from packages.harness.deerflow.tools.nail.ops_channel import OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec, AdapterRegistry, ChannelRouter, run_job
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
-from packages.harness.deerflow.tools.nail.ops_channel.delivery.messages.base import FileMessage
+from packages.harness.nailflow.tools.nail.ops_channel import OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec, AdapterRegistry, ChannelRouter, run_job
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
+from packages.harness.nailflow.tools.nail.ops_channel.delivery.messages.base import FileMessage
 print('Full integration import OK')
 "
 ```
@@ -1049,8 +1049,8 @@ Expected: `Full integration import OK`
 cd backend && uv run python -c "
 import asyncio, os
 os.environ['FEISHU_OPS_WEBHOOK_URL'] = 'https://example.test'
-from packages.harness.deerflow.tools.nail.ops_channel import OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec, AdapterRegistry, ChannelRouter, run_job
-import packages.harness.deerflow.tools.nail.ops_channel.job_store as _js
+from packages.harness.nailflow.tools.nail.ops_channel import OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec, AdapterRegistry, ChannelRouter, run_job
+import packages.harness.nailflow.tools.nail.ops_channel.job_store as _js
 
 job = OpsJob(
     job_id='pdf_test', trigger=Trigger(type=TriggerType.CRON, cron_expr='0 9 * * *'),
@@ -1062,8 +1062,8 @@ job = OpsJob(
 )
 registry = AdapterRegistry()
 registry.load_from_config({
-    'web_push': {'adapter': 'packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.web_push:WebPushAdapter', 'enabled': True, 'config': {}},
-    'file': {'adapter': 'packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.file_adapter:FileAdapter', 'enabled': True, 'config': {'output_dir': '/tmp/nailops_test_reports'}},
+    'web_push': {'adapter': 'packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.web_push:WebPushAdapter', 'enabled': True, 'config': {}},
+    'file': {'adapter': 'packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter:FileAdapter', 'enabled': True, 'config': {'output_dir': '/tmp/nailops_test_reports'}},
 })
 router = ChannelRouter(registry)
 scheduler = OpsScheduler(runner=run_job, router=router, job_store=_js, jobs=[job])
@@ -1091,8 +1091,8 @@ Expected: `PDFs generated: 1 ... Full pipeline OK`
 - [ ] **Step 8: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/ops_channel/ops_runner.py \
-        backend/packages/harness/deerflow/tools/nail/ops_channel/ops_scheduler.py \
+git add backend/packages/harness/nailflow/tools/nail/ops_channel/ops_runner.py \
+        backend/packages/harness/nailflow/tools/nail/ops_channel/ops_scheduler.py \
         backend/app/gateway/app.py \
         backend/app/gateway/routers/nail_ops.py \
         config.yaml
@@ -1136,26 +1136,26 @@ def _set_fake_feishu_env():
 
 @pytest.fixture
 def ensure_tables():
-    from packages.harness.deerflow.tools.nail.base import init_nail_tables
+    from packages.harness.nailflow.tools.nail.base import init_nail_tables
     init_nail_tables()
 
 
 class TestReportData:
     def test_report_data_defaults(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import ReportData
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import ReportData
         r = ReportData()
         assert r.days == 7
         assert r.metrics.total_signals == 0
 
     def test_gather_report_data_no_signals(self, ensure_tables):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import gather_report_data
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import gather_report_data
         r = gather_report_data(days=1)
         assert r.date != ""
         assert r.metrics.total_signals == 0
         assert r.strategy_text != ""  # 至少有降级文本
 
     def test_dataclasses(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import (
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import (
             Metrics, TrendPoint, StyleRank, CategoryPct, BehaviorPct,
         )
         m = Metrics(total_signals=100, hot_count=3, cold_count=2, active_users=42)
@@ -1168,12 +1168,12 @@ class TestReportData:
 
 class TestCharts:
     def test_render_trend_empty(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_trend_chart
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_trend_chart
         assert render_trend_chart([]) is None
 
     def test_render_trend_with_data(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_trend_chart
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import TrendPoint
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_trend_chart
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import TrendPoint
         data = [TrendPoint(date_label="06-01", signal_count=100, save_count=30),
                 TrendPoint(date_label="06-02", signal_count=120, save_count=40)]
         buf = render_trend_chart(data)
@@ -1182,12 +1182,12 @@ class TestCharts:
         assert png_header[:4] == b'\x89PNG'
 
     def test_render_style_donut_empty(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_style_donut
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_style_donut
         assert render_style_donut([]) is None
 
     def test_render_behavior_bar_with_data(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_behavior_bar
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import BehaviorPct
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.charts import render_behavior_bar
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import BehaviorPct
         data = [BehaviorPct(label="收藏", count=50), BehaviorPct(label="订单", count=30)]
         buf = render_behavior_bar(data)
         assert buf is not None
@@ -1196,21 +1196,21 @@ class TestCharts:
 
 class TestBuilder:
     def test_build_pdf_empty_report(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import ReportData
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import ReportData
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
         r = ReportData(date="2026-06-07", days=7, strategy_text="测试")
         pdf = build_daily_report_pdf(r, {})
         assert pdf[:5] == b'%PDF-'
         assert len(pdf) > 200
 
     def test_build_pdf_with_charts(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import (
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import (
             ReportData, Metrics, TrendPoint, StyleRank, CategoryPct, BehaviorPct,
         )
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.charts import (
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.charts import (
             render_trend_chart, render_style_donut, render_behavior_bar,
         )
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
 
         r = ReportData(
             date="2026-06-07",
@@ -1237,8 +1237,8 @@ class TestBuilder:
         assert len(pdf) > 10000, f"Expected >10KB PDF, got {len(pdf)}"
 
     def test_fallback_pdf(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.report_data import ReportData
-        from packages.harness.deerflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.report_data import ReportData
+        from packages.harness.nailflow.tools.nail.ops_channel.formatters.pdf_report.builder import build_daily_report_pdf
         # Trigger fallback by passing a non-chart object
         pdf = build_daily_report_pdf(ReportData(date="test", strategy_text="fallback test"), {"trend": "not_bytesio"})
         assert pdf[:5] == b'%PDF-'
@@ -1246,17 +1246,17 @@ class TestBuilder:
 
 class TestFileAdapter:
     def test_channel_id_and_caps(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
-        from packages.harness.deerflow.tools.nail.ops_channel.delivery.base import ChannelCapability as CC
+        from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
+        from packages.harness.nailflow.tools.nail.ops_channel.delivery.base import ChannelCapability as CC
         a = FileAdapter()
         assert a.channel_id == "file"
         assert CC.FILE in a.capabilities
 
     @pytest.mark.asyncio
     async def test_save_file(self, tmp_path):
-        from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
-        from packages.harness.deerflow.tools.nail.ops_channel.delivery.base import DeliveryTarget
-        from packages.harness.deerflow.tools.nail.ops_channel.delivery.messages.base import FileMessage
+        from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
+        from packages.harness.nailflow.tools.nail.ops_channel.delivery.base import DeliveryTarget
+        from packages.harness.nailflow.tools.nail.ops_channel.delivery.messages.base import FileMessage
 
         out_dir = tmp_path / "reports"
         a = FileAdapter(config={"output_dir": str(out_dir)})
@@ -1269,9 +1269,9 @@ class TestFileAdapter:
 
     @pytest.mark.asyncio
     async def test_reject_non_file_message(self):
-        from packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
-        from packages.harness.deerflow.tools.nail.ops_channel.delivery.base import DeliveryTarget
-        from packages.harness.deerflow.tools.nail.ops_channel.delivery.messages.base import TextMessage
+        from packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter import FileAdapter
+        from packages.harness.nailflow.tools.nail.ops_channel.delivery.base import DeliveryTarget
+        from packages.harness.nailflow.tools.nail.ops_channel.delivery.messages.base import TextMessage
 
         a = FileAdapter()
         result = await a.send(DeliveryTarget(channel="file", recipient="/tmp"), TextMessage("hi"))
@@ -1282,11 +1282,11 @@ class TestFileAdapter:
 class TestEndToEndPDFPipeline:
     @pytest.mark.asyncio
     async def test_full_pipeline_pdf_generated(self, ensure_tables, tmp_path):
-        from packages.harness.deerflow.tools.nail.ops_channel import (
+        from packages.harness.nailflow.tools.nail.ops_channel import (
             OpsScheduler, OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec,
             AdapterRegistry, ChannelRouter, run_job,
         )
-        import packages.harness.deerflow.tools.nail.ops_channel.job_store as _js
+        import packages.harness.nailflow.tools.nail.ops_channel.job_store as _js
 
         out_dir = tmp_path / "e2e_reports"
 
@@ -1302,11 +1302,11 @@ class TestEndToEndPDFPipeline:
         registry = AdapterRegistry()
         registry.load_from_config({
             "web_push": {
-                "adapter": "packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.web_push:WebPushAdapter",
+                "adapter": "packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.web_push:WebPushAdapter",
                 "enabled": True, "config": {},
             },
             "file": {
-                "adapter": "packages.harness.deerflow.tools.nail.ops_channel.delivery.adapters.file_adapter:FileAdapter",
+                "adapter": "packages.harness.nailflow.tools.nail.ops_channel.delivery.adapters.file_adapter:FileAdapter",
                 "enabled": True, "config": {"output_dir": str(out_dir)},
             },
         })
@@ -1323,7 +1323,7 @@ class TestEndToEndPDFPipeline:
         assert len(pdf_bytes) > 200
 
         # verify job_run status
-        from packages.harness.deerflow.tools.nail.base import get_db
+        from packages.harness.nailflow.tools.nail.base import get_db
         with get_db() as conn:
             row = conn.execute(
                 "SELECT status FROM ops_job_runs WHERE job_id='e2e_pdf' ORDER BY created_at DESC LIMIT 1"

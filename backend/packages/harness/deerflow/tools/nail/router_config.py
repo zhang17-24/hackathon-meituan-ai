@@ -27,9 +27,6 @@ TOOL_CAPABILITIES: dict[str, Capability] = {
     "customer_service_tool":    Capability.CHAT,       # LLM 客服
     "action_proposal_tool":     Capability.CHAT,       # DB 写入，不用 LLM
 
-    # nail_dev 组
-    "evaluation_tool":          Capability.CHAT,       # LLM 评分
-
     # Agent
     "lead_agent":               Capability.CHAT,       # 主 Agent
 }

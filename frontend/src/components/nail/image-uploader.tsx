@@ -108,13 +108,11 @@ export function NailImageUploader({
       {previewUrl ? (
         /* ── 预览状态 ── */
         <div className="relative flex h-full w-full flex-col">
-          <div className="relative m-2 flex-1 overflow-hidden rounded-2xl">
-            { }
+          <div className="relative m-2 flex min-h-[140px] flex-1 items-center justify-center overflow-hidden rounded-2xl bg-white/70 p-2">
             <img
               src={previewUrl}
               alt={label}
-              className="h-full w-full object-cover object-center"
-              style={{ maxHeight: 140 }}
+              className="max-h-[140px] w-full object-contain object-center"
             />
             {/* 悬浮覆盖层 */}
             <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-pink-950/40 opacity-0 transition-opacity group-hover:opacity-100">

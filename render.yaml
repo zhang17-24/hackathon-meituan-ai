@@ -1,0 +1,60 @@
+# ============================================================
+# Render Blueprint — 后端一键部署配置
+# 使用方法：在 Render Dashboard → Blueprints → 连接此仓库
+# 文档：https://render.com/docs/blueprint-spec
+# ============================================================
+
+services:
+  - type: web
+    name: nailflow-api
+    runtime: docker
+    plan: starter  # 需要持久化磁盘，至少用 starter（$7/月）
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    # 首次构建需要 15-20 分钟（PyTorch 依赖大）
+    # 后续增量构建只需 2-3 分钟
+
+    envVars:
+      # ── LLM API（必填）─────────────────────────────
+      - key: OPENAI_API_KEY
+        sync: false  # 不在 render.yaml 中明文存储
+        value: sk-placeholder
+      - key: OPENAI_BASE_URL
+        sync: false
+        value: https://api.openai.com/v1
+
+      # ── JWT 密钥（必填）────────────────────────────
+      - key: JWT_SECRET_KEY
+        generateValue: true  # 自动生成随机值
+
+      # ── 飞书（不启用则留空即可）──────────────────
+      - key: FEISHU_APP_ID
+        sync: false
+      - key: FEISHU_APP_SECRET
+        sync: false
+      - key: FEISHU_OPS_WEBHOOK_URL
+        sync: false
+
+      # ── 小红书（不启用则留空即可）─────────────────
+      - key: XIAOHONGSHU_COOKIE
+        sync: false
+
+      # ── CORS（改成你的 Vercel 前端域名）───────────
+      - key: GATEWAY_CORS_ORIGINS
+        sync: false
+        value: https://你的前端.vercel.app
+
+      # ── 数据路径 ─────────────────────────────────
+      - key: NAIL_DB_PATH
+        value: ./data/nailflow.db
+      - key: NAIL_UPLOADS_DIR
+        value: ./data/uploads
+      - key: NAIL_RESULTS_DIR
+        value: ./data/results
+
+    # 持久化磁盘（SQLite + ChromaDB 需要）
+    disk:
+      name: nailflow-data
+      mountPath: /app/backend/data
+      sizeGB: 2  # ChromaDB 向量库 + SQLite + 上传文件

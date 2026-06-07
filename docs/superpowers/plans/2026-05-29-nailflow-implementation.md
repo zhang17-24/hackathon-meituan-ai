@@ -21,11 +21,11 @@
 | 复制 | `ROOT/config.yaml` | DeerFlow config.example.yaml 改名 |
 | 修改 | `backend/app/gateway/auth/models.py` | 新增 `nail_role` 字段 |
 | 修改 | `backend/app/gateway/authz.py` | 角色权限过滤 |
-| 修改 | `backend/packages/harness/deerflow/agents/lead_agent/agent.py` | 注入 nail_role → 工具过滤 |
-| 修改 | `backend/packages/harness/deerflow/agents/lead_agent/prompt.py` | 美甲专属 system prompt |
+| 修改 | `backend/packages/harness/nailflow/agents/lead_agent/agent.py` | 注入 nail_role → 工具过滤 |
+| 修改 | `backend/packages/harness/nailflow/agents/lead_agent/prompt.py` | 美甲专属 system prompt |
 | 修改 | `config.yaml` | 注册 nail 工具组 |
-| 新建 | `backend/packages/harness/deerflow/tools/nail/` | 所有 nail 工具 |
-| 新建 | `backend/packages/harness/deerflow/persistence/nail_tables.py` | nail DB 表 |
+| 新建 | `backend/packages/harness/nailflow/tools/nail/` | 所有 nail 工具 |
+| 新建 | `backend/packages/harness/nailflow/persistence/nail_tables.py` | nail DB 表 |
 | 新建 | `backend/app/gateway/routers/nail_ops.py` | ActionProposal 确认接口 |
 | 新建 | `backend/nail_scheduler.py` | APScheduler 运营定时任务 |
 | 修改 | `frontend/src/app/` | 三端路由 + 角色守卫 |
@@ -266,26 +266,26 @@ git commit -m "feat(auth): add nail_role to User model, JWT payload, seed test a
 ### Task 2: nail 工具包目录结构
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/__init__.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/base.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/__init__.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/base.py`
 
 - [ ] **Step 1: 创建包目录**
 
 ```bash
-mkdir -p backend/packages/harness/deerflow/tools/nail
+mkdir -p backend/packages/harness/nailflow/tools/nail
 ```
 
 - [ ] **Step 2: 创建 `__init__.py`**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/__init__.py
+# backend/packages/harness/nailflow/tools/nail/__init__.py
 """NailFlow tool package — nail art try-on and ops tools."""
 ```
 
 - [ ] **Step 3: 创建 `base.py`（公共工具基类和 DB helper）**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/base.py
+# backend/packages/harness/nailflow/tools/nail/base.py
 """Shared utilities for NailFlow tools."""
 import os
 import sqlite3
@@ -370,7 +370,7 @@ def init_nail_tables() -> None:
 
 ```bash
 cd backend
-python -c "from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables(); print('OK')"
+python -c "from packages.harness.nailflow.tools.nail.base import init_nail_tables; init_nail_tables(); print('OK')"
 ```
 
 预期输出：`OK`
@@ -378,7 +378,7 @@ python -c "from packages.harness.deerflow.tools.nail.base import init_nail_table
 - [ ] **Step 5: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/
+git add backend/packages/harness/nailflow/tools/nail/
 git commit -m "feat(nail): create nail tools package and DB schema"
 ```
 
@@ -387,12 +387,12 @@ git commit -m "feat(nail): create nail tools package and DB schema"
 ### Task 3: HandDetectTool
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/hand_detect.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/hand_detect.py`
 
 - [ ] **Step 1: 实现 HandDetectTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/hand_detect.py
+# backend/packages/harness/nailflow/tools/nail/hand_detect.py
 """检测手部姿态，返回指尖坐标和甲床 bounding box。"""
 import base64
 import json
@@ -495,7 +495,7 @@ def hand_detect_tool(image_path: str) -> str:
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.nail.hand_detect import hand_detect_tool
+from packages.harness.nailflow.tools.nail.hand_detect import hand_detect_tool
 # 用项目里的手图测试
 result = hand_detect_tool.run('../微信图片_20260523173957_29_463.jpg')
 import json; d = json.loads(result); print('detected:', d['detected'])
@@ -508,7 +508,7 @@ if d['detected']: print('nail_bboxes count:', len(d['nail_bboxes']))
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/hand_detect.py
+git add backend/packages/harness/nailflow/tools/nail/hand_detect.py
 git commit -m "feat(nail): implement HandDetectTool with MediaPipe"
 ```
 
@@ -517,12 +517,12 @@ git commit -m "feat(nail): implement HandDetectTool with MediaPipe"
 ### Task 4: NailMaskTool
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/nail_mask.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/nail_mask.py`
 
 - [ ] **Step 1: 实现 NailMaskTool（bbox 生成 mask）**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/nail_mask.py
+# backend/packages/harness/nailflow/tools/nail/nail_mask.py
 """根据甲床 bbox 生成 PNG mask 文件。白色=甲面，黑色=其余。"""
 import json
 import uuid
@@ -592,8 +592,8 @@ def nail_mask_tool(image_path: str, nail_bboxes_json: str) -> str:
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.nail.hand_detect import hand_detect_tool
-from packages.harness.deerflow.tools.nail.nail_mask import nail_mask_tool
+from packages.harness.nailflow.tools.nail.hand_detect import hand_detect_tool
+from packages.harness.nailflow.tools.nail.nail_mask import nail_mask_tool
 detect = hand_detect_tool.run('../微信图片_20260523173957_29_463.jpg')
 mask = nail_mask_tool.run({'image_path': '../微信图片_20260523173957_29_463.jpg', 'nail_bboxes_json': detect})
 import json; d = json.loads(mask); print('mask_path:', d.get('mask_path'), 'nails:', d.get('nail_count'))
@@ -605,7 +605,7 @@ import json; d = json.loads(mask); print('mask_path:', d.get('mask_path'), 'nail
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/nail_mask.py
+git add backend/packages/harness/nailflow/tools/nail/nail_mask.py
 git commit -m "feat(nail): implement NailMaskTool using bbox ellipse"
 ```
 
@@ -614,12 +614,12 @@ git commit -m "feat(nail): implement NailMaskTool using bbox ellipse"
 ### Task 5: StyleUnderstandingTool
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/style_understanding.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/style_understanding.py`
 
 - [ ] **Step 1: 实现 StyleUnderstandingTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/style_understanding.py
+# backend/packages/harness/nailflow/tools/nail/style_understanding.py
 """用 LLM Vision 解析款式图，提取颜色/纹理/甲型/饰品标签。"""
 import json
 import logging
@@ -627,7 +627,7 @@ import base64
 from pathlib import Path
 
 from langchain.tools import tool
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 from langchain_core.messages import HumanMessage
 
 logger = logging.getLogger(__name__)
@@ -704,7 +704,7 @@ def style_understanding_tool(style_image_path: str, user_description: str = "") 
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.nail.style_understanding import style_understanding_tool
+from packages.harness.nailflow.tools.nail.style_understanding import style_understanding_tool
 # 用美甲图片目录里的图
 import os
 pics = os.listdir('../美甲图片/')
@@ -719,7 +719,7 @@ if pics:
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/style_understanding.py
+git add backend/packages/harness/nailflow/tools/nail/style_understanding.py
 git commit -m "feat(nail): implement StyleUnderstandingTool with LLM Vision"
 ```
 
@@ -728,12 +728,12 @@ git commit -m "feat(nail): implement StyleUnderstandingTool with LLM Vision"
 ### Task 6: PromptBuilderTool（关键）
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/prompt_builder.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/prompt_builder.py`
 
 - [ ] **Step 1: 实现 PromptBuilderTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/prompt_builder.py
+# backend/packages/harness/nailflow/tools/nail/prompt_builder.py
 """根据手图描述 + 款式标签 + 用户需求，生成生图模型的 positive/negative prompt。"""
 import json
 import logging
@@ -837,7 +837,7 @@ def prompt_builder_tool(style_analysis_json: str, user_request: str = "") -> str
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.nail.prompt_builder import prompt_builder_tool
+from packages.harness.nailflow.tools.nail.prompt_builder import prompt_builder_tool
 import json
 style = json.dumps({'colors': ['rose', 'gold'], 'texture': 'glitter', 'nail_shape': 'almond', 'decorations': ['rhinestone'], 'style_tags': ['nail_art'], 'style_description_en': 'rose gold glitter nail art with rhinestone'})
 result = prompt_builder_tool.run({'style_analysis_json': style, 'user_request': '我想要暗一点的玫瑰金'})
@@ -853,7 +853,7 @@ print('ZH:', d['style_summary_zh'])
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/prompt_builder.py
+git add backend/packages/harness/nailflow/tools/nail/prompt_builder.py
 git commit -m "feat(nail): implement PromptBuilderTool for image generation"
 ```
 
@@ -862,12 +862,12 @@ git commit -m "feat(nail): implement PromptBuilderTool for image generation"
 ### Task 7: ImageGenerationTool（字节生图 API）
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/image_generation.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/image_generation.py`
 
 - [ ] **Step 1: 实现 ImageGenerationTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/image_generation.py
+# backend/packages/harness/nailflow/tools/nail/image_generation.py
 """调用字节生图 API，进行 inpaint 试戴生成。"""
 import base64
 import json
@@ -981,7 +981,7 @@ def image_generation_tool(
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.nail.image_generation import image_generation_tool
+from packages.harness.nailflow.tools.nail.image_generation import image_generation_tool
 import json
 result = image_generation_tool.run({
   'hand_image_path': '../微信图片_20260523173957_29_463.jpg',
@@ -998,7 +998,7 @@ print('is_mock:', d.get('is_mock'), 'result_path:', d.get('result_path'))
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/image_generation.py
+git add backend/packages/harness/nailflow/tools/nail/image_generation.py
 git commit -m "feat(nail): implement ImageGenerationTool with ByteDance inpaint API"
 ```
 
@@ -1007,12 +1007,12 @@ git commit -m "feat(nail): implement ImageGenerationTool with ByteDance inpaint 
 ### Task 8: TryOnQualityTool
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/quality_check.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/quality_check.py`
 
 - [ ] **Step 1: 实现 TryOnQualityTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/quality_check.py
+# backend/packages/harness/nailflow/tools/nail/quality_check.py
 """评估试戴图质量：甲面边界、肤色漂移、款式相似度。"""
 import base64
 import json
@@ -1020,7 +1020,7 @@ import logging
 
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 
 logger = logging.getLogger(__name__)
 
@@ -1116,7 +1116,7 @@ def quality_check_tool(
 - [ ] **Step 2: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/quality_check.py
+git add backend/packages/harness/nailflow/tools/nail/quality_check.py
 git commit -m "feat(nail): implement TryOnQualityTool with dual-image LLM scoring"
 ```
 
@@ -1126,8 +1126,8 @@ git commit -m "feat(nail): implement TryOnQualityTool with dual-image LLM scorin
 
 **Files:**
 - Modify: `ROOT/config.yaml`
-- Modify: `backend/packages/harness/deerflow/agents/lead_agent/agent.py`
-- Modify: `backend/packages/harness/deerflow/agents/lead_agent/prompt.py`
+- Modify: `backend/packages/harness/nailflow/agents/lead_agent/agent.py`
+- Modify: `backend/packages/harness/nailflow/agents/lead_agent/prompt.py`
 
 - [ ] **Step 1: 在 config.yaml 添加 nail 工具组**
 
@@ -1138,57 +1138,57 @@ git commit -m "feat(nail): implement TryOnQualityTool with dual-image LLM scorin
   # group: nail  (user + ops + dev 都可用)
   - name: hand_detect
     group: nail
-    use: deerflow.tools.nail.hand_detect:hand_detect_tool
+    use: nailflow.tools.nail.hand_detect:hand_detect_tool
 
   - name: nail_mask
     group: nail
-    use: deerflow.tools.nail.nail_mask:nail_mask_tool
+    use: nailflow.tools.nail.nail_mask:nail_mask_tool
 
   - name: style_understanding
     group: nail
-    use: deerflow.tools.nail.style_understanding:style_understanding_tool
+    use: nailflow.tools.nail.style_understanding:style_understanding_tool
 
   - name: prompt_builder
     group: nail
-    use: deerflow.tools.nail.prompt_builder:prompt_builder_tool
+    use: nailflow.tools.nail.prompt_builder:prompt_builder_tool
 
   - name: image_generation
     group: nail
-    use: deerflow.tools.nail.image_generation:image_generation_tool
+    use: nailflow.tools.nail.image_generation:image_generation_tool
 
   - name: quality_check
     group: nail
-    use: deerflow.tools.nail.quality_check:quality_check_tool
+    use: nailflow.tools.nail.quality_check:quality_check_tool
 
   - name: preference_rag
     group: nail
-    use: deerflow.tools.nail.preference_rag:preference_rag_tool
+    use: nailflow.tools.nail.preference_rag:preference_rag_tool
 
   - name: trend_query
     group: nail
-    use: deerflow.tools.nail.trend_query:trend_query_tool
+    use: nailflow.tools.nail.trend_query:trend_query_tool
 
   # group: nail_ops  (ops + dev 才可用)
   - name: ops_analysis
     group: nail_ops
-    use: deerflow.tools.nail.ops_analysis:ops_analysis_tool
+    use: nailflow.tools.nail.ops_analysis:ops_analysis_tool
 
   - name: customer_service
     group: nail_ops
-    use: deerflow.tools.nail.customer_service:customer_service_tool
+    use: nailflow.tools.nail.customer_service:customer_service_tool
 
   - name: action_proposal
     group: nail_ops
-    use: deerflow.tools.nail.action_proposal:action_proposal_tool
+    use: nailflow.tools.nail.action_proposal:action_proposal_tool
 
   - name: trend_discovery
     group: nail_ops
-    use: deerflow.tools.nail.trend_discovery:trend_discovery_tool
+    use: nailflow.tools.nail.trend_discovery:trend_discovery_tool
 
   # group: nail_dev  (dev only)
   - name: evaluation
     group: nail_dev
-    use: deerflow.tools.nail.evaluation:evaluation_tool
+    use: nailflow.tools.nail.evaluation:evaluation_tool
 ```
 
 - [ ] **Step 2: 在 lead_agent/agent.py 中注入 nail_role 并过滤工具**
@@ -1253,7 +1253,7 @@ def apply_prompt_template(state, config, ...) -> str:
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.tools import get_available_tools
+from packages.harness.nailflow.tools.tools import get_available_tools
 tools_user = get_available_tools(groups=['nail'])
 tools_ops  = get_available_tools(groups=['nail', 'nail_ops'])
 tools_dev  = get_available_tools(groups=['nail', 'nail_ops', 'nail_dev'])
@@ -1273,7 +1273,7 @@ dev extra: ['evaluation']
 - [ ] **Step 5: Commit**
 
 ```bash
-git add config.yaml backend/packages/harness/deerflow/agents/lead_agent/
+git add config.yaml backend/packages/harness/nailflow/agents/lead_agent/
 git commit -m "feat(nail): register nail tool groups in config.yaml, inject nail_role into lead_agent"
 ```
 
@@ -1337,12 +1337,12 @@ git add -A && git commit -m "feat: Day 1 complete — TryOn vision pipeline end-
 ### Task 11: PreferenceRAGTool（ChromaDB）
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/preference_rag.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/preference_rag.py`
 
 - [ ] **Step 1: 实现 PreferenceRAGTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/preference_rag.py
+# backend/packages/harness/nailflow/tools/nail/preference_rag.py
 """用户偏好 RAG：存储和检索用户喜好款式，返回个性化推荐。"""
 import json
 import logging
@@ -1426,7 +1426,7 @@ def preference_rag_tool(action: str, user_id: str, data: str = "") -> str:
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.nail.preference_rag import preference_rag_tool
+from packages.harness.nailflow.tools.nail.preference_rag import preference_rag_tool
 import json
 # 保存偏好
 r1 = preference_rag_tool.run({'action': 'save', 'user_id': 'test_user', 'data': json.dumps({'colors': ['rose', 'pink'], 'texture': 'glitter', 'style_description_en': 'rose glitter nail art'})})
@@ -1442,7 +1442,7 @@ print('query:', r2)
 - [ ] **Step 3: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/preference_rag.py
+git add backend/packages/harness/nailflow/tools/nail/preference_rag.py
 git commit -m "feat(nail): implement PreferenceRAGTool with ChromaDB"
 ```
 
@@ -1451,7 +1451,7 @@ git commit -m "feat(nail): implement PreferenceRAGTool with ChromaDB"
 ### Task 12: TrendQueryTool + mock 运营数据
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/trend_query.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/trend_query.py`
 - Create: `data/mock/ops_signals.sql`
 
 - [ ] **Step 1: 创建 mock 运营数据**
@@ -1479,7 +1479,7 @@ INSERT INTO ops_signals (user_id, style_id, signal_type, created_at) VALUES
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.nail.base import init_nail_tables, get_db, DB_PATH
+from packages.harness.nailflow.tools.nail.base import init_nail_tables, get_db, DB_PATH
 init_nail_tables()
 conn = get_db()
 with open('../data/mock/ops_signals.sql') as f:
@@ -1493,7 +1493,7 @@ print('Mock data imported to', DB_PATH)
 - [ ] **Step 2: 实现 TrendQueryTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/trend_query.py
+# backend/packages/harness/nailflow/tools/nail/trend_query.py
 """查询 7/30 天内的款式热度信号，返回爆款榜。"""
 import json
 from langchain.tools import tool
@@ -1544,7 +1544,7 @@ def trend_query_tool(days: int = 7, top_n: int = 10) -> str:
 ```bash
 cd backend
 python -c "
-from packages.harness.deerflow.tools.nail.trend_query import trend_query_tool
+from packages.harness.nailflow.tools.nail.trend_query import trend_query_tool
 import json
 result = trend_query_tool.run({'days': 7, 'top_n': 5})
 d = json.loads(result)
@@ -1557,7 +1557,7 @@ print('trending:', [s['style_id'] for s in d['trending_styles']])
 - [ ] **Step 4: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/trend_query.py data/mock/
+git add backend/packages/harness/nailflow/tools/nail/trend_query.py data/mock/
 git commit -m "feat(nail): implement TrendQueryTool, add mock ops_signals data"
 ```
 
@@ -1566,20 +1566,20 @@ git commit -m "feat(nail): implement TrendQueryTool, add mock ops_signals data"
 ### Task 13: 运营端四个工具
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/trend_discovery.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/ops_analysis.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/customer_service.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/action_proposal.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/trend_discovery.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/ops_analysis.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/customer_service.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/action_proposal.py`
 
 - [ ] **Step 1: 实现 TrendDiscoveryTool（OpenClaw 检索模式）**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/trend_discovery.py
+# backend/packages/harness/nailflow/tools/nail/trend_discovery.py
 """综合分析爆款趋势，输出可执行的趋势洞察报告。"""
 import json
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 from .trend_query import trend_query_tool
 from .base import get_db
 
@@ -1643,13 +1643,13 @@ def trend_discovery_tool(days: int = 7) -> str:
 - [ ] **Step 2: 实现 OpsAnalysisTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/ops_analysis.py
+# backend/packages/harness/nailflow/tools/nail/ops_analysis.py
 """生成运营建议并写入 ops_memory（OpenClaw 长期记忆模式）。"""
 import json
 import uuid
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 from .base import get_db
 
 MARKETING_TEMPLATES = [
@@ -1722,12 +1722,12 @@ def ops_analysis_tool(trend_summary: str, query: str = "") -> str:
 - [ ] **Step 3: 实现 CustomerServiceTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/customer_service.py
+# backend/packages/harness/nailflow/tools/nail/customer_service.py
 """美甲客服：处理风格咨询、预约、售后，回答必须标注信息来源。"""
 import json
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 
 MOCK_STORE_SOP = """
 门店 SOP（来自门店规则）：
@@ -1795,7 +1795,7 @@ def customer_service_tool(user_question: str, user_id: str = "") -> str:
 - [ ] **Step 4: 实现 ActionProposalTool（写入 DB，等待确认）**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/action_proposal.py
+# backend/packages/harness/nailflow/tools/nail/action_proposal.py
 """将运营方案写入 DB，标记 pending，等待人工确认后执行。"""
 import json
 import uuid
@@ -1844,7 +1844,7 @@ def action_proposal_tool(proposal_json: str, run_id: str = "") -> str:
 - [ ] **Step 5: Commit 所有运营工具**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/
+git add backend/packages/harness/nailflow/tools/nail/
 git commit -m "feat(nail): implement ops tools (TrendDiscovery/OpsAnalysis/CustomerService/ActionProposal)"
 ```
 
@@ -1853,18 +1853,18 @@ git commit -m "feat(nail): implement ops tools (TrendDiscovery/OpsAnalysis/Custo
 ### Task 14: EvaluationTool（dev 端专用）
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/evaluation.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/evaluation.py`
 
 - [ ] **Step 1: 实现 EvaluationTool**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/evaluation.py
+# backend/packages/harness/nailflow/tools/nail/evaluation.py
 """按赛题评分体系对本次 NailFlow 运行进行自动评分。"""
 import json
 import uuid
 from langchain.tools import tool
 from langchain_core.messages import HumanMessage
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 from .base import get_db
 
 RUBRIC = """
@@ -1951,7 +1951,7 @@ def evaluation_tool(run_summary: str, run_id: str = "") -> str:
 - [ ] **Step 2: Commit**
 
 ```bash
-git add backend/packages/harness/deerflow/tools/nail/evaluation.py
+git add backend/packages/harness/nailflow/tools/nail/evaluation.py
 git commit -m "feat(nail): implement EvaluationTool for dev portal scoring"
 ```
 
@@ -1978,7 +1978,7 @@ from app.gateway.authz import require_auth, require_permission
 
 # 动态导入以避免循环依赖
 def _get_db():
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
     return get_db()
 
 router = APIRouter(prefix="/api/nail", tags=["nail-ops"])
@@ -2088,8 +2088,8 @@ logger = logging.getLogger(__name__)
 def run_daily_trend_report():
     """每天定时生成趋势报告，存入 ops_memory。"""
     try:
-        from packages.harness.deerflow.tools.nail.trend_discovery import trend_discovery_tool
-        from packages.harness.deerflow.tools.nail.base import get_db
+        from packages.harness.nailflow.tools.nail.trend_discovery import trend_discovery_tool
+        from packages.harness.nailflow.tools.nail.base import get_db
         import json
 
         result = trend_discovery_tool.run({"days": 7})
@@ -2588,15 +2588,15 @@ git commit -m "feat(frontend): add ops dashboard and dev evaluation panel"
 ### Task 19: 异常处理 + 降级策略
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/hand_detect.py`（已有）
-- Modify: `backend/packages/harness/deerflow/tools/nail/image_generation.py`（已有）
+- Modify: `backend/packages/harness/nailflow/tools/nail/hand_detect.py`（已有）
+- Modify: `backend/packages/harness/nailflow/tools/nail/image_generation.py`（已有）
 
 - [ ] **Step 1: 验证 3 类异常场景的降级**
 
 ```bash
 # 场景 1：手图检测失败（传一张非手部图片）
 python -c "
-from packages.harness.deerflow.tools.nail.hand_detect import hand_detect_tool
+from packages.harness.nailflow.tools.nail.hand_detect import hand_detect_tool
 import json
 r = hand_detect_tool.run('config.yaml')  # 非图片文件
 d = json.loads(r); print('detected:', d.get('detected'), 'msg:', d.get('message', '')[:50])
@@ -2605,7 +2605,7 @@ d = json.loads(r); print('detected:', d.get('detected'), 'msg:', d.get('message'
 
 # 场景 2：生图 API 未配置（mock 降级）
 python -c "
-from packages.harness.deerflow.tools.nail.image_generation import image_generation_tool
+from packages.harness.nailflow.tools.nail.image_generation import image_generation_tool
 import json, os
 os.environ['NAIL_IMAGE_API_KEY'] = ''
 r = image_generation_tool.run({'hand_image_path': '../微信图片_20260523173957_29_463.jpg', 'mask_path': 'config.yaml', 'prompt_json': '{\"positive_prompt\": \"test\", \"negative_prompt\": \"test\"}'})
@@ -2615,7 +2615,7 @@ d = json.loads(r); print('is_mock:', d.get('is_mock'))
 
 # 场景 3：无效 JSON 传入 PromptBuilderTool
 python -c "
-from packages.harness.deerflow.tools.nail.prompt_builder import prompt_builder_tool
+from packages.harness.nailflow.tools.nail.prompt_builder import prompt_builder_tool
 import json
 r = prompt_builder_tool.run({'style_analysis_json': 'invalid json', 'user_request': '粉色'})
 d = json.loads(r); print('has positive_prompt:', 'positive_prompt' in d)
@@ -2698,5 +2698,5 @@ cd frontend && pnpm dev
 cd backend && uv run python scripts/seed_nail_users.py
 
 # 重置数据库
-rm data/nailflow.db && python -c "from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()"
+rm data/nailflow.db && python -c "from packages.harness.nailflow.tools.nail.base import init_nail_tables; init_nail_tables()"
 ```

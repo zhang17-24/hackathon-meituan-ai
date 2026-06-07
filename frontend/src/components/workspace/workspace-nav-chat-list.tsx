@@ -1,6 +1,6 @@
 "use client";
 
-import { BotIcon, MessagesSquare } from "lucide-react";
+import { MessagesSquare } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -21,12 +21,6 @@ export function WorkspaceNavChatList() {
       label: t.sidebar.chats,
       icon: MessagesSquare,
       active: pathname === "/workspace/chats",
-    },
-    {
-      href: "/workspace/agents",
-      label: t.sidebar.agents,
-      icon: BotIcon,
-      active: pathname.startsWith("/workspace/agents"),
     },
   ];
 

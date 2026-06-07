@@ -142,8 +142,8 @@ def _build_style_text(style: dict) -> str:
 
 def main():
     import chromadb
-    from packages.harness.deerflow.tools.nail.base import get_db, init_nail_tables
-    from packages.harness.deerflow.tools.nail.embedding import fused_style_embedding
+    from packages.harness.nailflow.tools.nail.base import get_db, init_nail_tables
+    from packages.harness.nailflow.tools.nail.embedding import fused_style_embedding
 
     print(f"初始化 ChromaDB nail_styles collection at {CHROMA_DIR}")
     print("使用 Chinese-CLIP 多模态嵌入 (512d)，优先融合真实款式图")

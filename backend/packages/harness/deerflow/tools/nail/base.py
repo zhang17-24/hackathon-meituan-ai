@@ -124,15 +124,6 @@ def init_nail_tables() -> None:
                 confirmed_at DATETIME
             );
 
-            CREATE TABLE IF NOT EXISTS evaluation_results (
-                id              TEXT PRIMARY KEY,
-                run_id          TEXT,
-                total_score     INTEGER,
-                rubric_scores   TEXT,
-                blocking_issues TEXT,
-                next_dev_tasks  TEXT,
-                created_at      DATETIME DEFAULT CURRENT_TIMESTAMP
-            );
 
             CREATE TABLE IF NOT EXISTS ops_memory (
                 id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -252,7 +243,7 @@ def init_nail_tables() -> None:
     try:
         with get_db() as conn:
             conn.execute(
-                "ALTER TABLE nail_tool_overrides ADD COLUMN enabled_pages TEXT DEFAULT '[\"tryon\",\"ops\",\"eval\"]'"
+                "ALTER TABLE nail_tool_overrides ADD COLUMN enabled_pages TEXT DEFAULT '[\"tryon\",\"ops\"]'"
             )
     except Exception as _e:
         if "duplicate column name" not in str(_e):

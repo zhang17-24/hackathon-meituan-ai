@@ -1,16 +1,16 @@
 # Setup Guide
 
-Quick setup instructions for DeerFlow.
+Quick setup instructions for nailflow.
 
 ## Configuration Setup
 
-DeerFlow uses a YAML configuration file that should be placed in the **project root directory**.
+nailflow uses a YAML configuration file that should be placed in the **project root directory**.
 
 ### Steps
 
 1. **Navigate to project root**:
    ```bash
-   cd /path/to/deer-flow
+   cd /path/to/nail-flow
    ```
 
 2. **Copy example configuration**:
@@ -24,7 +24,7 @@ DeerFlow uses a YAML configuration file that should be placed in the **project r
    export OPENAI_API_KEY="your-key-here"
 
    # Optional: pin the project root when running from another directory
-   export DEER_FLOW_PROJECT_ROOT="/path/to/deer-flow"
+   export DEER_FLOW_PROJECT_ROOT="/path/to/nail-flow"
 
    # Option B: Edit config.yaml directly
    vim config.yaml  # or your preferred editor
@@ -33,15 +33,15 @@ DeerFlow uses a YAML configuration file that should be placed in the **project r
 4. **Verify configuration**:
    ```bash
    cd backend
-   python -c "from deerflow.config import get_app_config; print('✓ Config loaded:', get_app_config().models[0].name)"
+   python -c "from nailflow.config import get_app_config; print('✓ Config loaded:', get_app_config().models[0].name)"
    ```
 
 ## Important Notes
 
-- **Location**: `config.yaml` should be in `deer-flow/` (project root)
+- **Location**: `config.yaml` should be in `nail-flow/` (project root)
 - **Git**: `config.yaml` is automatically ignored by git (contains secrets)
-- **Runtime root**: Set `DEER_FLOW_PROJECT_ROOT` if DeerFlow may start from outside the project root
-- **Runtime data**: State defaults to `.deer-flow` under the project root; set `DEER_FLOW_HOME` to move it
+- **Runtime root**: Set `DEER_FLOW_PROJECT_ROOT` if nailflow may start from outside the project root
+- **Runtime data**: State defaults to `.nail-flow` under the project root; set `DEER_FLOW_HOME` to move it
 - **Skills**: Skills default to `skills/` under the project root; set `DEER_FLOW_SKILLS_PATH` or `skills.path` to move them
 
 ## Configuration File Locations
@@ -53,11 +53,11 @@ The backend searches for `config.yaml` in this order:
 3. `config.yaml` under `DEER_FLOW_PROJECT_ROOT`, or the current working directory when `DEER_FLOW_PROJECT_ROOT` is unset
 4. Legacy backend/repository-root locations for monorepo compatibility
 
-**Recommended**: Place `config.yaml` in project root (`deer-flow/config.yaml`).
+**Recommended**: Place `config.yaml` in project root (`nail-flow/config.yaml`).
 
 ## Sandbox Setup (Optional but Recommended)
 
-If you plan to use Docker/Container-based sandbox (configured in `config.yaml` under `sandbox.use: deerflow.community.aio_sandbox:AioSandboxProvider`), it's highly recommended to pre-pull the container image:
+If you plan to use Docker/Container-based sandbox (configured in `config.yaml` under `sandbox.use: nailflow.community.aio_sandbox:AioSandboxProvider`), it's highly recommended to pre-pull the container image:
 
 ```bash
 # From project root
@@ -77,8 +77,8 @@ If you skip this step, the image will be automatically pulled on first agent exe
 
 ```bash
 # Check where the backend is looking
-cd deer-flow/backend
-python -c "from deerflow.config.app_config import AppConfig; print(AppConfig.resolve_config_path())"
+cd nail-flow/backend
+python -c "from nailflow.config.app_config import AppConfig; print(AppConfig.resolve_config_path())"
 ```
 
 If it can't find the config:

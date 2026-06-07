@@ -80,7 +80,7 @@ export const PROVIDER_PRESETS: Record<
   },
   doubao: {
     api_base: "https://ark.cn-beijing.volces.com/api/v3",
-    use_class: "deerflow.models.patched_deepseek:PatchedChatDeepSeek",
+    use_class: "nailflow.models.patched_deepseek:PatchedChatDeepSeek",
     models: [
       { id: "doubao-seed-1-8-251228", label: "Doubao-Seed-1.8", vision: true, thinking: true },
       { id: "doubao-pro-32k-241215", label: "Doubao-Pro-32k" },

@@ -17,7 +17,7 @@
 ### 1.1 新增目录结构
 
 ```
-backend/packages/harness/deerflow/ops/
+backend/packages/harness/nailflow/ops/
 ├── __init__.py
 ├── skills/
 │   ├── __init__.py
@@ -174,7 +174,7 @@ class SkillManager:
 ### 2.4 技能加载路径
 
 ```
-backend/packages/harness/deerflow/ops/skills/
+backend/packages/harness/nailflow/ops/skills/
   (代码管理 skills 目录)
 
 data/skills/
@@ -188,7 +188,7 @@ data/skills/
 在 `lead_agent/agent.py` 中，构建 system prompt 时：
 
 ```python
-from deerflow.ops.skills.manager import SkillManager
+from nailflow.ops.skills.manager import SkillManager
 
 skill_mgr = SkillManager()
 skills = skill_mgr.load_skills(group=nail_groups)

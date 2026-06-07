@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "web-devhandler": {
+      "command": "node",
+      "args": ["/Users/xinyiji/Desktop/Web-DevHander/mcp-server/dist/index.js"]
+    }
+  }
+}

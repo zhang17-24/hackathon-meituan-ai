@@ -1,0 +1,39 @@
+{
+  "style_understanding_raw": "{\"colors\": [\"#F5F5F5\", \"#D4D4D4\", \"#E6E6E6\"], \"color_description\": \"soft natural beige base with crisp white French tips; accent nail features a shimmering silver-gray glitter polish with fine reflective particles\", \"texture\": \"glossy\", \"nail_shape\": \"oval\", \"decorations\": [\"glitter\", \"French tip\"], \"pattern\": \"classic French manicure on all nails except ring finger, which is an accent nail fully covered in silver-gray glitter polish\", \"gradient\": null, \"finish\": \"high gloss top coat\", \"length\": \"medium\", \"style_description_en\": \"natural beige oval nails with clean white French tips and a silver-gray glitter accent nail on the ring finger, featuring a glossy finish\", \"style_description_zh\": \"自然米色椭圆甲，搭配干净的白色法式边，无名指为银灰色闪粉点缀，整体呈现光泽感\", \"level_of_detail\": \"detailed but clean\"}",
+  "style_understanding": {
+    "colors": [
+      "#F5F5F5",
+      "#D4D4D4",
+      "#E6E6E6"
+    ],
+    "color_description": "soft natural beige base with crisp white French tips; accent nail features a shimmering silver-gray glitter polish with fine reflective particles",
+    "texture": "glossy",
+    "nail_shape": "oval",
+    "decorations": [
+      "glitter",
+      "French tip"
+    ],
+    "pattern": "classic French manicure on all nails except ring finger, which is an accent nail fully covered in silver-gray glitter polish",
+    "gradient": null,
+    "finish": "high gloss top coat",
+    "length": "medium",
+    "style_description_en": "natural beige oval nails with clean white French tips and a silver-gray glitter accent nail on the ring finger, featuring a glossy finish",
+    "style_description_zh": "自然米色椭圆甲，搭配干净的白色法式边，无名指为银灰色闪粉点缀，整体呈现光泽感",
+    "level_of_detail": "detailed but clean"
+  },
+  "quality_check_raw": "{\"scores\": {\"boundary_score\": 9, \"skin_tone_score\": 9, \"lighting_score\": 8, \"style_match_score\": 9, \"natural_score\": 9}, \"overall\": 9, \"fit_comment\": \"该款式很适合您的手型\", \"risk_comment\": \"亮片甲可能在某些光线下反光明显，建议实际试戴确认效果\", \"adjustments\": \"可微调亮片的分布密度以增强自然感\", \"explanation_zh\": \"我保留了原图的肤色、手纹和光照，只在甲面区域试戴了自然裸粉底配白色法式边，并在一枚指甲上添加银色亮片作为强调。边界清晰无溢出，整体风格与目标高度一致，视觉效果自然且具有商业呈现力。\"}",
+  "quality_check": {
+    "scores": {
+      "boundary_score": 9,
+      "skin_tone_score": 9,
+      "lighting_score": 8,
+      "style_match_score": 9,
+      "natural_score": 9
+    },
+    "overall": 9,
+    "fit_comment": "该款式很适合您的手型",
+    "risk_comment": "亮片甲可能在某些光线下反光明显，建议实际试戴确认效果",
+    "adjustments": "可微调亮片的分布密度以增强自然感",
+    "explanation_zh": "我保留了原图的肤色、手纹和光照，只在甲面区域试戴了自然裸粉底配白色法式边，并在一枚指甲上添加银色亮片作为强调。边界清晰无溢出，整体风格与目标高度一致，视觉效果自然且具有商业呈现力。"
+  }
+}

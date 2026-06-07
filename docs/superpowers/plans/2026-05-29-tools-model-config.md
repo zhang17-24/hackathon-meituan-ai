@@ -13,7 +13,7 @@
 ## 文件变更地图
 
 ```
-backend/packages/harness/deerflow/tools/nail/base.py   ← 新增3张表到 init_nail_tables()
+backend/packages/harness/nailflow/tools/nail/base.py   ← 新增3张表到 init_nail_tables()
 backend/app/gateway/routers/nail_config.py             ← 新建：模型/Agent/工具 CRUD API
 backend/app/gateway/routers/models.py                  ← 修改：合并 DB + config.yaml
 backend/app/gateway/app.py                             ← 注册 nail_config_router
@@ -43,12 +43,12 @@ frontend/src/components/workspace/nail-nav.tsx         ← 修改：添加 🔧 
 ### Task 1: 在 base.py 新增 3 张配置表
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/base.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/base.py`
 
 - [ ] **Step 1: 读取 base.py 确认 init_nail_tables 位置**
 
 ```bash
-cat /Users/zhangkai169/Desktop/美团黑客松-ai美甲试戴和运营/hackathon-meituan-ai/backend/packages/harness/deerflow/tools/nail/base.py
+cat /Users/zhangkai169/Desktop/美团黑客松-ai美甲试戴和运营/hackathon-meituan-ai/backend/packages/harness/nailflow/tools/nail/base.py
 ```
 
 - [ ] **Step 2: 在 init_nail_tables() 的 executescript 中追加 3 张表**
@@ -93,7 +93,7 @@ cd /Users/zhangkai169/Desktop/美团黑客松-ai美甲试戴和运营/hackathon-
 python3 -c "
 import sys, os; sys.path.insert(0, '.')
 os.chdir('..')
-from packages.harness.deerflow.tools.nail.base import init_nail_tables, get_db
+from packages.harness.nailflow.tools.nail.base import init_nail_tables, get_db
 init_nail_tables()
 with get_db() as conn:
     tables = [r[0] for r in conn.execute(\"SELECT name FROM sqlite_master WHERE type='table'\").fetchall()]
@@ -108,7 +108,7 @@ with get_db() as conn:
 
 ```bash
 cd /Users/zhangkai169/Desktop/美团黑客松-ai美甲试戴和运营/hackathon-meituan-ai
-git add backend/packages/harness/deerflow/tools/nail/base.py
+git add backend/packages/harness/nailflow/tools/nail/base.py
 git commit -m "feat(db): add nail_model_configs, nail_agent_configs, nail_tool_overrides tables"
 ```
 
@@ -139,7 +139,7 @@ router = APIRouter(prefix="/api/nail/config", tags=["nail-config"])
 
 
 def _get_db():
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
     return get_db()
 
 
@@ -447,7 +447,7 @@ git commit -m "feat(api): add nail_config router for model/agent/tool CRUD"
 )
 async def list_models(config: AppConfig = Depends(get_config)) -> ModelsListResponse:
     """合并 nail_model_configs（DB）和 config.yaml 模型，DB 优先去重。"""
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
 
     # 1. 读 DB 中活跃的用户模型
     db_models: list[ModelResponse] = []
@@ -643,7 +643,7 @@ export const PROVIDER_PRESETS: Record<
   },
   doubao: {
     api_base: "https://ark.cn-beijing.volces.com/api/v3",
-    use_class: "deerflow.models.patched_deepseek:PatchedChatDeepSeek",
+    use_class: "nailflow.models.patched_deepseek:PatchedChatDeepSeek",
     models: [
       { id: "doubao-seed-1-8-251228", label: "Doubao-Seed-1.8", vision: true, thinking: true },
       { id: "doubao-pro-32k", label: "Doubao-Pro-32k" },
@@ -1817,7 +1817,7 @@ git commit -m "feat(chat): insert NailModelPicker in chat page header"
 ### Task 14: 修改 lead_agent 读取 nail_agent_configs
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/agents/lead_agent/agent.py`
+- Modify: `backend/packages/harness/nailflow/agents/lead_agent/agent.py`
 
 - [ ] **Step 1: 在 _get_runtime_config 之后、get_available_tools 之前读取 nail_agent_configs**
 
@@ -1828,7 +1828,7 @@ git commit -m "feat(chat): insert NailModelPicker in chat page header"
 _requested_model = cfg.get("model_name")
 if not _requested_model:
     try:
-        from packages.harness.deerflow.tools.nail.base import get_db
+        from packages.harness.nailflow.tools.nail.base import get_db
         with get_db() as _db:
             _row = _db.execute(
                 "SELECT model_name FROM nail_agent_configs WHERE config_key='main_agent'"
@@ -1847,7 +1847,7 @@ if not _requested_model:
 
 ```bash
 cd /Users/zhangkai169/Desktop/美团黑客松-ai美甲试戴和运营/hackathon-meituan-ai
-git add backend/packages/harness/deerflow/agents/lead_agent/agent.py
+git add backend/packages/harness/nailflow/agents/lead_agent/agent.py
 git commit -m "feat(agent): read nail_agent_configs main_agent model binding"
 ```
 
@@ -1856,16 +1856,16 @@ git commit -m "feat(agent): read nail_agent_configs main_agent model binding"
 ### Task 15: 修改 LLM 工具读取 nail_tool_overrides
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/style_understanding.py`
-- Modify: `backend/packages/harness/deerflow/tools/nail/quality_check.py`
-- Modify: `backend/packages/harness/deerflow/tools/nail/ops_analysis.py`
-- Modify: `backend/packages/harness/deerflow/tools/nail/customer_service.py`
-- Modify: `backend/packages/harness/deerflow/tools/nail/trend_discovery.py`
-- Modify: `backend/packages/harness/deerflow/tools/nail/evaluation.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/style_understanding.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/quality_check.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/ops_analysis.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/customer_service.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/trend_discovery.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/evaluation.py`
 
 - [ ] **Step 1: 在 base.py 添加工具模型查询帮助函数**
 
-在 `backend/packages/harness/deerflow/tools/nail/base.py` 末尾追加：
+在 `backend/packages/harness/nailflow/tools/nail/base.py` 末尾追加：
 
 ```python
 def get_tool_model(tool_name: str) -> str | None:
@@ -1916,7 +1916,7 @@ model = create_chat_model(
 
 ```bash
 cd /Users/zhangkai169/Desktop/美团黑客松-ai美甲试戴和运营/hackathon-meituan-ai
-git add backend/packages/harness/deerflow/tools/nail/
+git add backend/packages/harness/nailflow/tools/nail/
 git commit -m "feat(tools): read nail_tool_overrides for per-tool model selection"
 ```
 

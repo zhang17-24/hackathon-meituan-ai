@@ -1,0 +1,91 @@
+version: "3.8"
+
+# ============================================================
+# nailflow Docker Compose — CPU 部署配置（调模型 API）
+# ============================================================
+# 前置条件：
+#   1. 服务器需安装 Docker（参考下方命令）
+#   2. cp .env.example .env && 填入真实密钥
+#   3. config.yaml 已配置 $ENV_VAR 引用（无需手动改）
+#
+# 启动：docker compose up -d --build
+# 查看日志：docker compose logs -f
+# 停止：docker compose down
+# ============================================================
+
+services:
+  # ── Backend (FastAPI + LangGraph + nailflow Tools) ─────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+      target: runtime
+      args:
+        # 国内服务器取消注释下面两行加速构建：
+        # APT_MIRROR: mirrors.aliyun.com
+        # UV_INDEX_URL: https://pypi.tuna.tsinghua.edu.cn/simple
+    image: nailflow-backend:latest
+    container_name: nailflow-backend
+    ports:
+      - "8001:8001"
+      - "2024:2024"
+    volumes:
+      # 持久化数据（ChromaDB 向量库 + SQLite 数据库 + 上传文件）
+      - nailflow_data:/app/backend/data
+      # Checkpointer & LangGraph runtime state
+      - nailflow_nailflow:/app/backend/.nail-flow
+      # 配置文件（只读挂载）
+      - ./config.yaml:/app/backend/config.yaml:ro
+    environment:
+      # config.yaml 使用 $ENV_VAR 引用，由 .env 提供实际值
+      - FEISHU_APP_ID=${FEISHU_APP_ID:-}
+      - FEISHU_APP_SECRET=${FEISHU_APP_SECRET:-}
+      - FEISHU_OPS_WEBHOOK_URL=${FEISHU_OPS_WEBHOOK_URL:-}
+      - XIAOHONGSHU_COOKIE=${XIAOHONGSHU_COOKIE:-}
+      # 通用环境变量
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-sk-placeholder}
+      - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me}
+      - NAIL_DB_PATH=${NAIL_DB_PATH:-./data/nailflow.db}
+      - NAIL_UPLOADS_DIR=${NAIL_UPLOADS_DIR:-./data/uploads}
+      - NAIL_RESULTS_DIR=${NAIL_RESULTS_DIR:-./data/results}
+      - GATEWAY_HOST=0.0.0.0
+      - GATEWAY_PORT=8001
+      # 可选：生图 API
+      - NAIL_IMAGE_API_KEY=${NAIL_IMAGE_API_KEY:-}
+      - NAIL_IMAGE_API_URL=${NAIL_IMAGE_API_URL:-}
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 90s
+
+  # ── Frontend (Next.js) ──────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      target: prod
+      args:
+        # 国内服务器取消注释下面一行加速构建：
+        # NPM_REGISTRY: https://registry.npmmirror.com
+    image: nailflow-frontend:latest
+    container_name: nailflow-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      # 后端 API 地址（Next.js server-side rewrite 使用此地址代理 /api/* 请求）
+      - DEER_FLOW_INTERNAL_GATEWAY_BASE_URL=http://backend:8001
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  nailflow_data:
+    name: nailflow_data
+  nailflow_nailflow:
+    name: nailflow_nailflow

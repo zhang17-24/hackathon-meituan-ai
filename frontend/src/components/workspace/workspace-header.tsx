@@ -41,11 +41,11 @@ export function WorkspaceHeader({ className }: { className?: string }) {
                 href="/"
                 className="font-serif text-3xl font-bold text-pink-500"
               >
-                DeerFlow
+                nailflow
               </Link>
             ) : (
               <div className="cursor-default font-serif text-3xl font-bold text-pink-500">
-                DeerFlow
+                nailflow
               </div>
             )}
             <SidebarTrigger className="text-pink-500 hover:bg-pink-100/70 hover:text-pink-600" />

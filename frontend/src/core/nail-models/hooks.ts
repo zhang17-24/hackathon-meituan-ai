@@ -7,7 +7,7 @@ import type { NailModelCreate, AgentConfigs } from "./types";
 export const NAIL_MODELS_KEY = ["nail-models"] as const;
 export const AGENT_CONFIGS_KEY = ["nail-agent-configs"] as const;
 export const TOOLS_KEY = ["nail-tools"] as const;
-// 与 DeerFlow 的 useModels() 共用同一 queryKey，更新时双向失效
+// 与 nailflow 的 useModels() 共用同一 queryKey，更新时双向失效
 export const ALL_MODELS_KEY = ["models"] as const;
 
 export function useNailModels() {

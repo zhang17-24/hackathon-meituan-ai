@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field
 
 from app.gateway.authz import require_permission
 from app.gateway.deps import get_config
-from deerflow.config.app_config import AppConfig
-from deerflow.models import create_chat_model
+from nailflow.config.app_config import AppConfig
+from nailflow.models import create_chat_model
 
 logger = logging.getLogger(__name__)
 
