@@ -198,13 +198,46 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             logger.warning("NailFlow DB init failed (non-fatal)")
 
         # Start NailFlow APScheduler (daily trend report at 09:00)
+        _nail_scheduler = None
         try:
             from nail_scheduler import start_scheduler
             _nail_scheduler = start_scheduler()
         except Exception:
             logger.exception("NailFlow scheduler failed to start (non-fatal)")
 
+        # Start Feishu Polling Monitor (poll every 3s, Agent reply)
+        _feishu_monitor = None
+        try:
+            feishu_cfg = getattr(startup_config, 'nail_feishu', None) or {}
+            if feishu_cfg.get("enabled", False) and feishu_cfg.get("app_id") and feishu_cfg.get("app_secret"):
+                from packages.harness.nailflow.tools.nail.ops_channel.feishu_polling import FeishuPollingMonitor
+                _feishu_monitor = FeishuPollingMonitor(
+                    app_id=feishu_cfg.get("app_id", ""),
+                    app_secret=feishu_cfg.get("app_secret", ""),
+                    mention_only=feishu_cfg.get("mention_only", True),
+                )
+                import asyncio as _asyncio
+                _asyncio.create_task(_feishu_monitor.start())
+                logger.info("FeishuPollingMonitor started (polling mode)")
+        except Exception:
+            logger.exception("FeishuPollingMonitor failed to start (non-fatal)")
+
         yield
+
+        # Shutdown FeishuPollingMonitor
+        if _feishu_monitor is not None:
+            try:
+                import asyncio as _asyncio
+                await _asyncio.wait_for(_feishu_monitor.shutdown(), timeout=_SHUTDOWN_HOOK_TIMEOUT_SECONDS)
+            except Exception:
+                logger.exception("FeishuPollingMonitor shutdown error (non-fatal)")
+
+        # Shutdown NailFlow scheduler
+        if _nail_scheduler is not None:
+            try:
+                _nail_scheduler.shutdown(wait=False)
+            except Exception:
+                pass
 
     logger.info("Shutting down API Gateway")
 

@@ -1,0 +1,67 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-07T15:25:16.716476Z",
+  "user": {
+    "workContext": {
+      "summary": "Working on AI image generation and virtual try-on applications, specifically focusing on AI nail try-on features using tools like unified_tryon_tool and backend services like Seedream.",
+      "updatedAt": "2026-06-07T15:21:15.514496Z"
+    },
+    "personalContext": {
+      "summary": "Communicates primarily in Chinese. Interacts with AI systems to test and integrate multimodal image processing and generation tools.",
+      "updatedAt": "2026-06-07T15:18:58.376928Z"
+    },
+    "topOfMind": {
+      "summary": "Currently focused on testing and integrating the unified_tryon_tool for one-click AI nail try-on using hand and style image inputs. Actively troubleshooting backend API routing errors in the Seedream AIGC multimodal service, specifically addressing 400 InvalidParameter 'No static resource' issues for both chat/completions and images/generations endpoints under api/v1/aigc/multimodal-generation/. Prioritizing the seamless execution of the final image generation step after successful hand detection, mask generation, and prompt construction.",
+      "updatedAt": "2026-06-07T15:21:15.514496Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "Recently engaged in developing and testing AI virtual try-on technologies, with a specific emphasis on AI nail try-on implementations using unified_tryon_tool. Successfully validated the front-end and intermediate pipeline steps, including hand detection, style analysis, nail mask generation, and prompt construction. However, encountered persistent backend API routing issues with the Seedream AIGC multimodal image generation service. Debugged 400 InvalidParameter errors related to missing static resources for both 'chat/completions' and 'images/generations' endpoints under the 'api/v1/aigc/multimodal-generation/' path, indicating a broader deployment or gateway routing misconfiguration that blocks the final image generation step.",
+      "updatedAt": "2026-06-07T15:21:15.514496Z"
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_0bd5d83a",
+      "content": "User is developing or testing an AI nail try-on (AI 美甲试戴) feature using the unified_tryon_tool.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T15:18:58.376928Z",
+      "source": "ba4bf707-19e4-47af-9c53-cb2816473454"
+    },
+    {
+      "id": "fact_6ead34f6",
+      "content": "The backend AIGC multimodal image generation service used for the AI nail try-on feature is identified as Seedream.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T15:21:15.514496Z",
+      "source": "565522d8-d4b9-4948-9490-16002e9b66e8"
+    },
+    {
+      "id": "fact_1a2d046f",
+      "content": "The AI nail try-on pipeline using unified_tryon_tool successfully completes hand detection, style analysis, nail mask generation, and prompt construction before calling the image generation API.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T15:21:15.514496Z",
+      "source": "565522d8-d4b9-4948-9490-16002e9b66e8"
+    },
+    {
+      "id": "fact_b3f3ce32",
+      "content": "The Seedream AIGC multimodal service has routing issues for both 'api/v1/aigc/multimodal-generation/generation/chat/completions' and 'api/v1/aigc/multimodal-generation/generation/images/generations', returning 400 InvalidParameter 'No static resource' errors.",
+      "category": "correction",
+      "confidence": 0.95,
+      "createdAt": "2026-06-07T15:21:15.514496Z",
+      "source": "565522d8-d4b9-4948-9490-16002e9b66e8",
+      "sourceError": "LLM request failed: Error code: 400 - {'code': 'InvalidParameter', 'message': 'No static resource api/v1/aigc/multimodal-generation/generation/images/generations.'}"
+    }
+  ]
+}

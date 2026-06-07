@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-06-07T14:57:07.964841Z",
+  "lastUpdated": "2026-06-07T15:45:39.394637Z",
   "user": {
     "workContext": {
       "summary": "",
@@ -17,8 +17,8 @@
   },
   "history": {
     "recentMonths": {
-      "summary": "",
-      "updatedAt": ""
+      "summary": "In June 2026, the user conducted extensive repetitive interaction testing with the NailFlow assistant, sending the identical greeting message ('@_user_1 你好') over a hundred times in a single session. This behavior was likely aimed at observing the system's conversational persistence, automated guidance prompts, and proactive data reporting capabilities, such as the generation of the weekly nail art trend report.",
+      "updatedAt": "2026-06-07T15:45:39.391574Z"
     },
     "earlierContext": {
       "summary": "",
@@ -44,6 +44,14 @@
       "category": "context",
       "confidence": 0.7,
       "createdAt": "2026-06-07T14:51:05.019981Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_6d87fd1f",
+      "content": "User occasionally engages in high-frequency repetitive messaging (e.g., sending the exact same greeting dozens of times in a single session), likely for system testing, automation scripting, or evaluating the assistant's response handling and proactive guidance.",
+      "category": "behavior",
+      "confidence": 0.8,
+      "createdAt": "2026-06-07T15:45:39.391574Z",
       "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
     }
   ]
