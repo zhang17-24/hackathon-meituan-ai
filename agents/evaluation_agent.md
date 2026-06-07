@@ -1,6 +1,6 @@
 # EvaluationAgent: 评分驱动开发 Agent
 
-`EvaluationAgent` 是 NailFlow 的质量总控。它在每次用户端试戴或运营端任务完成后运行，判断本次输出能否支撑黑客松评分，并把缺口转成下一轮开发任务。
+`EvaluationAgent` 是 nailflow 的质量总控。它在每次用户端试戴或运营端任务完成后运行，判断本次输出能否支撑黑客松评分，并把缺口转成下一轮开发任务。
 
 ## 为什么先做评价 Agent
 

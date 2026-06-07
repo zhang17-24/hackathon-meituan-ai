@@ -23,7 +23,7 @@ class User(BaseModel):
     system_role: Literal["admin", "user"] = Field(default="user")
     nail_role: Literal["user", "ops", "dev"] = Field(
         default="user",
-        description="NailFlow portal role: user=trial, ops=operator, dev=developer"
+        description="nailflow portal role: user=trial, ops=operator, dev=developer"
     )
     created_at: datetime = Field(default_factory=_utc_now)
 

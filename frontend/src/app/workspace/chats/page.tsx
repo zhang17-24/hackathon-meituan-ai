@@ -37,7 +37,7 @@ export default function ChatsPage() {
           <header className="flex shrink-0 flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
               <div className="text-sm font-semibold text-pink-500">
-                NailFlow
+                nailflow
               </div>
               <h1 className="mt-2 text-3xl font-extrabold text-[#5b1738]">
                 历史对话

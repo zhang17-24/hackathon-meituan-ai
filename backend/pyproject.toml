@@ -1,11 +1,11 @@
 [project]
-name = "deer-flow"
+name = "nail-flow"
 version = "0.1.0"
 description = "LangGraph-based AI agent system with sandbox execution capabilities"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "deerflow-harness",
+    "nailflow-harness",
     "fastapi>=0.115.0",
     "httpx>=0.28.0",
     "python-multipart>=0.0.27",
@@ -22,10 +22,12 @@ dependencies = [
     "pyjwt>=2.9.0",
     "email-validator>=2.0.0",
     "chromadb>=1.5.9",
+    "torch>=2.12.0",
+    "transformers>=5.9.0",
 ]
 
 [project.optional-dependencies]
-postgres = ["deerflow-harness[postgres]"]
+postgres = ["nailflow-harness[postgres]"]
 discord = ["discord.py>=2.7.0"]
 
 [dependency-groups]
@@ -50,4 +52,4 @@ index-url = "https://pypi.org/simple"
 members = ["packages/harness"]
 
 [tool.uv.sources]
-deerflow-harness = { workspace = true }
+nailflow-harness = { workspace = true }

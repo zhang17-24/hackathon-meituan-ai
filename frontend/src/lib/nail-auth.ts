@@ -1,6 +1,6 @@
 // frontend/src/lib/nail-auth.ts
 /**
- * NailFlow client-side role utilities.
+ * nailflow client-side role utilities.
  * Reads nail_role from the AuthContext user object.
  */
 

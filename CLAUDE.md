@@ -1,12 +1,12 @@
-# NailFlow — CLAUDE.md
+# nailflow — CLAUDE.md
 
-> 给 Claude 的项目说明书。阅读此文件可以理解 NailFlow 的架构、约定和开发原则，直接开始高质量编码。
+> 给 Claude 的项目说明书。阅读此文件可以理解 nailflow 的架构、约定和开发原则，直接开始高质量编码。
 
 ---
 
 ## 一、项目是什么
 
-**NailFlow** 是美团黑客松"美甲 AI 试戴与智能运营"赛题的产品原型，基于 **DeerFlow**（字节开源的 LangGraph 多 Agent 框架）二次开发。
+**nailflow** 是美团黑客松"美甲 AI 试戴与智能运营"赛题的产品原型，基于 **DeerFlow**（字节开源的 LangGraph 多 Agent 框架）二次开发。
 
 核心目标：
 - **用户端**：上传手图 + 款式图 → AI 在指甲区域做局部 inpaint → 返回真实试戴效果图
@@ -38,7 +38,7 @@ hackathon-meituan-ai/
 │   │   ├── auth/               ← JWT 鉴权（nail_role 签发）
 │   │   ├── authz.py            ← @require_auth 装饰器
 │   │   └── app.py              ← FastAPI 主应用（lifespan 注册）
-│   └── packages/harness/deerflow/
+│   └── packages/harness/nailflow/
 │       ├── agents/lead_agent/  ← 主 Agent 工厂（nail_role 注入点）
 │       └── tools/nail/         ← 13 个美甲专属工具（核心业务逻辑）
 │
@@ -47,7 +47,7 @@ hackathon-meituan-ai/
 │       ├── app/workspace/nail/ ← 四端页面（tryon/dashboard/evaluation/tools）
 │       ├── components/nail/    ← 6 个美甲专属 React 组件
 │       ├── components/workspace/
-│       │   ├── nail-nav.tsx    ← 侧边 NailFlow 导航（权限过滤）
+│       │   ├── nail-nav.tsx    ← 侧边 nailflow 导航（权限过滤）
 │       │   └── settings/       ← 设置弹窗（含模型配置 Tab）
 │       ├── core/nail-models/   ← 模型配置 API hooks（React Query）
 │       └── lib/nail-auth.ts    ← 前端权限工具函数
@@ -101,7 +101,7 @@ uv sync
 uv pip install mediapipe chromadb apscheduler pillow httpx
 
 # 2. 数据库初始化（第一次，backend/ 目录下执行）
-python -c "from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()"
+python -c "from packages.harness.nailflow.tools.nail.base import init_nail_tables; init_nail_tables()"
 # 导入 mock 运营数据（可选）
 sqlite3 ../data/nailflow.db < ../data/mock/ops_signals.sql
 # 创建测试账号
@@ -152,7 +152,7 @@ payload = {
 }
 ```
 
-### 5.3 Agent 层（`backend/packages/harness/deerflow/agents/lead_agent/agent.py`）
+### 5.3 Agent 层（`backend/packages/harness/nailflow/agents/lead_agent/agent.py`）
 
 ```python
 nail_role = cfg.get("nail_role", "user")
@@ -186,7 +186,7 @@ export function canAccess(userRole: NailRole, required: NailRole): boolean {
 
 ## 六、工具系统：13 个 nail 工具
 
-所有工具在 `backend/packages/harness/deerflow/tools/nail/` 下，通过 `config.yaml` 的 `group` 字段注册。
+所有工具在 `backend/packages/harness/nailflow/tools/nail/` 下，通过 `config.yaml` 的 `group` 字段注册。
 
 ### 6.1 工具组权限
 
@@ -202,7 +202,7 @@ export function canAccess(userRole: NailRole, required: NailRole): boolean {
 tools:
   - name: hand_detect          # 工具函数名（必须与 @tool 函数名一致）
     group: nail                # 权限组
-    use: deerflow.tools.nail.hand_detect:hand_detect_tool  # Python 路径:对象名
+    use: nailflow.tools.nail.hand_detect:hand_detect_tool  # Python 路径:对象名
 ```
 
 ### 6.3 工具模型优先级链
@@ -218,7 +218,7 @@ tools:
 代码模式：
 ```python
 from .base import get_tool_model
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 
 # 在工具函数内
 _tool_model = get_tool_model("your_tool_name")  # 可能返回 None
@@ -228,11 +228,11 @@ model = create_chat_model(name=_tool_model, thinking_enabled=False, attach_traci
 ### 6.4 新建工具的标准结构
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/your_tool.py
+# backend/packages/harness/nailflow/tools/nail/your_tool.py
 import json, logging
 from langchain.tools import tool
 from .base import get_db, get_tool_model
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 
 logger = logging.getLogger(__name__)
 
@@ -264,7 +264,7 @@ def your_tool_name(param1: str, param2: str = "") -> str:
 ```yaml
   - name: your_tool_name
     group: nail          # 或 nail_ops / nail_dev
-    use: deerflow.tools.nail.your_tool:your_tool_name
+    use: nailflow.tools.nail.your_tool:your_tool_name
 ```
 
 ---
@@ -274,7 +274,7 @@ def your_tool_name(param1: str, param2: str = "") -> str:
 ### 7.1 get_db() 是上下文管理器，必须用 with
 
 ```python
-from packages.harness.deerflow.tools.nail.base import get_db
+from packages.harness.nailflow.tools.nail.base import get_db
 
 # ✅ 正确
 with get_db() as conn:
@@ -306,7 +306,7 @@ nail_tool_overrides — 工具级模型覆盖（tool_name → model_name）
 ### 7.3 模型配置辅助函数
 
 ```python
-from packages.harness.deerflow.tools.nail.base import get_tool_model
+from packages.harness.nailflow.tools.nail.base import get_tool_model
 
 # 获取工具绑定的模型（按优先级链）
 model_name = get_tool_model("style_understanding")  # str | None
@@ -315,7 +315,7 @@ model_name = get_tool_model("style_understanding")  # str | None
 ### 7.4 表初始化（幂等）
 
 ```python
-from packages.harness.deerflow.tools.nail.base import init_nail_tables
+from packages.harness.nailflow.tools.nail.base import init_nail_tables
 init_nail_tables()  # 安全多次调用，IF NOT EXISTS
 # app.py lifespan 已自动调用，无需手动调用
 ```
@@ -323,7 +323,7 @@ init_nail_tables()  # 安全多次调用，IF NOT EXISTS
 ### 7.5 路径常量
 
 ```python
-from packages.harness.deerflow.tools.nail.base import UPLOADS_DIR, RESULTS_DIR, DB_PATH
+from packages.harness.nailflow.tools.nail.base import UPLOADS_DIR, RESULTS_DIR, DB_PATH
 # 均为 Path 对象，从环境变量读取，有合理默认值
 # UPLOADS_DIR = Path(os.getenv("NAIL_UPLOADS_DIR", "data/uploads"))
 # RESULTS_DIR = Path(os.getenv("NAIL_RESULTS_DIR", "data/results"))
@@ -343,7 +343,7 @@ GET   /api/nail/dashboard?days=7         — 运营看板数据
 GET   /api/nail/image?path=...           — 静态图片服务
 ```
 
-### 8.2 NailFlow 配置 API（nail_config.py）
+### 8.2 nailflow 配置 API（nail_config.py）
 
 ```
 # 模型 CRUD
@@ -357,7 +357,7 @@ GET    /api/nail/config/agents           — 获取 main_agent/tool_default 绑�
 PUT    /api/nail/config/agents           — 更新绑定
 
 # 工具管理
-GET    /api/nail/config/tools            — 列出全部工具（NailFlow+内置）
+GET    /api/nail/config/tools            — 列出全部工具（nailflow+内置）
 PUT    /api/nail/config/tools/{name}     — 更新工具开关/模型覆盖
 ```
 
@@ -438,7 +438,7 @@ return json.dumps({"error": str(e)})
 ### 9.4 DeerFlow 的 create_chat_model 调用规范
 
 ```python
-from deerflow.models import create_chat_model
+from nailflow.models import create_chat_model
 
 # ✅ 在 nail 工具内部（非 lead_agent）
 model = create_chat_model(thinking_enabled=False, attach_tracing=False)
@@ -567,7 +567,7 @@ const { models } = useModels();
 // Agent 绑定（main_agent, tool_default）
 const { data: agentConfigs } = useAgentConfigs();
 
-// 工具列表（NailFlow 13 个 + 内置 5 个）
+// 工具列表（nailflow 13 个 + 内置 5 个）
 const { data: tools } = useTools();
 ```
 
@@ -593,9 +593,9 @@ if (!canAccess(nailRole, "ops")) {
 - 颜色主题变量从 `tailwind.config.ts` 中的 CSS variables 取
 - `text-muted-foreground`：次要文字颜色
 - `bg-card` / `bg-background`：卡片/页面背景
-- NailFlow 品牌色：`pink-500`（用户端主色）、`blue-600`（开发端）、`green-500`（确认/通过）
+- nailflow 品牌色：`pink-500`（用户端主色）、`blue-600`（开发端）、`green-500`（确认/通过）
 
-### 10.7 调用 NailFlow 专属 API
+### 10.7 调用 nailflow 专属 API
 
 ```typescript
 import { listNailModels, createNailModel, updateAgentConfigs } from "@/core/nail-models/api";
@@ -693,7 +693,7 @@ os.chdir('/path/to/hackathon-meituan-ai')  # data/ 路径相对于此
 确认 `nail_tool_overrides` 表已创建：
 ```bash
 cd backend
-python -c "from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()"
+python -c "from packages.harness.nailflow.tools.nail.base import init_nail_tables; init_nail_tables()"
 ```
 
 ### Q: config.yaml 中工具名和函数名不一致
@@ -733,7 +733,7 @@ Lead agent 有一套中间件，按顺序执行：
 ### 13.3 工具的 `use:` 路径格式
 
 ```yaml
-use: deerflow.tools.nail.hand_detect:hand_detect_tool
+use: nailflow.tools.nail.hand_detect:hand_detect_tool
 # 格式：Python 模块路径:对象名
 # 注意：模块路径从 backend/ 目录开始（uv 将 packages/harness 安装为可导入包）
 ```
@@ -742,7 +742,7 @@ use: deerflow.tools.nail.hand_detect:hand_detect_tool
 
 - **Tool（工具）**：Python 函数，用 `@tool` 装饰，在 config.yaml 注册
 - **Skill（技能）**：Markdown 文件，描述给 Agent 看的操作流程，存在 skills/ 目录
-- NailFlow 当前主要用 Tool，Skill 暂未使用
+- nailflow 当前主要用 Tool，Skill 暂未使用
 
 ---
 
@@ -784,4 +784,40 @@ use: deerflow.tools.nail.hand_detect:hand_detect_tool
 
 ---
 
-*最后更新：2026-05-29*
+*最后更新：2026-05-30*
+
+---
+
+## 开发前强制自检
+
+每次编码前必须过一遍：
+
+1. **【这是哪】** 文件在项目里的角色？属于哪一层（视图/业务/数据/基础设施）？
+2. **【搜过了吗】** grep 搜过同类功能？现有实现风格？能复用/抽象吗？
+3. **【上下游】** 数据从哪来？影响谁？接口契约、类型定义、数据库需同步吗？
+4. **【拓展性】** 不只要解决今天。单→多？本地→全局？一次写支持未来复用。
+5. **【放对地方】** 新增代码属于 utils/hooks/service/组件/页面 哪一层？
+6. **【全局规范】** API 路由、错误码、响应结构、权限、日志符合全局标准吗？
+7. **【异常与边界】** 网络失败、并发、空数据、权限不足、性能瓶颈？
+8. **【给两个方案】** 方案A：最小改动。方案B：适度重构更优。说明选择理由。
+9. **【修改清单】** 精确列出：改哪些文件、哪个函数、新增什么、删除什么。
+
+---
+
+## 识图能力
+
+你的底层模型不具备原生识图能力。遇到图片时，**不要用 Read 工具**，改用 vision.js：
+
+```
+node vision.js "<图片路径>" "用中文描述这张图片"
+```
+
+### 触发场景
+
+- 用户分享图片路径（本地或网络 URL）
+- 消息中出现 "Saved attachments:" 并列出图片
+- 用户要求分析、描述、识别图片内容
+
+### 配置好之后
+
+用户直接发图片，自动识图，无需手动打命令。

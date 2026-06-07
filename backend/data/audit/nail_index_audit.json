@@ -1,0 +1,52 @@
+{
+  "version": "2026-06-03",
+  "paths": {
+    "sqlite": "data/nailflow.db",
+    "chroma": "data/chroma"
+  },
+  "style_audit": {
+    "sqlite_count": 65,
+    "chroma_count": 65,
+    "shared_count": 65,
+    "only_in_sqlite_count": 0,
+    "only_in_chroma_count": 0,
+    "sqlite_source_counts": {
+      "wikimedia": 11,
+      "wikimedia_search": 1,
+      "static": 53
+    },
+    "chroma_source_counts": {
+      "static": 53,
+      "wikimedia": 11,
+      "wikimedia_search": 1
+    },
+    "only_in_sqlite_sample": [],
+    "only_in_chroma_sample": []
+  },
+  "knowledge_audit": {
+    "sqlite_document_count": 7,
+    "chroma_chunk_count": 33,
+    "chroma_topic_count": 6,
+    "sqlite_topic_sample": [
+      "Essie - Nail Prep Guide",
+      "常见甲型与适配规则",
+      "底胶、色胶、封层与质感",
+      "感染控制与工具消毒",
+      "指甲结构与前处理",
+      "美甲化学品与通风安全",
+      "适合 RAG / 检索的美甲标签体系建议"
+    ],
+    "chroma_topic_sample": [
+      "biohazard_disinfection",
+      "dataset_schema_recommendation",
+      "nail_anatomy_and_prep",
+      "nail_shapes",
+      "product_layers_and_finish",
+      "salon_safety_chemicals"
+    ],
+    "chunk_type_counts": {
+      "summary": 6,
+      "point": 27
+    }
+  }
+}

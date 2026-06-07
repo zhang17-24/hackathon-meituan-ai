@@ -29,11 +29,12 @@ from app.gateway.routers.nail_ops import router as nail_ops_router
 from app.gateway.routers.nail_config import router as nail_config_router
 from app.gateway.routers.nail_warehouse import router as nail_warehouse_router
 from app.gateway.routers.nail_dev import router as nail_dev_router
-from deerflow.config import app_config as deerflow_app_config
-from deerflow.config.app_config import apply_logging_level
+from app.gateway.routers.nail_data import router as nail_data_router
+from nailflow.config import app_config as nailflow_app_config
+from nailflow.config.app_config import apply_logging_level
 
-AppConfig = deerflow_app_config.AppConfig
-get_app_config = deerflow_app_config.get_app_config
+AppConfig = nailflow_app_config.AppConfig
+get_app_config = nailflow_app_config.get_app_config
 
 # Default logging; lifespan overrides from config.yaml log_level.
 logging.basicConfig(
@@ -74,8 +75,8 @@ async def _ensure_admin_user(app: FastAPI) -> None:
     from sqlalchemy import select
 
     from app.gateway.deps import get_local_provider
-    from deerflow.persistence.engine import get_session_factory
-    from deerflow.persistence.user.model import UserRow
+    from nailflow.persistence.engine import get_session_factory
+    from nailflow.persistence.user.model import UserRow
 
     try:
         provider = get_local_provider()
@@ -191,7 +192,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
 
         # 确保 NailFlow DB 表存在（幂等，安全多次调用）
         try:
-            from packages.harness.deerflow.tools.nail.base import init_nail_tables
+            from packages.harness.nailflow.tools.nail.base import init_nail_tables
             init_nail_tables()
         except Exception:
             logger.warning("NailFlow DB init failed (non-fatal)")
@@ -364,6 +365,7 @@ This gateway provides runtime endpoints for agent runs plus custom endpoints for
     app.include_router(nail_config_router)
     app.include_router(nail_warehouse_router)
     app.include_router(nail_dev_router)
+    app.include_router(nail_data_router)
 
     @app.get("/health", tags=["health"])
     async def health_check() -> dict[str, str]:
@@ -372,7 +374,7 @@ This gateway provides runtime endpoints for agent runs plus custom endpoints for
         Returns:
             Service health status information.
         """
-        return {"status": "healthy", "service": "deer-flow-gateway"}
+        return {"status": "healthy", "service": "nailflow-gateway"}
 
     return app
 

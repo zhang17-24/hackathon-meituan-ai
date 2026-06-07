@@ -15,16 +15,16 @@
 ## 文件改动清单
 
 ### 后端新建
-- `backend/packages/harness/deerflow/tools/nail/nail_style_recommend.py`
-- `backend/packages/harness/deerflow/tools/nail/user_pref_analytics.py`
-- `backend/packages/harness/deerflow/tools/nail/nail_run_query.py`
+- `backend/packages/harness/nailflow/tools/nail/nail_style_recommend.py`
+- `backend/packages/harness/nailflow/tools/nail/user_pref_analytics.py`
+- `backend/packages/harness/nailflow/tools/nail/nail_run_query.py`
 - `backend/scripts/init_nail_styles.py`
 
 ### 后端修改
-- `backend/packages/harness/deerflow/tools/nail/base.py`（新增2表+1列+update_user_pref_vector）
-- `backend/packages/harness/deerflow/tools/nail/preference_rag.py`（重构）
-- `backend/packages/harness/deerflow/agents/lead_agent/agent.py`（nail_page_mode注入+tool_call_log中间件）
-- `backend/packages/harness/deerflow/agents/lead_agent/prompt.py`（MODE_PROMPT_PREFIX+apply_prompt_template新参数）
+- `backend/packages/harness/nailflow/tools/nail/base.py`（新增2表+1列+update_user_pref_vector）
+- `backend/packages/harness/nailflow/tools/nail/preference_rag.py`（重构）
+- `backend/packages/harness/nailflow/agents/lead_agent/agent.py`（nail_page_mode注入+tool_call_log中间件）
+- `backend/packages/harness/nailflow/agents/lead_agent/prompt.py`（MODE_PROMPT_PREFIX+apply_prompt_template新参数）
 - `backend/app/gateway/routers/nail_config.py`（新增page-mode端点+enabled_pages支持）
 - `backend/app/gateway/routers/nail_ops.py`（新增save_style+pref_distribution+dashboard扩展）
 - `backend/config.yaml`（注册3个新工具）
@@ -47,7 +47,7 @@
 ## Task 1: 数据库 Schema 扩展
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/base.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/base.py`
 
 - [ ] **Step 1: 在 `init_nail_tables()` 的 `executescript` 末尾追加3个新建表/列语句**
 
@@ -177,7 +177,7 @@ def update_user_pref_vector(user_id: str, style_id: str, signal_type: str) -> No
 ```bash
 cd /path/to/hackathon-meituan-ai/backend
 python -c "
-from packages.harness.deerflow.tools.nail.base import init_nail_tables
+from packages.harness.nailflow.tools.nail.base import init_nail_tables
 init_nail_tables()
 print('OK')
 "
@@ -198,8 +198,8 @@ sqlite3 data/nailflow.db ".tables"
 ## Task 2: nail_page_mode 后端注入（Agent + Prompt）
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/agents/lead_agent/prompt.py`
-- Modify: `backend/packages/harness/deerflow/agents/lead_agent/agent.py`
+- Modify: `backend/packages/harness/nailflow/agents/lead_agent/prompt.py`
+- Modify: `backend/packages/harness/nailflow/agents/lead_agent/agent.py`
 
 - [ ] **Step 1: 在 `prompt.py` 中扩展 `_NAIL_ROLE_PREFIX` 为按 mode 的提示词**
 
@@ -313,7 +313,7 @@ def apply_prompt_template(
 ```bash
 cd /path/to/hackathon-meituan-ai/backend
 uv run python -c "
-from packages.harness.deerflow.agents.lead_agent.prompt import apply_prompt_template
+from packages.harness.nailflow.agents.lead_agent.prompt import apply_prompt_template
 p = apply_prompt_template(nail_role='ops', nail_page_mode='ops')
 assert '运营助手' in p, 'ops prefix missing'
 p2 = apply_prompt_template(nail_role='dev', nail_page_mode='eval')
@@ -418,8 +418,8 @@ curl -s http://localhost:8001/api/nail/config/page-mode/ops | python3 -m json.to
 ## Task 4: RAG 推荐系统重构
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/tools/nail/preference_rag.py`（重构）
-- Create: `backend/packages/harness/deerflow/tools/nail/nail_style_recommend.py`
+- Modify: `backend/packages/harness/nailflow/tools/nail/preference_rag.py`（重构）
+- Create: `backend/packages/harness/nailflow/tools/nail/nail_style_recommend.py`
 - Create: `backend/scripts/init_nail_styles.py`
 
 - [ ] **Step 1: 重写 `preference_rag.py` 为偏好向量更新工具**
@@ -427,7 +427,7 @@ curl -s http://localhost:8001/api/nail/config/page-mode/ops | python3 -m json.to
 将 `preference_rag.py` 内容完全替换为：
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/preference_rag.py
+# backend/packages/harness/nailflow/tools/nail/preference_rag.py
 """用户偏好 RAG：保存试戴/收藏信号，更新用户偏好向量。"""
 import json
 import logging
@@ -492,7 +492,7 @@ def preference_rag_tool(action: str, user_id: str, style_id: str = "", data: str
 - [ ] **Step 2: 创建 `nail_style_recommend.py`**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/nail_style_recommend.py
+# backend/packages/harness/nailflow/tools/nail/nail_style_recommend.py
 """基于用户偏好向量，在款式向量空间中查找最近邻，返回推荐款式。"""
 import json
 import logging
@@ -707,7 +707,7 @@ uv run python -c "
 import sys, os
 sys.path.insert(0, '.')
 os.chdir('..')
-from backend.packages.harness.deerflow.tools.nail.nail_style_recommend import nail_style_recommend_tool
+from backend.packages.harness.nailflow.tools.nail.nail_style_recommend import nail_style_recommend_tool
 result = nail_style_recommend_tool.invoke({'user_id': 'test-user-no-pref', 'top_k': 3})
 import json; data = json.loads(result)
 print('count:', data.get('count'), 'message:', data.get('message'))
@@ -721,13 +721,13 @@ print('count:', data.get('count'), 'message:', data.get('message'))
 ## Task 5: 新增工具 user_pref_analytics + nail_run_query
 
 **Files:**
-- Create: `backend/packages/harness/deerflow/tools/nail/user_pref_analytics.py`
-- Create: `backend/packages/harness/deerflow/tools/nail/nail_run_query.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/user_pref_analytics.py`
+- Create: `backend/packages/harness/nailflow/tools/nail/nail_run_query.py`
 
 - [ ] **Step 1: 创建 `user_pref_analytics.py`**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/user_pref_analytics.py
+# backend/packages/harness/nailflow/tools/nail/user_pref_analytics.py
 """聚合分析全体用户偏好分布，识别主要风格群体。"""
 import json
 import logging
@@ -806,7 +806,7 @@ def user_pref_analytics_tool(top_k_styles: int = 10) -> str:
 - [ ] **Step 2: 创建 `nail_run_query.py`**
 
 ```python
-# backend/packages/harness/deerflow/tools/nail/nail_run_query.py
+# backend/packages/harness/nailflow/tools/nail/nail_run_query.py
 """查询试戴执行数据：工具调用链、Agent 思考过程、时间统计。"""
 import json
 import logging
@@ -913,8 +913,8 @@ def nail_run_query_tool(user_id: str = "", limit: int = 3) -> str:
 ```bash
 cd /path/to/hackathon-meituan-ai/backend
 uv run python -c "
-from packages.harness.deerflow.tools.nail.user_pref_analytics import user_pref_analytics_tool
-from packages.harness.deerflow.tools.nail.nail_run_query import nail_run_query_tool
+from packages.harness.nailflow.tools.nail.user_pref_analytics import user_pref_analytics_tool
+from packages.harness.nailflow.tools.nail.nail_run_query import nail_run_query_tool
 print('imports OK')
 "
 ```
@@ -926,7 +926,7 @@ print('imports OK')
 ## Task 6: tool_call_log 写入中间件
 
 **Files:**
-- Modify: `backend/packages/harness/deerflow/agents/lead_agent/agent.py`
+- Modify: `backend/packages/harness/nailflow/agents/lead_agent/agent.py`
 
 - [ ] **Step 1: 在 `agent.py` 顶部导入区添加**
 
@@ -954,7 +954,7 @@ def _log_tool_call(
     """幂等写入工具调用日志到 tool_call_log 表，失败不影响主流程。"""
     try:
         import json as _json
-        from packages.harness.deerflow.tools.nail.base import get_db as _nail_get_db
+        from packages.harness.nailflow.tools.nail.base import get_db as _nail_get_db
         with _nail_get_db() as conn:
             conn.execute(
                 "INSERT OR IGNORE INTO tool_call_log "
@@ -1026,7 +1026,7 @@ sleep 5
 curl -s http://localhost:8001/health
 ```
 
-期望输出：`{"status":"healthy","service":"deer-flow-gateway"}`
+期望输出：`{"status":"healthy","service":"nailflow-gateway"}`
 
 ---
 
@@ -1048,7 +1048,7 @@ class SaveStyleRequest(BaseModel):
 @require_auth
 async def save_style(style_id: str, body: SaveStyleRequest, request: Request):
     """用户收藏款式：写入偏好向量 + ops_signals。"""
-    from packages.harness.deerflow.tools.nail.base import update_user_pref_vector, get_db
+    from packages.harness.nailflow.tools.nail.base import update_user_pref_vector, get_db
     user = request.state.user
     user_id = str(user.id)
 
@@ -1070,7 +1070,7 @@ async def save_style(style_id: str, body: SaveStyleRequest, request: Request):
 @require_auth
 async def get_pref_distribution(request: Request):
     """返回全体用户偏好风格分布（供运营看板饼图使用）。"""
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
     with get_db() as conn:
         rows = conn.execute("""
             SELECT s.style_id,
@@ -1121,7 +1121,7 @@ async def get_pref_distribution(request: Request):
 @require_auth
 async def get_latest_run(request: Request):
     """返回最近一次 nail_run 的工具调用链数据，供前端 ToolTimeline 展示。"""
-    from packages.harness.deerflow.tools.nail.base import get_db
+    from packages.harness.nailflow.tools.nail.base import get_db
     user = request.state.user
     with get_db() as conn:
         run = conn.execute(
@@ -1974,15 +1974,15 @@ enabled_pages?: string[];
 ```yaml
   - name: nail_style_recommend_tool
     group: nail
-    use: deerflow.tools.nail.nail_style_recommend:nail_style_recommend_tool
+    use: nailflow.tools.nail.nail_style_recommend:nail_style_recommend_tool
 
   - name: user_pref_analytics_tool
     group: nail_ops
-    use: deerflow.tools.nail.user_pref_analytics:user_pref_analytics_tool
+    use: nailflow.tools.nail.user_pref_analytics:user_pref_analytics_tool
 
   - name: nail_run_query_tool
     group: nail_dev
-    use: deerflow.tools.nail.nail_run_query:nail_run_query_tool
+    use: nailflow.tools.nail.nail_run_query:nail_run_query_tool
 ```
 
 - [ ] **Step 3: 重启后端验证工具注册**

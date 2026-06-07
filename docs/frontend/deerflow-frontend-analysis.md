@@ -1,4 +1,4 @@
-# DeerFlow 前端深度分析 — NailFlow 组件设计参考
+# DeerFlow 前端深度分析 — nailflow 组件设计参考
 
 > 目标：在 DeerFlow 现有 workspace 基础上，以最小侵入的方式增加美甲 AI 试戴相关页面和组件。
 
@@ -90,7 +90,7 @@ DeerFlow 所有工作区页面遵循：
 
 ---
 
-## 四、已有 NailFlow 页面现状与问题
+## 四、已有 nailflow 页面现状与问题
 
 ### 4.1 当前页面（workspace/nail/）
 
@@ -185,7 +185,7 @@ useI18n()           // 国际化（目前不支持美甲词条，暂时用硬编
 - 所有页面包裹在标准 `flex h-full flex-col` 结构中
 - 顶部必须有 `SidebarTrigger + Separator + Breadcrumb` header 条
 
-### 7.2 美学方向（NailFlow 专属）
+### 7.2 美学方向（nailflow 专属）
 - 在 DeerFlow 的中性设计系统中加入**柔和玫瑰粉**作为 nail 品牌色
 - 品牌色变量：`--nail-primary: oklch(0.65 0.18 350)` （玫瑰粉）
 - 试戴结果展示用**大图优先**布局，强调视觉对比
@@ -222,7 +222,7 @@ import {
   <Separator orientation="vertical" className="mr-2 h-4" />
   <Breadcrumb>
     <BreadcrumbList>
-      <BreadcrumbItem>NailFlow</BreadcrumbItem>
+      <BreadcrumbItem>nailflow</BreadcrumbItem>
       <BreadcrumbSeparator />
       <BreadcrumbItem>
         <BreadcrumbPage>AI 美甲试戴</BreadcrumbPage>

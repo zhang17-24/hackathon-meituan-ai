@@ -1,0 +1,50 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-07T14:57:07.964841Z",
+  "user": {
+    "workContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "personalContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "topOfMind": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_cc7e0d89",
+      "content": "User communicates in Chinese.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T14:51:05.019981Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    },
+    {
+      "id": "fact_4d544aa6",
+      "content": "User interacts with the NailFlow 智能运营助手 (NailFlow Intelligent Operations Assistant) platform.",
+      "category": "context",
+      "confidence": 0.7,
+      "createdAt": "2026-06-07T14:51:05.019981Z",
+      "source": "7fbbfd34-e0df-4ce3-aaaa-af15da5f4877"
+    }
+  ]
+}

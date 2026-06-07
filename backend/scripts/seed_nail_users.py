@@ -1,4 +1,4 @@
-"""创建 NailFlow 三端测试账号（idempotent，可重复运行）"""
+"""创建 nailflow 三端测试账号（idempotent，可重复运行）"""
 import asyncio
 import sys
 from pathlib import Path
@@ -15,7 +15,7 @@ USERS = [
 
 
 async def main():
-    from deerflow.persistence import init_engine, get_session_factory
+    from nailflow.persistence import init_engine, get_session_factory
     from app.gateway.auth.repositories.sqlite import SQLiteUserRepository
     from app.gateway.auth.password import hash_password
     from app.gateway.auth.models import User
@@ -23,7 +23,7 @@ async def main():
     # Load config to find the SQLite path
     import os
     sqlite_dir = os.getenv("SQLITE_DIR", ".")
-    db_url = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{sqlite_dir}/deer-flow.db")
+    db_url = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{sqlite_dir}/nail-flow.db")
 
     await init_engine("sqlite", url=db_url, sqlite_dir=sqlite_dir)
     sf = get_session_factory()

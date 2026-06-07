@@ -1,15 +1,15 @@
-# NailFlow — 美甲 AI 试戴与智能运营
+# nailflow — 美甲 AI 试戴与智能运营
 
-> 美团黑客松赛题原型 · 基于 DeerFlow（字节多 Agent 框架）二次开发  
+> 美团黑客松赛题原型 · 基于 nailflow（字节多 Agent 框架）二次开发  
 > **多 Agent 编排 + AI 试戴 + 智能运营 + 三端权限 + 自动评分**
 
 ---
 
 ## 产品概述
 
-NailFlow 解决了美甲行业的两个核心矛盾：
+nailflow 解决了美甲行业的两个核心矛盾：
 
-| 问题 | NailFlow 解决方案 |
+| 问题 | nailflow 解决方案 |
 |------|-----------------|
 | 用户无法"所见即所得"，试色靠想象 | AI 在真实手图上 inpaint，生成毫米级精准的试戴效果图 |
 | 运营无法"实时感知"爆款趋势 | 多 Agent 自动分析收藏/搜索/订单信号，生成可执行营销方案 |
@@ -33,6 +33,7 @@ NailFlow 解决了美甲行业的两个核心矛盾：
 - ⚡ 智能 Prompt 构建 + 字节生图 API inpaint
 - ✅ 自动质量评估（边界/肤色/光照/款式相似度）
 - 💾 用户偏好 RAG 记忆（ChromaDB 向量检索）
+- 🔎 美甲 RAG 检索采用局部化 embedding：甲面裁剪 + 弱背景 masked view + 文本融合，降低手和背景噪声
 
 ### 运营端智能运营
 - 📈 实时聚合运营信号（点击/收藏/订单/搜索）
@@ -63,7 +64,7 @@ NailFlow 解决了美甲行业的两个核心矛盾：
 └──────────────────────┬──────────────────────────────┘
                        │
 ┌──────────────────────▼──────────────────────────────┐
-│           DeerFlow LangGraph Runtime                │
+│           nailflow LangGraph Runtime                │
 │  ┌─────────────────────────────────────────────┐   │
 │  │              Lead Agent                     │   │
 │  │  nail_role → 工具组权限过滤                  │   │
@@ -88,7 +89,7 @@ NailFlow 解决了美甲行业的两个核心矛盾：
 
 | 层 | 技术 | 版本 |
 |----|------|------|
-| Agent 编排 | DeerFlow + LangGraph | 0.1.0 |
+| Agent 编排 | nailflow + LangGraph | 0.1.0 |
 | 后端 | FastAPI + uvicorn | 0.115+ |
 | 手部检测 | MediaPipe Tasks API | 0.10+ |
 | 向量库 | ChromaDB（进程内） | 1.5.9+ |
@@ -170,8 +171,13 @@ pnpm install
 ```bash
 # 必须在 backend/ 目录下执行
 cd backend
-python -c "from packages.harness.deerflow.tools.nail.base import init_nail_tables; init_nail_tables()"
+python -c "from packages.harness.nailflow.tools.nail.base import init_nail_tables; init_nail_tables()"
 python scripts/seed_nail_users.py
+# 可选：将真实款式图放到 backend/data/styles/，文件名使用 <style_id>.jpg/.png
+# 然后执行图片+文本融合索引初始化
+uv run python scripts/init_nail_styles.py
+# 可选：抓取一批公开授权的美甲知识与 Commons 图片种子
+uv run python scripts/fetch_seed_nail_assets.py
 ```
 
 ### 6. 启动服务
@@ -205,7 +211,7 @@ hackathon-meituan-ai/
 ├── CLAUDE.md                    # Claude 开发指南（详细架构说明）
 ├── README.md                    # 本文件
 ├── ARCHITECTURE.md              # 系统架构设计文档
-├── config.yaml                  # DeerFlow 模型/工具/沙箱配置
+├── config.yaml                  # nailflow 模型/工具/沙箱配置
 ├── .env                         # 环境变量（gitignored）
 │
 ├── backend/                     # Python 后端
@@ -215,10 +221,10 @@ hackathon-meituan-ai/
 │   │   │   ├── nail_config.py   # 模型/工具配置 API (/api/nail/config/*)
 │   │   │   ├── auth.py          # 登录/注册/JWT
 │   │   │   ├── models.py        # 模型列表（DB + config.yaml 合并）
-│   │   │   └── ...              # 15 个 DeerFlow 标准路由
+│   │   │   └── ...              # 15 个 nailflow 标准路由
 │   │   ├── auth/                # JWT 鉴权（nail_role 签发）
 │   │   └── app.py               # FastAPI 主应用
-│   └── packages/harness/deerflow/
+│   └── packages/harness/nailflow/
 │       ├── agents/lead_agent/   # 主 Agent（nail_role 权限注入）
 │       └── tools/nail/          # 13 个美甲专属工具
 │           ├── base.py          # DB 连接 + 9 张表 + get_tool_model()
@@ -238,7 +244,7 @@ hackathon-meituan-ai/
 │
 ├── frontend/                    # Next.js 16 前端
 │   └── src/
-│       ├── app/workspace/nail/  # 四个 NailFlow 页面
+│       ├── app/workspace/nail/  # 四个 nailflow 页面
 │       │   ├── tryon/           # 用户端试戴
 │       │   ├── dashboard/       # 运营看板
 │       │   ├── evaluation/      # 开发自评
@@ -285,7 +291,7 @@ hackathon-meituan-ai/
 | GET | `/api/nail/config/tools` | 工具列表（13+5） |
 | PUT | `/api/nail/config/tools/{name}` | 更新工具开关/模型 |
 
-### 标准 DeerFlow 接口
+### 标准 nailflow 接口
 
 | 方法 | 路径 | 说明 |
 |------|------|------|
@@ -299,7 +305,7 @@ hackathon-meituan-ai/
 
 ## 数据库设计
 
-SQLite 数据库位于 `backend/data/nailflow.db`（相对于 `backend/` 目录），共 9 张表：
+SQLite 数据库位于 `backend/data/nailflow.db`（相对于 `backend/` 目录），包含运行记录、配置、素材仓库、用户画像和款式 catalog 等多张表。
 
 | 表名 | 用途 |
 |------|------|
@@ -313,11 +319,13 @@ SQLite 数据库位于 `backend/data/nailflow.db`（相对于 `backend/` 目录�
 | `nail_agent_configs` | Agent 模型绑定配置 |
 | `nail_tool_overrides` | 工具级模型覆盖配置 |
 
+`nail_style_catalog` 额外记录 `image_path`、`color_group`、`pattern_type` 等款式元数据，配合 ChromaDB 中的 Chinese-CLIP 向量做图片优先的 RAG 检索。
+
 ---
 
 ## 模型配置说明
 
-NailFlow 支持三种方式配置模型，优先级从高到低：
+nailflow 支持三种方式配置模型，优先级从高到低：
 
 1. **UI 配置**（推荐）：「设置 → 模型配置」，支持千问/DeepSeek/豆包/Kimi/自定义
 2. **config.yaml**：静态配置，适合固定部署
@@ -337,11 +345,11 @@ NailFlow 支持三种方式配置模型，优先级从高到低：
 
 ## 赛题评分对照
 
-| 评分维度 | 权重 | NailFlow 实现 |
+| 评分维度 | 权重 | nailflow 实现 |
 |---------|------|-------------|
 | 完整性 | 30% | 试戴全链路（6 步）+ 运营闭环 + 3 类异常处理 |
 | 应用效果 | 25% | inpaint 局部生图 + 质量 5 维度评估 |
-| 创新性 | 20% | DeerFlow 多 Agent + RAG 偏好 + 自评反馈 |
+| 创新性 | 20% | nailflow 多 Agent + RAG 偏好 + 自评反馈 |
 | 商业价值 | 15% | ActionProposal 确认机制 + 运营记忆 |
 | 硬约束 | 10% | mock 模式保证不超时 + 三类失败降级 |
 
@@ -355,7 +363,7 @@ NailFlow 支持三种方式配置模型，优先级从高到低：
 
 ### 添加新工具
 
-1. 在 `backend/packages/harness/deerflow/tools/nail/` 创建工具文件
+1. 在 `backend/packages/harness/nailflow/tools/nail/` 创建工具文件
 2. 在 `config.yaml` 注册工具和权限组
 3. （可选）在 `backend/app/gateway/routers/nail_config.py` 的 `_NAIL_TOOL_META` 添加工具元信息供前端展示
 
@@ -380,7 +388,7 @@ NailFlow 支持三种方式配置模型，优先级从高到低：
 
 ## License
 
-本项目为美团黑客松参赛作品，基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发。
+本项目为美团黑客松参赛作品，基于 [nailflow](https://github.com/bytedance/nail-flow) 二次开发。
 
 ---
 

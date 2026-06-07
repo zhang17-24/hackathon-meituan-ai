@@ -17,7 +17,7 @@ class TokenPayload(BaseModel):
     exp: datetime
     iat: datetime | None = None
     ver: int = 0  # token_version — must match User.token_version
-    nail_role: Literal["user", "ops", "dev"] = "user"  # NailFlow portal role
+    nail_role: Literal["user", "ops", "dev"] = "user"  # nailflow portal role
 
 
 def create_access_token(
@@ -32,7 +32,7 @@ def create_access_token(
         user_id: The user's UUID as string
         expires_delta: Optional custom expiry, defaults to 7 days
         token_version: User's current token_version for invalidation
-        nail_role: NailFlow portal role (user/ops/dev)
+        nail_role: nailflow portal role (user/ops/dev)
 
     Returns:
         Encoded JWT string

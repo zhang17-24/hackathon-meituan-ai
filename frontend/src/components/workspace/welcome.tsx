@@ -110,14 +110,14 @@ export function Welcome({
       {searchParams.get("mode") === "skill" ? (
         <div className="max-w-2xl text-sm leading-7 text-[#8b7180]">
           <p>
-            用自然语言描述你想要的能力，DeerFlow 会帮助你整理成可复用的 Skill。
+            用自然语言描述你想要的能力，nailflow 会帮助你整理成可复用的 Skill。
           </p>
         </div>
       ) : (
         <div className="max-w-2xl text-sm leading-7 text-[#8b7180]">
           <p>
-            欢迎使用 DeerFlow，一个完全开源的超级智能体。通过内置和自定义的
-            Skills，DeerFlow 可以帮你搜索网络、分析数据，还能为你生成幻灯片、
+            欢迎使用 nailflow，一个完全开源的超级智能体。通过内置和自定义的
+            Skills，nailflow 可以帮你搜索网络、分析数据，还能为你生成幻灯片、
             图片、视频、播客及网页等，几乎可以做任何事情。
           </p>
         </div>

@@ -1,0 +1,16 @@
+{
+  "version": "2026-06-02",
+  "source_count": 1,
+  "chunk_count": 11,
+  "report": [
+    {
+      "doc_id": "essie_prep",
+      "source_url": "https://www.essie.com/inspiration/tips-and-trends/how-to-prep-nail-for-manicure",
+      "source_site": "essie",
+      "topic": "nail_anatomy_and_prep",
+      "status": "ok",
+      "chunk_count": 11,
+      "resolved_title": "how to prep nails for manicure"
+    }
+  ]
+}

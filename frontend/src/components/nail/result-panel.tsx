@@ -206,22 +206,20 @@ export function NailResultPanel({
         {view === "compare" && originalUrl && (
           <div className="grid grid-cols-2 gap-3">
             <div className="relative overflow-hidden rounded-3xl bg-white/45 shadow-inner shadow-pink-100">
-              { }
               <img
                 src={originalUrl}
                 alt="原始手图"
-                className="max-h-64 w-full object-cover"
+                className="max-h-64 w-full object-contain bg-white/60"
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-pink-950/60 to-transparent px-3 py-2">
                 <span className="text-[11px] font-bold text-white">原图</span>
               </div>
             </div>
             <div className="relative overflow-hidden rounded-3xl bg-white/45 shadow-inner shadow-pink-100">
-              { }
               <img
                 src={resultUrl}
                 alt="试戴效果"
-                className="max-h-64 w-full object-cover"
+                className="max-h-64 w-full object-contain bg-white/60"
               />
               <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-pink-700/70 to-transparent px-3 py-2">
                 <span className="text-[11px] font-bold text-pink-50">

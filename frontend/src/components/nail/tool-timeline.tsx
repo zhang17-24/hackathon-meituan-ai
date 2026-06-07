@@ -23,7 +23,6 @@ const TOOL_EMOJI: Record<string, string> = {
   prompt_builder_tool:      "📝",
   image_generation_tool:    "🖼️",
   quality_check_tool:       "✅",
-  evaluation_tool:          "📊",
   trend_query_tool:         "📈",
   ops_analysis_tool:        "💡",
   nail_run_query_tool:      "🔍",

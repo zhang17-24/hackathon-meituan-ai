@@ -31,6 +31,20 @@ import { textOfMessage } from "@/core/threads/utils";
 import { env } from "@/env";
 import { cn } from "@/lib/utils";
 
+const PENDING_NAIL_TRYON_STORAGE_KEY = "nail-pending-chat-tryon";
+
+type PendingChatTryonPayload = {
+  threadId: string;
+  text: string;
+  files: {
+    filename: string;
+    size: number;
+    path?: string;
+    status?: "uploading" | "uploaded";
+  }[];
+  extraContext?: Record<string, unknown>;
+};
+
 export default function ChatPage() {
   const { t } = useI18n();
   const { threadId, setThreadId, isNewThread, setIsNewThread, isMock } =
@@ -50,6 +64,7 @@ export default function ChatPage() {
   );
   const backendTokenUsage = threadTokenUsageToTokenUsage(threadTokenUsage.data);
   const mountedRef = useRef(false);
+  const autoSendPendingTryonRef = useRef<string | null>(null);
   useSpecificChatMode();
 
   useEffect(() => {
@@ -121,6 +136,56 @@ export default function ChatPage() {
   const handleStop = useCallback(async () => {
     await thread.stop();
   }, [thread]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !threadId) {
+      return;
+    }
+    if (autoSendPendingTryonRef.current === threadId) {
+      return;
+    }
+
+    const rawPayload = window.sessionStorage.getItem(
+      PENDING_NAIL_TRYON_STORAGE_KEY,
+    );
+    if (!rawPayload) {
+      return;
+    }
+
+    let payload: PendingChatTryonPayload | null = null;
+    try {
+      payload = JSON.parse(rawPayload) as PendingChatTryonPayload;
+    } catch {
+      window.sessionStorage.removeItem(PENDING_NAIL_TRYON_STORAGE_KEY);
+      return;
+    }
+
+    if (payload.threadId !== threadId) {
+      return;
+    }
+
+    autoSendPendingTryonRef.current = threadId;
+    window.sessionStorage.removeItem(PENDING_NAIL_TRYON_STORAGE_KEY);
+    setIsWelcomeMode(false);
+
+    void sendMessage(
+      threadId,
+      {
+        text: payload.text,
+        files: [],
+      },
+      payload.extraContext,
+      {
+        additionalKwargs: payload.files.length > 0 ? { files: payload.files } : {},
+      },
+    ).catch(() => {
+      autoSendPendingTryonRef.current = null;
+      window.sessionStorage.setItem(
+        PENDING_NAIL_TRYON_STORAGE_KEY,
+        rawPayload,
+      );
+    });
+  }, [sendMessage, threadId]);
 
   const tokenUsageInlineMode = tokenUsageEnabled
     ? localSettings.tokenUsage.inlineMode

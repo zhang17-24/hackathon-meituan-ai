@@ -1,0 +1,90 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-03T17:32:13.775393Z",
+  "user": {
+    "workContext": {
+      "summary": "小美是一名在北京工作的白领。",
+      "updatedAt": "2026-06-03T17:32:13.773804Z"
+    },
+    "personalContext": {
+      "summary": "小美对美甲有浓厚兴趣，喜欢根据工作日和周末的不同场景尝试不同风格的美甲设计，注重款式与自身肤色及手型的搭配。",
+      "updatedAt": "2026-06-03T17:32:13.773804Z"
+    },
+    "topOfMind": {
+      "summary": "小美目前正在寻找和探索适合日常通勤与周末休闲的美甲款式。她重点关注经典优雅的法式白边设计，以及适合周末的猫眼和亮片美甲。同时，她希望结合自己偏白的肤色和瘦长的手型，获取个性化的美甲推荐或进行AI试戴体验。",
+      "updatedAt": "2026-06-03T17:32:13.773804Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "近期小美主要关注美甲款式的选择与搭配，特别是探索适合职场通勤的低调法式美甲，以及适合周末放松的猫眼和亮片设计，并开始尝试利用AI工具进行美甲试戴和款式推荐。",
+      "updatedAt": "2026-06-03T17:32:13.773804Z"
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "小美是一位在北京工作的白领女性，具有偏白的肤色和瘦长的手型。她对美甲艺术有着明确的个人审美和长期的兴趣，善于根据不同的生活场景（如工作日与周末）调整自己的美甲风格。",
+      "updatedAt": "2026-06-03T17:32:13.773804Z"
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_2f443375",
+      "content": "用户名叫小美",
+      "category": "context",
+      "confidence": 1.0,
+      "createdAt": "2026-06-03T17:32:13.773804Z",
+      "source": "9f681c28-d706-47bd-bd5b-dd3aae20a36c"
+    },
+    {
+      "id": "fact_1376bce1",
+      "content": "用户是一名在北京上班的白领",
+      "category": "context",
+      "confidence": 1.0,
+      "createdAt": "2026-06-03T17:32:13.773804Z",
+      "source": "9f681c28-d706-47bd-bd5b-dd3aae20a36c"
+    },
+    {
+      "id": "fact_eeb5726a",
+      "content": "用户特别喜欢法式美甲，尤其是白色法式边",
+      "category": "preference",
+      "confidence": 1.0,
+      "createdAt": "2026-06-03T17:32:13.773804Z",
+      "source": "9f681c28-d706-47bd-bd5b-dd3aae20a36c"
+    },
+    {
+      "id": "fact_1510243d",
+      "content": "用户在工作日上班时需要低调一点的美甲款式",
+      "category": "preference",
+      "confidence": 1.0,
+      "createdAt": "2026-06-03T17:32:13.773804Z",
+      "source": "9f681c28-d706-47bd-bd5b-dd3aae20a36c"
+    },
+    {
+      "id": "fact_ca33996e",
+      "content": "用户在周末喜欢尝试猫眼或者亮片美甲设计",
+      "category": "preference",
+      "confidence": 1.0,
+      "createdAt": "2026-06-03T17:32:13.773804Z",
+      "source": "9f681c28-d706-47bd-bd5b-dd3aae20a36c"
+    },
+    {
+      "id": "fact_c45dff80",
+      "content": "用户的肤色偏白",
+      "category": "context",
+      "confidence": 1.0,
+      "createdAt": "2026-06-03T17:32:13.773804Z",
+      "source": "9f681c28-d706-47bd-bd5b-dd3aae20a36c"
+    },
+    {
+      "id": "fact_9017a400",
+      "content": "用户的手型偏瘦长",
+      "category": "context",
+      "confidence": 1.0,
+      "createdAt": "2026-06-03T17:32:13.773804Z",
+      "source": "9f681c28-d706-47bd-bd5b-dd3aae20a36c"
+    }
+  ]
+}

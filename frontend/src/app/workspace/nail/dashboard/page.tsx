@@ -417,7 +417,7 @@ function Header({ extra }: { extra?: React.ReactNode }) {
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem className="text-muted-foreground hidden sm:block">
-            NailFlow
+            nailflow
           </BreadcrumbItem>
           <BreadcrumbSeparator className="hidden sm:block" />
           <BreadcrumbItem>
