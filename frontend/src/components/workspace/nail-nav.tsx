@@ -4,6 +4,8 @@
 import {
   BoxIcon,
   ChartNoAxesColumnIcon,
+  DatabaseIcon,
+  HeartIcon,
   SparklesIcon,
   WrenchIcon,
 } from "lucide-react";
@@ -24,7 +26,7 @@ interface NailNavItem {
 
 const NAV_ITEMS: NailNavItem[] = [
   {
-    href: "/workspace/nail/tryon",
+    href: "/workspace/chats/new?mode=nail",
     label: "AI 试戴",
     icon: SparklesIcon,
     requiredRole: "user",
@@ -47,6 +49,18 @@ const NAV_ITEMS: NailNavItem[] = [
     icon: ChartNoAxesColumnIcon,
     requiredRole: "ops",
   },
+  {
+    href: "/workspace/nail/data",
+    label: "数据中心",
+    icon: DatabaseIcon,
+    requiredRole: "ops",
+  },
+  {
+    href: "/workspace/nail/evaluation",
+    label: "评分面板",
+    icon: HeartIcon,
+    requiredRole: "dev",
+  },
 ];
 
 export function NailNav() {
@@ -66,7 +80,6 @@ export function NailNav() {
     const [hrefPath, hrefQuery] = href.split("?");
     if (hrefQuery) {
       const params = new URLSearchParams(hrefQuery);
-      // 路径匹配（/workspace/chats/new 前缀）+ mode 参数匹配
       return (
         (pathname.startsWith("/workspace/chats") || pathname === hrefPath) &&
         params.get("mode") === searchParams.get("mode")

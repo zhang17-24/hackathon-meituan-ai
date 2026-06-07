@@ -20,22 +20,22 @@ class ToolTestRequest(BaseModel):
 
 # 工具名 → Python 导入路径映射
 _TOOL_REGISTRY = {
-    "unified_tryon_tool":      "deerflow.tools.nail.unified_tryon:unified_tryon_tool",
-    "hand_detect_tool":        "deerflow.tools.nail.hand_detect:hand_detect_tool",
-    "nail_mask_tool":          "deerflow.tools.nail.nail_mask:nail_mask_tool",
-    "style_understanding_tool":"deerflow.tools.nail.style_understanding:style_understanding_tool",
-    "prompt_builder_tool":     "deerflow.tools.nail.prompt_builder:prompt_builder_tool",
-    "image_generation_tool":   "deerflow.tools.nail.image_generation:image_generation_tool",
-    "quality_check_tool":      "deerflow.tools.nail.quality_check:quality_check_tool",
-    "trend_query_tool":        "deerflow.tools.nail.trend_query:trend_query_tool",
-    "trend_discovery_tool":    "deerflow.tools.nail.trend_discovery:trend_discovery_tool",
-    "ops_analysis_tool":       "deerflow.tools.nail.ops_analysis:ops_analysis_tool",
-    "customer_service_tool":   "deerflow.tools.nail.customer_service:customer_service_tool",
-    "action_proposal_tool":    "deerflow.tools.nail.action_proposal:action_proposal_tool",
-    "preference_rag_tool":     "deerflow.tools.nail.preference_rag:preference_rag_tool",
-    "nail_style_recommend_tool":"deerflow.tools.nail.nail_style_recommend:nail_style_recommend_tool",
-    "nail_run_query_tool":     "deerflow.tools.nail.nail_run_query:nail_run_query_tool",
-    "user_pref_analytics_tool":"deerflow.tools.nail.user_pref_analytics:user_pref_analytics_tool",
+    "unified_tryon_tool":      "nailflow.tools.nail.unified_tryon:unified_tryon_tool",
+    "hand_detect_tool":        "nailflow.tools.nail.hand_detect:hand_detect_tool",
+    "nail_mask_tool":          "nailflow.tools.nail.nail_mask:nail_mask_tool",
+    "style_understanding_tool":"nailflow.tools.nail.style_understanding:style_understanding_tool",
+    "prompt_builder_tool":     "nailflow.tools.nail.prompt_builder:prompt_builder_tool",
+    "image_generation_tool":   "nailflow.tools.nail.image_generation:image_generation_tool",
+    "quality_check_tool":      "nailflow.tools.nail.quality_check:quality_check_tool",
+    "trend_query_tool":        "nailflow.tools.nail.trend_query:trend_query_tool",
+    "trend_discovery_tool":    "nailflow.tools.nail.trend_discovery:trend_discovery_tool",
+    "ops_analysis_tool":       "nailflow.tools.nail.ops_analysis:ops_analysis_tool",
+    "customer_service_tool":   "nailflow.tools.nail.customer_service:customer_service_tool",
+    "action_proposal_tool":    "nailflow.tools.nail.action_proposal:action_proposal_tool",
+    "preference_rag_tool":     "nailflow.tools.nail.preference_rag:preference_rag_tool",
+    "nail_style_recommend_tool":"nailflow.tools.nail.nail_style_recommend:nail_style_recommend_tool",
+    "nail_run_query_tool":     "nailflow.tools.nail.nail_run_query:nail_run_query_tool",
+    "user_pref_analytics_tool":"nailflow.tools.nail.user_pref_analytics:user_pref_analytics_tool",
 }
 
 _TOOL_DESCRIPTIONS = {
@@ -96,7 +96,7 @@ async def test_tool(body: ToolTestRequest, request: Request):
         raise HTTPException(404, f"未知工具: {body.tool_name}")
 
     try:
-        from deerflow.reflection import resolve_variable
+        from nailflow.reflection import resolve_variable
         from langchain.tools import BaseTool
         tool = resolve_variable(tool_path, BaseTool)
     except Exception as e:

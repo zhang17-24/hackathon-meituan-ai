@@ -4,7 +4,9 @@ import {
   BellIcon,
   BrainIcon,
   CpuIcon,
+  MessageCircleIcon,
   PaletteIcon,
+  RadioIcon,
   SparklesIcon,
   UserIcon,
   WrenchIcon,
@@ -23,6 +25,8 @@ import { AppearanceSettingsPage } from "@/components/workspace/settings/appearan
 import { MemorySettingsPage } from "@/components/workspace/settings/memory-settings-page";
 import { ModelSettingsPage } from "@/components/workspace/settings/model-settings-page";
 import { NotificationSettingsPage } from "@/components/workspace/settings/notification-settings-page";
+import { OpsChannelSettingsPage } from "@/components/workspace/settings/ops-channel-settings-page";
+import { FeishuChatSettingsPage } from "@/components/workspace/settings/feishu-chat-settings-page";
 import { SkillSettingsPage } from "@/components/workspace/settings/skill-settings-page";
 import { ToolSettingsPage } from "@/components/workspace/settings/tool-settings-page";
 import { useI18n } from "@/core/i18n/hooks";
@@ -32,10 +36,12 @@ type SettingsSection =
   | "account"
   | "models"
   | "appearance"
-  | "memory"
+  | "notification"
+  | "ops"
   | "tools"
   | "skills"
-  | "notification";
+  | "memory"
+  | "feishu";
 
 type SettingsDialogProps = React.ComponentProps<typeof Dialog> & {
   defaultSection?: SettingsSection;
@@ -77,6 +83,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
         label: t.settings.sections.notification,
         icon: BellIcon,
       },
+      { id: "ops", label: "运营通道", icon: RadioIcon },
+      { id: "feishu", label: "飞书对话", icon: MessageCircleIcon },
       {
         id: "memory",
         label: t.settings.sections.memory,
@@ -154,6 +162,8 @@ export function SettingsDialog(props: SettingsDialogProps) {
                 />
               )}
               {activeSection === "notification" && <NotificationSettingsPage />}
+              {activeSection === "ops" && <OpsChannelSettingsPage />}
+              {activeSection === "feishu" && <FeishuChatSettingsPage />}
             </div>
           </ScrollArea>
         </div>

@@ -1,11 +1,16 @@
 # backend/app/gateway/routers/nail_config.py
-"""nailflow 配置 API：模型 CRUD、Agent 绑定、工具开关管理。"""
+"""nailflow 配置 API：模型 CRUD、Agent 绑定、工具开关管理、Ops Channel 配置。"""
+import copy
 import json
 import logging
+import os
+import tempfile
 import uuid
 from datetime import datetime, UTC
+from pathlib import Path
 from typing import Optional
 
+import yaml
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
@@ -361,3 +366,175 @@ _PAGE_MODE_CONFIG = {
 async def get_page_mode_config(mode: str):
     """返回指定页面模式的欢迎语和建议问题。"""
     return _PAGE_MODE_CONFIG.get(mode, _PAGE_MODE_CONFIG["tryon"])
+
+
+# ─── Ops Channel & Feishu 配置 ───────────────────────────────────
+
+
+def _resolve_config_path() -> Path:
+    from nailflow.config.app_config import AppConfig
+    return AppConfig.resolve_config_path()
+
+
+def _read_raw_config() -> dict:
+    path = _resolve_config_path()
+    with open(path, encoding="utf-8") as f:
+        return yaml.safe_load(f) or {}
+
+
+def _write_raw_config(data: dict) -> None:
+    path = _resolve_config_path()
+    fd, tmp = tempfile.mkstemp(dir=str(path.parent), suffix=".yaml")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            yaml.dump(data, f, default_flow_style=False, indent=2, sort_keys=False, allow_unicode=True)
+        Path(tmp).replace(path)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
+
+
+def _deep_merge(base: dict, update: dict) -> dict:
+    result = copy.deepcopy(base)
+    for k, v in update.items():
+        if isinstance(v, dict) and isinstance(result.get(k), dict):
+            result[k] = _deep_merge(result[k], v)
+        else:
+            result[k] = v
+    return result
+
+
+# ─── Ops Channel 配置 ──────────────────────────────────────────
+
+
+class OpsChannelUpdate(BaseModel):
+    enabled: Optional[bool] = None
+    timezone: Optional[str] = None
+    jobs: Optional[dict] = None
+    delivery: Optional[dict] = None
+    sessions: Optional[dict] = None
+
+
+@router.get("/ops-channel")
+@require_auth
+async def get_ops_channel_config(request: Request):
+    """读取 NailOps Channel 配置（从 config.yaml 直接读取）。"""
+    raw = _read_raw_config()
+    ops_cfg = raw.get("nail_ops_channel", {}) or {}
+    return {"config": ops_cfg, "message": "ok"}
+
+
+@router.put("/ops-channel")
+@require_auth
+async def update_ops_channel_config(body: OpsChannelUpdate, request: Request):
+    """更新 NailOps Channel 配置（部分更新，写入 config.yaml）。"""
+    raw = _read_raw_config()
+    existing = raw.get("nail_ops_channel", {}) or {}
+    update = body.model_dump(exclude_unset=True, exclude_none=True)
+    merged = _deep_merge(existing, update)
+    raw["nail_ops_channel"] = merged
+    _write_raw_config(raw)
+    return {"message": "更新成功", "config": merged}
+
+
+# ─── Feishu Chat 配置 ──────────────────────────────────────────
+
+
+class FeishuChatUpdate(BaseModel):
+    enabled: Optional[bool] = None
+    app_id: Optional[str] = None
+    app_secret: Optional[str] = None
+    mention_only: Optional[bool] = None
+
+
+@router.get("/feishu-chat")
+@require_auth
+async def get_feishu_chat_config(request: Request):
+    """读取飞书双向对话配置。"""
+    raw = _read_raw_config()
+    cfg = raw.get("nail_feishu", {}) or {}
+    return {"config": cfg, "message": "ok"}
+
+
+@router.put("/feishu-chat")
+@require_auth
+async def update_feishu_chat_config(body: FeishuChatUpdate, request: Request):
+    """更新飞书双向对话配置。"""
+    raw = _read_raw_config()
+    existing = raw.get("nail_feishu", {}) or {}
+    update = body.model_dump(exclude_unset=True, exclude_none=True)
+    merged = _deep_merge(existing, update)
+    raw["nail_feishu"] = merged
+    _write_raw_config(raw)
+    return {"message": "更新成功", "config": merged}
+
+
+# ─── 小红书配置 ────────────────────────────────────────────────
+
+
+class XhsConfigUpdate(BaseModel):
+    enabled: Optional[bool] = None
+    cookie: Optional[str] = None
+
+
+@router.get("/xiaohongshu")
+@require_auth
+async def get_xhs_config(request: Request):
+    """读取小红书搜索配置。"""
+    raw = _read_raw_config()
+    cfg = raw.get("nail_xiaohongshu", {}) or {}
+    return {"config": cfg, "message": "ok"}
+
+
+@router.put("/xiaohongshu")
+@require_auth
+async def update_xhs_config(body: XhsConfigUpdate, request: Request):
+    """更新小红书搜索配置。"""
+    raw = _read_raw_config()
+    existing = raw.get("nail_xiaohongshu", {}) or {}
+    update = body.model_dump(exclude_unset=True, exclude_none=True)
+    merged = _deep_merge(existing, update)
+    raw["nail_xiaohongshu"] = merged
+    _write_raw_config(raw)
+    return {"message": "更新成功", "config": merged}
+
+
+# ─── 定时主动聊天配置 ──────────────────────────────────────────
+
+
+class ProactiveChatTarget(BaseModel):
+    channel: str = "feishu"
+    chat_id: str = ""
+
+
+class ProactiveChatItem(BaseModel):
+    id: str
+    enabled: bool = True
+    schedule: str = "0 9 * * *"
+    prompt: str = ""
+    targets: list[ProactiveChatTarget] = []
+
+
+class ProactiveChatsUpdate(BaseModel):
+    proactive_chats: list[ProactiveChatItem] = []
+
+
+@router.get("/proactive-chats")
+@require_auth
+async def get_proactive_chats(request: Request):
+    """读取定时主动聊天配置。"""
+    raw = _read_raw_config()
+    ops_cfg = raw.get("nail_ops_channel", {}) or {}
+    return {"proactive_chats": ops_cfg.get("proactive_chats", []), "message": "ok"}
+
+
+@router.put("/proactive-chats")
+@require_auth
+async def update_proactive_chats(body: ProactiveChatsUpdate, request: Request):
+    """更新定时主动聊天配置。"""
+    raw = _read_raw_config()
+    ops_cfg = raw.get("nail_ops_channel", {}) or {}
+    ops_cfg["proactive_chats"] = [item.model_dump() for item in body.proactive_chats]
+    raw["nail_ops_channel"] = ops_cfg
+    _write_raw_config(raw)
+    return {"message": "更新成功", "proactive_chats": ops_cfg["proactive_chats"]}

@@ -13,8 +13,8 @@ def run_daily_trend_report() -> None:
         import os
         sys.path.insert(0, os.path.dirname(__file__))
 
-        from packages.harness.deerflow.tools.nail.trend_discovery import trend_discovery_tool
-        from packages.harness.deerflow.tools.nail.base import get_db
+        from packages.harness.nailflow.tools.nail.trend_discovery import trend_discovery_tool
+        from packages.harness.nailflow.tools.nail.base import get_db
 
         result = trend_discovery_tool.run({"days": 7})
         data = json.loads(result)
