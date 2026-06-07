@@ -184,7 +184,7 @@ class FeishuPollingMonitor:
                 except json.JSONDecodeError:
                     continue
 
-                if isinstance(chunk.get("data"), list) and len(chunk["data"]) >= 2:
+                if isinstance(chunk, dict) and isinstance(chunk.get("data"), list) and len(chunk["data"]) >= 2:
                     msg_type, msg_data = chunk["data"][0], chunk["data"][1]
                     if msg_type in ("ai", "AIMessageChunk"):
                         delta = ""
@@ -199,7 +199,25 @@ class FeishuPollingMonitor:
                                 delta = str(delta)
                         accumulated += delta
 
-        return accumulated.strip()
+        # 从 values 事件提取 AI 回复（/api/runs/stream 默认 stream mode）
+        last_ai = ""
+        async for raw_line2 in resp.aiter_lines():
+            if raw_line2.startswith("data: "):
+                try:
+                    c2 = json.loads(raw_line2[6:])
+                    if isinstance(c2, dict) and isinstance(c2.get("data"), dict):
+                        msgs = c2["data"].get("messages", [])
+                        for m in msgs:
+                            if isinstance(m, dict) and m.get("type") == "ai":
+                                c = m.get("content", "")
+                                if isinstance(c, str):
+                                    last_ai = c
+                                elif isinstance(c, list):
+                                    last_ai = "".join(d.get("text","") if isinstance(d,dict) else str(d) for d in c)
+                except Exception:
+                    pass
+
+        return (accumulated or last_ai).strip()
 
     async def _send_reply(self, client: httpx.AsyncClient, token: str, chat_id: str, text: str) -> None:
         resp = await client.post(

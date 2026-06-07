@@ -153,7 +153,7 @@ class ModelRouter:
         if override:
             db_models = _get_db_models()
             for m in db_models:
-                if m["name"] == override:
+                if m["name"] == override and _model_matches_capability(m, capability):
                     return _to_resolution(m, "tool_override")
 
         # ── 优先级 3: agent 配置 ──

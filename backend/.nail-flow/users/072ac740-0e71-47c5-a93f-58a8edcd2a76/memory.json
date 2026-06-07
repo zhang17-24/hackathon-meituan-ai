@@ -1,0 +1,99 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-06-07T15:59:57.673301Z",
+  "user": {
+    "workContext": {
+      "summary": "Working on AI image generation and virtual try-on applications, specifically focusing on AI nail try-on features using tools like unified_tryon_tool and backend services like Seedream.",
+      "updatedAt": "2026-06-07T15:21:15.514496Z"
+    },
+    "personalContext": {
+      "summary": "Communicates primarily in Chinese. Interacts with AI systems to test and integrate multimodal image processing and generation tools.",
+      "updatedAt": "2026-06-07T15:18:58.376928Z"
+    },
+    "topOfMind": {
+      "summary": "Currently focused on testing and integrating the unified_tryon_tool for one-click AI nail try-on using hand and style image inputs. Actively troubleshooting persistent backend API routing errors in the Seedream AIGC multimodal service, specifically addressing 400 InvalidParameter 'No static resource' issues for the chat/completions endpoint. Recent end-to-end execution attempts with actual hand and style images continue to fail with the same routing error, confirming that the front-end and intermediate pipeline remain ready while the backend infrastructure (API Gateway/reverse proxy routing, service discovery) is still the sole unresolved blocker.",
+      "updatedAt": "2026-06-07T15:59:57.668331Z"
+    }
+  },
+  "history": {
+    "recentMonths": {
+      "summary": "Recently engaged in developing and testing AI virtual try-on technologies, with a specific emphasis on AI nail try-on implementations using unified_tryon_tool. Successfully validated the front-end and intermediate pipeline steps, including hand detection, style analysis, nail mask generation, and prompt construction. However, encountered persistent backend API routing issues with the Seedream AIGC multimodal image generation service. Multiple end-to-end execution attempts with actual hand and style image inputs have failed, consistently returning 400 InvalidParameter errors related to missing static resources for 'chat/completions' and 'images/generations' endpoints. The ongoing focus remains strictly on debugging backend infrastructure, specifically API Gateway/reverse proxy configurations, service discovery registrations (e.g., Nacos, Eureka), and path matching rules to resolve the routing blocker.",
+      "updatedAt": "2026-06-07T15:59:57.668331Z"
+    },
+    "earlierContext": {
+      "summary": "",
+      "updatedAt": ""
+    },
+    "longTermBackground": {
+      "summary": "",
+      "updatedAt": ""
+    }
+  },
+  "facts": [
+    {
+      "id": "fact_0bd5d83a",
+      "content": "User is developing or testing an AI nail try-on (AI 美甲试戴) feature using the unified_tryon_tool.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T15:18:58.376928Z",
+      "source": "ba4bf707-19e4-47af-9c53-cb2816473454"
+    },
+    {
+      "id": "fact_6ead34f6",
+      "content": "The backend AIGC multimodal image generation service used for the AI nail try-on feature is identified as Seedream.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T15:21:15.514496Z",
+      "source": "565522d8-d4b9-4948-9490-16002e9b66e8"
+    },
+    {
+      "id": "fact_1a2d046f",
+      "content": "The AI nail try-on pipeline using unified_tryon_tool successfully completes hand detection, style analysis, nail mask generation, and prompt construction before calling the image generation API.",
+      "category": "context",
+      "confidence": 0.9,
+      "createdAt": "2026-06-07T15:21:15.514496Z",
+      "source": "565522d8-d4b9-4948-9490-16002e9b66e8"
+    },
+    {
+      "id": "fact_b3f3ce32",
+      "content": "The Seedream AIGC multimodal service has routing issues for both 'api/v1/aigc/multimodal-generation/generation/chat/completions' and 'api/v1/aigc/multimodal-generation/generation/images/generations', returning 400 InvalidParameter 'No static resource' errors.",
+      "category": "correction",
+      "confidence": 0.95,
+      "createdAt": "2026-06-07T15:21:15.514496Z",
+      "source": "565522d8-d4b9-4948-9490-16002e9b66e8",
+      "sourceError": "LLM request failed: Error code: 400 - {'code': 'InvalidParameter', 'message': 'No static resource api/v1/aigc/multimodal-generation/generation/images/generations.'}"
+    },
+    {
+      "id": "fact_6c28eb87",
+      "content": "The backend infrastructure for the Seedream AIGC multimodal service involves or is being debugged across an API Gateway/reverse proxy (such as Nginx or Spring Cloud Gateway) and a service discovery center.",
+      "category": "context",
+      "confidence": 0.8,
+      "createdAt": "2026-06-07T15:56:06.899574Z",
+      "source": "30acd17a-f139-43eb-8213-b0d46bab8b89"
+    },
+    {
+      "id": "fact_a7f4450a",
+      "content": "The API Gateway routing investigation for the Seedream AIGC service includes checking path prefix consistency, specifically looking for extra or missing '/generation' segments in the URL path.",
+      "category": "context",
+      "confidence": 0.8,
+      "createdAt": "2026-06-07T15:58:30.461665Z",
+      "source": "02c94bfd-0be2-443c-a6bf-0354c30bcefa"
+    },
+    {
+      "id": "fact_c520c088",
+      "content": "The AI nail try-on front-end and intermediate pipeline is fully ready and operational, with the backend Seedream API routing issue being the sole blocker for end-to-end execution.",
+      "category": "context",
+      "confidence": 0.95,
+      "createdAt": "2026-06-07T15:59:18.304660Z",
+      "source": "1708c456-fa15-4147-b0ef-0f8f565d8392"
+    },
+    {
+      "id": "fact_c8543bc9",
+      "content": "Troubleshooting for the Seedream AIGC service routing includes verifying microservice registration in discovery centers like Nacos or Eureka, and checking if the API Gateway's path matching mode (prefix vs exact match) is compatible with the '/chat/completions' subpath.",
+      "category": "context",
+      "confidence": 0.8,
+      "createdAt": "2026-06-07T15:59:57.668331Z",
+      "source": "d6edcb98-9d83-46bf-9999-4e84acd87f0b"
+    }
+  ]
+}

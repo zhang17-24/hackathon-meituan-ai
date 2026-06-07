@@ -187,6 +187,11 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             )
 
         if should_check_csrf(request) and not _is_auth:
+            # Bypass CSRF for trusted internal callers (FeishuPollingMonitor etc.)
+            from app.gateway.internal_auth import INTERNAL_AUTH_HEADER_NAME, is_valid_internal_auth_token
+            if is_valid_internal_auth_token(request.headers.get(INTERNAL_AUTH_HEADER_NAME)):
+                return await call_next(request)
+
             cookie_token = request.cookies.get(CSRF_COOKIE_NAME)
             header_token = request.headers.get(CSRF_HEADER_NAME)
 

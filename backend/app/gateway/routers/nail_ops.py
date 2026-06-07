@@ -258,11 +258,18 @@ class OpsTriggerBody(BaseModel):
 async def trigger_ops_job(job_id: str, body: OpsTriggerBody, request: Request):
     """手动触发运营定时任务（daily_report / trend_alert / proactive_chat）。"""
     from nailflow.tools.nail.ops_channel.ops_runner import run_job
+    from nailflow.tools.nail.ops_channel.job_store import OpsJob, TaskSpec, Trigger, TriggerType, DeliverySpec
     import asyncio as _asyncio
 
+    job = OpsJob(
+        job_id=job_id,
+        trigger=Trigger(type=TriggerType.MANUAL),
+        task=TaskSpec(type=job_id),
+        delivery=DeliverySpec(targets=[]),
+    )
     try:
         result = await _asyncio.wait_for(
-            run_job(job_id, context=body.context or {}),
+            run_job(job, trigger_context=body.context or {}),
             timeout=300,
         )
         return {"job_id": job_id, "status": "completed", "result": result}
