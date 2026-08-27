@@ -139,6 +139,10 @@ async def list_styles():
 
     _STYLE_CACHE = []
     for f in sorted(styles_dir.glob("*.jpg")):
+        # Skip dotfiles (e.g. macOS AppleDouble "._*.jpg" companions that
+        # leak into deployments via tar/scp) — they are not real styles.
+        if f.name.startswith("."):
+            continue
         _STYLE_CACHE.append({
             "id": f.stem,
             "name": f"款式 {f.stem}",
