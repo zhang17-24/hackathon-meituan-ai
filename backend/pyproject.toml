@@ -51,5 +51,15 @@ index-url = "https://pypi.org/simple"
 [tool.uv.workspace]
 members = ["packages/harness"]
 
+# torch 只用 CPU 版：本项目无 CUDA 推理，PyPI 默认 wheel 会引入数百 MB
+# 的 nvidia-* CUDA 依赖（Linux 容器内下载易超时）。explicit 索引仅对
+# sources 中显式引用的包生效。国内服务器可换
+# "https://mirrors.tuna.tsinghua.edu.cn/pytorch-wheels/cpu"。
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
 [tool.uv.sources]
 nailflow-harness = { workspace = true }
+torch = { index = "pytorch-cpu" }

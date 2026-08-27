@@ -20,12 +20,14 @@ async def main():
     from app.gateway.auth.password import hash_password
     from app.gateway.auth.models import User
 
-    # Load config to find the SQLite path
-    import os
-    sqlite_dir = os.getenv("SQLITE_DIR", ".")
-    db_url = os.getenv("DATABASE_URL", f"sqlite+aiosqlite:///{sqlite_dir}/nail-flow.db")
+    # Use the same persistence config as the app runtime (config.yaml
+    # database section). Previously this defaulted to ./nail-flow.db while
+    # the app read {sqlite_dir}/nailflow.db — seeded users were invisible.
+    from nailflow.config import get_app_config
+    from nailflow.persistence.engine import init_engine_from_config
 
-    await init_engine("sqlite", url=db_url, sqlite_dir=sqlite_dir)
+    cfg = get_app_config()
+    await init_engine_from_config(cfg.database)
     sf = get_session_factory()
     if sf is None:
         print("ERROR: session factory is None — engine not initialized")

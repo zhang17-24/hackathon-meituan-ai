@@ -50,6 +50,15 @@ COPY backend ./backend
 RUN --mount=type=cache,target=/root/.cache/uv \
     sh -c "cd backend && UV_INDEX_URL=${UV_INDEX_URL:-https://pypi.org/simple} uv sync ${UV_EXTRAS:+--extra $UV_EXTRAS}"
 
+# Create isolated MediaPipe venv (.mp-venv).
+# mediapipe conflicts with the main dependency chain on protobuf, so
+# hand_detect_tool runs it as a subprocess (scripts/mp_hand_detect.py).
+# Version range: mediapipe ships platform-specific wheels; linux-aarch64
+# tops out at 0.10.18 while x86_64/macOS go higher. HandLandmarker Task
+# API is stable across this range.
+RUN --mount=type=cache,target=/root/.cache/pip \
+    sh -c "cd backend && python -m venv .mp-venv && PIP_INDEX_URL=${UV_INDEX_URL:-https://pypi.org/simple} .mp-venv/bin/pip install --no-cache-dir 'mediapipe>=0.10.18,<1.0'"
+
 # UTF-8 locale prevents UnicodeEncodeError on Chinese/emoji content in minimal
 # containers where locale configuration may be missing and the default encoding is not UTF-8.
 ENV LANG=C.UTF-8
@@ -70,11 +79,18 @@ CMD ["sh", "-c", "cd backend && PYTHONPATH=. uv run uvicorn app.gateway.app:app 
 
 # ── Stage 3: Runtime ──────────────────────────────────────────────────────────
 # Clean image without build-essential — reduces size (~200 MB) and attack surface.
-FROM python:3.12-slim-bookworm
+FROM python:3.12-slim-bookworm AS runtime
 
 ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 ENV PYTHONIOENCODING=utf-8
+
+# libGL + glib are required by OpenCV inside the isolated .mp-venv
+# (mediapipe hand detection subprocess); slim image does not ship them.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Copy Node.js runtime from builder (provides npx for MCP servers)
 COPY --from=builder /usr/bin/node /usr/bin/node
@@ -93,9 +109,17 @@ WORKDIR /app
 
 # Copy backend with pre-built virtualenv from builder
 COPY --from=builder /app/backend ./backend
+COPY --from=builder /app/backend/.mp-venv ./backend/.mp-venv
+
+# Copy system assets (nail styles, knowledge, seed images, hand landmarker model)
+# to a separate path: docker-compose mounts a named volume over /app/backend/data,
+# which shadows the image contents — the entrypoint seeds the volume on first start.
+COPY --from=builder /app/backend/data /app/backend-data-seed
 
 # Expose ports (gateway: 8001, langgraph: 2024)
 EXPOSE 8001 2024
 
-# Default command (can be overridden in docker-compose)
-CMD ["sh", "-c", "cd backend && PYTHONPATH=. uv run --no-sync uvicorn app.gateway.app:app --host 0.0.0.0 --port 8001"]
+# Seed system assets into the data volume on first start, then run the gateway.
+# MEDIAPIPE_PYTHON points hand_detect_tool at the container .mp-venv.
+ENV MEDIAPIPE_PYTHON=/app/backend/.mp-venv/bin/python
+CMD ["sh", "-c", "cp -rn /app/backend-data-seed/. /app/backend/data/ 2>/dev/null; cd backend && PYTHONPATH=. uv run --no-sync uvicorn app.gateway.app:app --host 0.0.0.0 --port 8001"]

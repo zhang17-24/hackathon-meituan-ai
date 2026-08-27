@@ -30,6 +30,10 @@ EXPOSE 3000
 
 # ── Builder: install + compile Next.js ───────────────────────────────────────
 FROM base AS builder
+# next.config.js 的 rewrites 在构建时读取该变量并编译进产物，
+# 必须通过 build args 传入（docker-compose 已配置）。
+ARG DEER_FLOW_INTERNAL_GATEWAY_BASE_URL
+ENV DEER_FLOW_INTERNAL_GATEWAY_BASE_URL=${DEER_FLOW_INTERNAL_GATEWAY_BASE_URL}
 RUN cd /app/frontend && pnpm install --frozen-lockfile
 # Skip env validation — runtime vars are injected by nginx/container
 RUN cd /app/frontend && SKIP_ENV_VALIDATION=1 pnpm build

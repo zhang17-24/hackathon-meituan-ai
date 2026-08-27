@@ -5,10 +5,12 @@
 # Secrets and local model/provider configuration
 .env
 .env.*
-config.yaml
-extensions_config.json
+!.env.example
 **/.env
 **/.env.*
+!**/.env.example
+config.yaml
+extensions_config.json
 **/config.yaml
 **/extensions_config.json
 **/*secret*

@@ -11,7 +11,19 @@ backend/.env.*
 
 # 开发/运行时本地状态
 **/.deer-flow/
-backend/data/
+**/.nail-flow/
+**/.mp-venv/
+# backend/data 只排除运行时内容，保留系统资产（styles/knowledge/seed_images/hand_landmarker.task）
+backend/data/*
+!backend/data/styles/
+!backend/data/styles/**
+!backend/data/knowledge/
+!backend/data/knowledge/**
+!backend/data/seed_images/
+!backend/data/seed_images/**
+!backend/data/mock/
+!backend/data/mock/**
+!backend/data/hand_landmarker.task
 backend/*.db
 backend/*.db-shm
 backend/*.db-wal
