@@ -88,7 +88,15 @@ function CreatePostDialog({
                   </button>
                 </div>
               ))}
-              <label className="size-20 rounded-lg border-2 border-dashed border-border/60 flex flex-col items-center justify-center cursor-pointer hover:border-rose-400/60 transition-colors shrink-0">
+              <label
+                className="size-20 rounded-lg border-2 border-dashed border-border/60 flex flex-col items-center justify-center cursor-pointer hover:border-rose-400/60 transition-colors shrink-0"
+                onClick={(e) => {
+                  // display:none file inputs cannot be activated by label
+                  // click in Chrome; open the picker manually.
+                  const input = e.currentTarget.querySelector("input[type=file]") as HTMLInputElement | null;
+                  if (input) { e.preventDefault(); input.click(); }
+                }}
+              >
                 <ImageIcon className="size-5 text-muted-foreground" />
                 <span className="text-[10px] text-muted-foreground mt-0.5">添加图片</span>
                 <input type="file" accept="image/*" multiple className="hidden" onChange={handleFiles} />
