@@ -171,6 +171,7 @@ async def save_style(style_id: str, body: SaveStyleRequest, request: Request):
             "INSERT INTO ops_signals (user_id, style_id, signal_type) VALUES (?,?,?)",
             (user_id, style_id, signal_type)
         )
+        conn.commit()
     return {"saved": True, "style_id": style_id, "signal_type": signal_type}
 
 

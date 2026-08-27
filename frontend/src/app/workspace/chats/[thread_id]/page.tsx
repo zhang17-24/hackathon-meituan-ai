@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { type PromptInputMessage } from "@/components/ai-elements/prompt-input";
 import { NailModelPicker } from "@/components/nail/nail-model-picker";
+import { NailTryonProgressBar } from "@/components/nail/nail-tryon-progress";
 import { ArtifactTrigger } from "@/components/workspace/artifacts";
 import {
   ChatBox,
@@ -25,7 +26,11 @@ import { useI18n } from "@/core/i18n/hooks";
 import { useModels } from "@/core/models/hooks";
 import { useNotification } from "@/core/notification/hooks";
 import { useLocalSettings, useThreadSettings } from "@/core/settings";
-import { useThreadStream, useThreadTokenUsage } from "@/core/threads/hooks";
+import {
+  type NailTryonProgress,
+  useThreadStream,
+  useThreadTokenUsage,
+} from "@/core/threads/hooks";
 import { threadTokenUsageToTokenUsage } from "@/core/threads/token-usage";
 import { textOfMessage } from "@/core/threads/utils";
 import { env } from "@/env";
@@ -81,6 +86,10 @@ export default function ChatPage() {
 
   const { showNotification } = useNotification();
 
+  const [tryonProgress, setTryonProgress] = useState<NailTryonProgress | null>(
+    null,
+  );
+
   const {
     thread,
     pendingUsageMessages,
@@ -93,6 +102,7 @@ export default function ChatPage() {
     threadId: isNewThread ? undefined : threadId,
     context: settings.context,
     isMock,
+    onTryonProgress: setTryonProgress,
     // onSend only animates the UI; do NOT flip `isNewThread` here — the
     // LangGraph SDK eagerly fetches /history the moment it receives a
     // thread id and assumes the thread exists on the backend (issue #2746).
@@ -106,6 +116,7 @@ export default function ChatPage() {
       history.replaceState(null, "", `/workspace/chats/${createdThreadId}`);
     },
     onFinish: (state) => {
+      setTryonProgress(null);
       if (document.hidden || !document.hasFocus()) {
         let body = "Conversation finished";
         const lastMessage = state.messages.at(-1);
@@ -305,6 +316,12 @@ export default function ChatPage() {
                       />
                     </div>
                   </div>
+                )}
+                {tryonProgress && !isWelcomeMode && (
+                  <NailTryonProgressBar
+                    progress={tryonProgress}
+                    className="mb-3"
+                  />
                 )}
                 {mountedRef.current ? (
                   <InputBox

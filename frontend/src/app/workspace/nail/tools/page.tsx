@@ -464,7 +464,7 @@ export default function ToolsPage() {
               </section>
               <section>
                 <div className="mb-3 text-xs font-bold tracking-wide text-pink-500 uppercase">
-                  DeerFlow 内置工具
+                  内置工具
                 </div>
                 {builtinTools.length === 0 ? (
                   <p className="py-4 text-sm text-[#8f7b88]">没有匹配的工具</p>

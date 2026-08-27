@@ -6,7 +6,7 @@
 
 ## 一、项目是什么
 
-**nailflow** 是美团黑客松"美甲 AI 试戴与智能运营"赛题的产品原型，基于 **DeerFlow**（字节开源的 LangGraph 多 Agent 框架）二次开发。
+**nailflow** 是美团黑客松"美甲 AI 试戴与智能运营"赛题的产品原型，基于 **LangGraph** 深度定制的多 Agent 编排框架。
 
 核心目标：
 - **用户端**：上传手图 + 款式图 → AI 在指甲区域做局部 inpaint → 返回真实试戴效果图
@@ -29,7 +29,7 @@ hackathon-meituan-ai/
 ├── CLAUDE.md                   ← 本文件（Claude 开发指南）
 ├── README.md                   ← 项目概述（给人看）
 ├── ARCHITECTURE.md             ← 架构设计文档
-├── config.yaml                 ← DeerFlow 配置（模型/工具/沙箱，gitignore）
+├── config.yaml                 ← 框架配置（模型/工具/沙箱，gitignore）
 ├── .env                        ← 环境变量（API key，gitignore）
 │
 ├── backend/                    ← Python 后端（FastAPI + LangGraph）
@@ -44,7 +44,7 @@ hackathon-meituan-ai/
 │
 ├── frontend/                   ← Next.js 16 前端
 │   └── src/
-│       ├── app/workspace/nail/ ← 四端页面（tryon/dashboard/evaluation/tools）
+│       ├── app/workspace/nail/ ← 页面（warehouse/dashboard/data/community/tryon）
 │       ├── components/nail/    ← 6 个美甲专属 React 组件
 │       ├── components/workspace/
 │       │   ├── nail-nav.tsx    ← 侧边 nailflow 导航（权限过滤）
@@ -74,7 +74,7 @@ hackathon-meituan-ai/
 
 | 层 | 技术 | 版本 | 说明 |
 |----|------|------|------|
-| Agent 编排 | DeerFlow + LangGraph | 0.1.0 | 主框架，SSE 流式思考链 |
+| Agent 编排 | LangGraph | 最新 | 主框架，SSE 流式思考链 |
 | 后端 | FastAPI | 0.115+ | 异步，内嵌 LangGraph 运行时 |
 | 包管理 | uv | latest | 后端依赖管理，比 pip 快 |
 | LLM | 字节 Doubao/Volcengine | - | `VOLCENGINE_API_KEY` |
@@ -127,7 +127,7 @@ cd frontend && pnpm dev
 |------|------|-----------|-----------|
 | user@nailflow.dev | nail123456 | user | `/workspace/nail/tryon` |
 | ops@nailflow.dev | nail123456 | ops | + `/workspace/nail/dashboard` |
-| dev@nailflow.dev | nail123456 | dev | + `/workspace/nail/evaluation`, `/workspace/nail/tools` |
+| dev@nailflow.dev | nail123456 | dev | + `/workspace/nail/data`, `/workspace/nail/community` |
 
 ---
 
@@ -406,7 +406,7 @@ app.include_router(your_router)
 
 ### 9.1 文件修改前必须先 Read
 
-用 Read 工具读取文件后再 Edit，不凭记忆猜测代码内容。DeerFlow 代码量大，很多函数有微妙的参数或副作用。
+用 Read 工具读取文件后再 Edit，不凭记忆猜测代码内容。框架代码量大，很多函数有微妙的参数或副作用。
 
 ### 9.2 每个工具必须有降级路径
 
@@ -435,7 +435,7 @@ return json.dumps({"proposal_id": "", "status": "failed", "title": "", "message"
 return json.dumps({"error": str(e)})
 ```
 
-### 9.4 DeerFlow 的 create_chat_model 调用规范
+### 9.4 create_chat_model 调用规范
 
 ```python
 from nailflow.models import create_chat_model
@@ -469,7 +469,6 @@ frontend/src/
 ├── app/workspace/nail/       ← 四个页面（路由级）
 │   ├── tryon/page.tsx        ← 用户端试戴页面
 │   ├── dashboard/page.tsx    ← 运营端看板
-│   ├── evaluation/page.tsx   ← 开发端自评
 │   └── tools/page.tsx        ← 工具管理页面
 │
 ├── components/nail/          ← 美甲专属 React 组件
@@ -684,9 +683,24 @@ os.chdir('/path/to/hackathon-meituan-ai')  # data/ 路径相对于此
 
 把 `models:` 改为 `models: []`（空列表），不要删除该字段。
 
+### Q: 对话卡住/不流式（embedding 工具阻塞 run）
+
+`embedding.py` 默认离线优先（`NAIL_EMBEDDING_OFFLINE=1`），只从本地缓存加载
+Chinese-CLIP，避免 HuggingFace 不可达时 `from_pretrained` 重试 5 次把整个 run
+阻塞数十秒（用户端表现为"对话卡住、不流式"）。模型未缓存时自动降级到
+ChromaDB 内置的 all-MiniLM-L6-v2（384d pad 到 512d）。如需首次联网下载，
+设置 `NAIL_EMBEDDING_OFFLINE=0`（建议配 `HF_ENDPOINT=https://hf-mirror.com`）。
+
+### Q: 中文回复的"逐字打字机"流式效果
+
+`core/rehype/index.ts` 的 `rehypeSplitWordsIntoSpans` 会把中文/日文/韩文按
+**逐字**拆成 `animate-fade-in` span，每个字递增 18ms 动画延迟（上限 1200ms，
+避免长消息最后几个字等太久）。非 CJK 文本仍按词拆分（与上游 deer-flow 一致）。
+该插件只在 `isLoading=true`（流式期间）启用，完成后自动还原为纯文本。
+
 ### Q: 前端 nail_role 取不到
 
-`useAuth()` 返回的 `user` 对象类型是 DeerFlow 原始的 `User`，没有 `nail_role` 字段类型声明，但运行时 JWT payload 里有这个字段。用 `(user as any)?.nail_role` 读取。
+`useAuth()` 返回的 `user` 对象类型是框架原始的 `User`，没有 `nail_role` 字段类型声明，但运行时 JWT payload 里有这个字段。用 `(user as any)?.nail_role` 读取。
 
 ### Q: 工具页面空白（500 错误）
 
@@ -698,7 +712,7 @@ python -c "from packages.harness.nailflow.tools.nail.base import init_nail_table
 
 ### Q: config.yaml 中工具名和函数名不一致
 
-DeerFlow 会 warning 但仍使用函数的 `.name` 属性。必须保持：
+框架会 warning 但仍使用函数的 `.name` 属性。必须保持：
 ```yaml
 - name: hand_detect  # ← 这里的 name
 ```
@@ -706,11 +720,11 @@ DeerFlow 会 warning 但仍使用函数的 `.name` 属性。必须保持：
 
 ---
 
-## 十三、DeerFlow 框架关键点
+## 十三、框架关键点（LangGraph 运行时）
 
 ### 13.1 LangGraph 运行时
 
-DeerFlow 使用 LangGraph 的 Checkpoint + Thread 模型：
+框架使用 LangGraph 的 Checkpoint + Thread 模型：
 - `Thread` = 一次对话（含历史消息）
 - `Run` = 在 Thread 上执行一次 Agent
 - SSE stream = Agent 运行时的实时事件流

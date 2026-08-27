@@ -118,13 +118,44 @@ def _find_style_image(style: dict) -> str:
     ]
     search_exts = (".jpg", ".jpeg", ".png", ".webp", ".bmp")
 
+    # 1) 精确匹配：data/styles/{style_id}.jpg
     for base_dir in search_dirs:
         for ext in search_exts:
             candidate = base_dir / f"{style_id}{ext}"
             if candidate.exists():
                 return str(candidate)
 
+    # 2) 语义文件名映射：data/styles/cat-eye-starry.jpg → cat-eye-001
+    alias = _STYLE_IMAGE_ALIASES.get(style_id)
+    if alias:
+        for base_dir in search_dirs:
+            for ext in search_exts:
+                candidate = base_dir / f"{alias}{ext}"
+                if candidate.exists():
+                    return str(candidate)
+
     return ""
+
+
+# data/styles/ 下的语义命名款式图 → 内置 style_id。
+# 这些图是美甲仓库的系统内置款式图，文件名即款式语义。
+_STYLE_IMAGE_ALIASES: dict[str, str] = {
+    "french-001": "french-white",        # 经典法式白
+    "gradient-002": "ocean-wave",        # 蓝白海浪渐变
+    "gradient-003": "gradient-sunset",   # 夕阳渐变
+    "gradient-001": "lavender-dream",    # 粉紫梦幻渐变
+    "solid-nude-001": "solid-nude",      # 裸色
+    "solid-dark-001": "matte-burgundy",  # 磨砂酒红
+    "geo-line-001": "geometric-gold",    # 金色几何线条
+    "glitter-003": "glitter-rose",       # 玫瑰金渐变闪粉
+    "marble-001": "marble-jade",         # 玉石大理石
+    "cat-eye-001": "cat-eye-starry",     # 星空猫眼
+    "jelly-001": "neon-coral",           # 霓虹珊瑚果冻
+    "3d-001": "holographic-pearl",       # 镭射珍珠
+    "velvet-001": "velvet-navy",         # 藏蓝丝绒
+    "floral-001": "spring-floral",       # 春日碎花
+    "japanese-001": "cherry-blossom",    # 日系樱花干花
+}
 
 
 def _build_style_text(style: dict) -> str:
@@ -239,6 +270,15 @@ def main():
     print(f"成功导入 {len(ids)} 个款式，其中 {image_count} 个使用真实图片融合")
     print(f"嵌入维度: {dim}d (Chinese-CLIP)")
     print(f"HNSW 距离: cosine")
+
+    # 校验 SQLite catalog 落库（CWD 错误会导致写入别处的 DB）
+    from packages.harness.nailflow.tools.nail.base import DB_PATH
+    with get_db() as conn:
+        catalog_rows = conn.execute("SELECT COUNT(*) FROM nail_style_catalog").fetchone()[0]
+        with_img = conn.execute(
+            "SELECT COUNT(*) FROM nail_style_catalog WHERE image_path IS NOT NULL AND image_path != ''"
+        ).fetchone()[0]
+    print(f"SQLite catalog 落库: {DB_PATH} → {catalog_rows} 行, {with_img} 行带图片")
 
 
 if __name__ == "__main__":

@@ -53,14 +53,15 @@ def _mmr_rerank(candidates: list[dict], query_vec: list[float], top_k: int, lamb
             if selected:
                 # 惩罚与已选款式的相似度
                 c_emb = np.array(c.get("_embedding", []), dtype=float)
+                max_sim = 0.0
                 if len(c_emb) > 0:
-                    max_sim = max(
+                    sims = [
                         float(np.dot(c_emb, np.array(s.get("_embedding", []), dtype=float)))
                         for s in selected
                         if len(s.get("_embedding", [])) > 0
-                    )
-                else:
-                    max_sim = 0.0
+                    ]
+                    if sims:
+                        max_sim = max(sims)
                 diversity = 1.0 - max_sim
             else:
                 diversity = 1.0
@@ -78,14 +79,19 @@ def _cold_start_recommend(top_k: int) -> str:
     try:
         with get_db() as conn:
             rows = conn.execute("""
-                SELECT style_id, COUNT(*) as cnt
-                FROM ops_signals
-                WHERE signal_type IN ('click','save','order')
-                GROUP BY style_id
+                SELECT s.style_id, c.description, c.image_path, COUNT(*) as cnt
+                FROM ops_signals s
+                LEFT JOIN nail_style_catalog c ON s.style_id = c.style_id
+                WHERE s.signal_type IN ('click','save','order')
+                GROUP BY s.style_id
                 ORDER BY cnt DESC
                 LIMIT ?
             """, (top_k,)).fetchall()
-        recs = [{"style_id": r["style_id"], "description": "热门款式", "similarity": 0.8}
+        recs = [{"style_id": r["style_id"], "description": r["description"] or "热门款式",
+                 "image_path": r["image_path"] or "",
+                 "image_url": f"/api/nail/image?path={r['image_path']}" if r["image_path"] else "",
+                 "similarity": 0.8,
+                 "match_reason": "热门款式，用户收藏度高"}
                 for r in rows]
         return json.dumps({
             "recommendations": recs,
@@ -117,8 +123,12 @@ def nail_style_recommend_tool(user_id: str = "", top_k: int = 5,
         pattern_type: 图案类型过滤 (如 "cow_spots"/"french"/"gradient")。
         exclude_tried: 是否排除已试款式，默认 true。
 
+    IMPORTANT: After this tool returns, reply with the recommended style images
+    using markdown image syntax for every recommendation that has an image_url:
+    ![款式描述](image_url)
+
     Returns:
-        {"recommendations": [{"style_id","description","category","image_path","similarity","match_reason"}],
+        {"recommendations": [{"style_id","description","category","image_path","image_url","similarity","match_reason"}],
          "count": n, "query_mode": "...", "message": "..."}
     """
     try:
@@ -204,11 +214,13 @@ def nail_style_recommend_tool(user_id: str = "", top_k: int = 5,
                 continue
             sim = round(max(0.0, 1.0 - float(dist)), 3)
             match_reason = _generate_match_reason(meta, sim)
+            image_path = meta.get("image_path", "")
             candidates.append({
                 "style_id": sid,
                 "description": doc,
                 "category": meta.get("category", ""),
-                "image_path": meta.get("image_path", ""),
+                "image_path": image_path,
+                "image_url": f"/api/nail/image?path={image_path}" if image_path else "",
                 "similarity": sim,
                 "match_reason": match_reason,
                 "_embedding": list(emb) if emb is not None else [],

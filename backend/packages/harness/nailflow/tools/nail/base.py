@@ -247,6 +247,45 @@ def init_nail_tables() -> None:
                 source      TEXT,
                 created_at  TEXT DEFAULT (datetime('now'))
             );
+
+            CREATE TABLE IF NOT EXISTS community_posts (
+                id            TEXT PRIMARY KEY,
+                user_id       TEXT NOT NULL,
+                content       TEXT NOT NULL DEFAULT '',
+                tags          TEXT,
+                style_refs    TEXT,
+                like_count    INTEGER DEFAULT 0,
+                comment_count INTEGER DEFAULT 0,
+                is_active     INTEGER DEFAULT 1,
+                created_at    TEXT,
+                updated_at    TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS post_images (
+                id         TEXT PRIMARY KEY,
+                post_id    TEXT NOT NULL,
+                file_path  TEXT NOT NULL,
+                filename   TEXT,
+                sort_order INTEGER DEFAULT 0,
+                created_at TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS post_likes (
+                id         TEXT PRIMARY KEY,
+                post_id    TEXT NOT NULL,
+                user_id    TEXT NOT NULL,
+                created_at TEXT
+            );
+
+            CREATE TABLE IF NOT EXISTS post_comments (
+                id         TEXT PRIMARY KEY,
+                post_id    TEXT NOT NULL,
+                user_id    TEXT NOT NULL,
+                content    TEXT NOT NULL,
+                parent_id  TEXT,
+                is_active  INTEGER DEFAULT 1,
+                created_at TEXT
+            );
         """)
     try:
         with get_db() as conn:
@@ -316,7 +355,8 @@ def update_user_pref_vector(user_id: str, style_id: str, signal_type: str) -> No
         col = client.get_or_create_collection("nail_styles", embedding_function=None)
 
         result = col.get(ids=[style_id], include=["embeddings"])
-        if not result["embeddings"]:
+        embeddings = result.get("embeddings")
+        if embeddings is None or len(embeddings) == 0:
             # 降级：从款式描述文本生成向量
             with get_db() as conn:
                 row = conn.execute(
@@ -377,6 +417,7 @@ def update_user_pref_vector(user_id: str, style_id: str, signal_type: str) -> No
                     (user_id,)
                 )
             # search 信号不计数
+            conn.commit()
 
         # 同步更新多维画像
         _update_multidim_profile(user_id, style_id, signal_type, weight, style_vec)
@@ -482,6 +523,7 @@ def _update_multidim_profile(user_id: str, style_id: str, signal_type: str, weig
                     "UPDATE nail_user_prefs_v2 SET save_count = save_count + 1 WHERE user_id = ?",
                     (user_id,)
                 )
+            conn.commit()
 
     except Exception as e:
         logger.error("_update_multidim_profile failed (user=%s style=%s): %s", user_id, style_id, e)

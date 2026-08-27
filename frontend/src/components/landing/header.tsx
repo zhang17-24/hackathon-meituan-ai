@@ -16,8 +16,7 @@ export type HeaderProps = {
 
 export async function Header({ className, homeURL, locale }: HeaderProps) {
   const isExternalHome = !homeURL;
-  const { locale: resolvedLocale, t } = await getI18n(locale);
-  const lang = resolvedLocale.substring(0, 2);
+  const { t } = await getI18n(locale);
   return (
     <header
       className={cn(
@@ -35,12 +34,6 @@ export async function Header({ className, homeURL, locale }: HeaderProps) {
         </a>
       </div>
       <nav className="mr-8 ml-auto flex items-center gap-8 text-sm font-medium">
-        <Link
-          href={`/${lang}/docs`}
-          className="text-secondary-foreground hover:text-foreground transition-colors"
-        >
-          {t.home.docs}
-        </Link>
         <Link
           href="/blog/posts"
           className="text-secondary-foreground hover:text-foreground transition-colors"

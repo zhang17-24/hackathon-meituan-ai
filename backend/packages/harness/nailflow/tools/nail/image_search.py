@@ -28,6 +28,10 @@ def image_search_tool(query_image_path: str, top_k: int = 10,
     先用 image_search 找到库中最相似的款式，
     再用推荐工具基于用户画像个性化排序。
 
+    IMPORTANT: After this tool returns, reply with the matching style images
+    using markdown image syntax for every match that has an image_url:
+    ![款式描述](image_url)
+
     Args:
         query_image_path: 参考美甲图文件路径。
         top_k: 返回数量，默认 10。
@@ -36,7 +40,7 @@ def image_search_tool(query_image_path: str, top_k: int = 10,
 
     Returns:
         {"matches": [{"style_id", "description", "category", "color_tags",
-                       "image_path", "similarity", "match_reason"}],
+                       "image_path", "image_url", "similarity", "match_reason"}],
          "count": n, "query_mode": "image"}
     """
     try:
@@ -103,12 +107,14 @@ def image_search_tool(query_image_path: str, top_k: int = 10,
             if color_tags:
                 reason += f"，{color_tags}色系"
 
+            image_path = meta.get("image_path", "")
             matches.append({
                 "style_id": meta.get("style_id", ""),
                 "description": doc,
                 "category": category,
                 "color_tags": color_tags,
-                "image_path": meta.get("image_path", ""),
+                "image_path": image_path,
+                "image_url": f"/api/nail/image?path={image_path}" if image_path else "",
                 "similarity": sim,
                 "match_reason": reason,
             })

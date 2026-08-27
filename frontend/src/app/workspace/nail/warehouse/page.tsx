@@ -130,11 +130,16 @@ export default function WarehousePage() {
               <input
                 ref={handInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/bmp"
                 className="hidden"
                 onChange={handleHandFile}
               />
             </div>
+            {handUpload.isError && (
+              <p className="text-sm font-medium text-red-500">
+                {handUpload.error?.message}
+              </p>
+            )}
 
             {handsLoading ? (
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -176,6 +181,7 @@ export default function WarehousePage() {
                         <img
                           src={h.url}
                           alt={h.filename}
+                          loading="lazy"
                           className="h-full w-full object-cover"
                         />
                         {isSel && (
@@ -220,11 +226,16 @@ export default function WarehousePage() {
               <input
                 ref={styleInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/bmp"
                 className="hidden"
                 onChange={handleStyleFile}
               />
             </div>
+            {styleUpload.isError && (
+              <p className="text-sm font-medium text-red-500">
+                {styleUpload.error?.message}
+              </p>
+            )}
 
             {stylesLoading ? (
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 lg:grid-cols-6">

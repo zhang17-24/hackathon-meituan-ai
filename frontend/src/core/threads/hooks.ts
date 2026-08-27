@@ -31,6 +31,12 @@ export type ToolEndEvent = {
   data: unknown;
 };
 
+export type NailTryonProgress = {
+  stage: string;
+  progress: number;
+  message?: string;
+};
+
 export type ThreadStreamOptions = {
   threadId?: string | null | undefined;
   context: LocalSettings["context"];
@@ -39,6 +45,7 @@ export type ThreadStreamOptions = {
   onStart?: (threadId: string, runId: string) => void;
   onFinish?: (state: AgentThreadState) => void;
   onToolEnd?: (event: ToolEndEvent) => void;
+  onTryonProgress?: (progress: NailTryonProgress) => void;
 };
 
 type SendMessageOptions = {
@@ -180,6 +187,7 @@ export function useThreadStream({
   onStart,
   onFinish,
   onToolEnd,
+  onTryonProgress,
 }: ThreadStreamOptions) {
   const { t } = useI18n();
   // Track the thread ID that is currently streaming to handle thread changes during streaming
@@ -194,6 +202,7 @@ export function useThreadStream({
     onStart,
     onFinish,
     onToolEnd,
+    onTryonProgress,
   });
 
   const {
@@ -206,8 +215,14 @@ export function useThreadStream({
 
   // Keep listeners ref updated with latest callbacks
   useEffect(() => {
-    listeners.current = { onSend, onStart, onFinish, onToolEnd };
-  }, [onSend, onStart, onFinish, onToolEnd]);
+    listeners.current = {
+      onSend,
+      onStart,
+      onFinish,
+      onToolEnd,
+      onTryonProgress,
+    };
+  }, [onSend, onStart, onFinish, onToolEnd, onTryonProgress]);
 
   useEffect(() => {
     const normalizedThreadId = threadId ?? null;
@@ -315,6 +330,19 @@ export function useThreadStream({
       }
     },
     onCustomEvent(event: unknown) {
+      const payload = (event as { data?: unknown } | null)?.data ?? event;
+      if (
+        typeof payload === "object" &&
+        payload !== null &&
+        "type" in payload &&
+        (payload as { type: unknown }).type === "nail_tryon_progress"
+      ) {
+        listeners.current.onTryonProgress?.(
+          payload as unknown as NailTryonProgress,
+        );
+        return;
+      }
+
       if (
         typeof event === "object" &&
         event !== null &&

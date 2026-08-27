@@ -32,6 +32,11 @@ from nailflow.config.token_usage_config import TokenUsageConfig
 from nailflow.config.tool_config import ToolConfig, ToolGroupConfig
 from nailflow.config.tool_search_config import ToolSearchConfig, load_tool_search_config_from_dict
 
+# 项目根目录（hackathon-meituan-ai/）的 .env 是主配置来源；cwd 下的 .env 兜底。
+# load_dotenv 默认不覆盖已存在的环境变量，先加载根目录，后加载 cwd。
+_PROJECT_ROOT_ENV = Path(__file__).resolve().parents[5] / ".env"
+if _PROJECT_ROOT_ENV.exists():
+    load_dotenv(_PROJECT_ROOT_ENV)
 load_dotenv()
 
 logger = logging.getLogger(__name__)

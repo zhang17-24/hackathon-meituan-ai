@@ -181,6 +181,23 @@ export function MessageListItem({
 /**
  * Custom image component that handles artifact URLs
  */
+
+/**
+ * LLM 有时会把相对路径的图片 URL 改写成它臆造的绝对域名（如
+ * https://nailaibb.chatai.com/...），该域名不可达导致图片裂图。
+ * 非当前站点的绝对 URL 一律还原为相对路径，走同源代理访问后端。
+ */
+function normalizeImageUrl(src: string): string {
+  if (!src.startsWith("http")) return src;
+  try {
+    const u = new URL(src);
+    if (u.origin === window.location.origin) return src;
+    return u.pathname + u.search;
+  } catch {
+    return src;
+  }
+}
+
 function MessageImage({
   src,
   alt,
@@ -202,7 +219,9 @@ function MessageImage({
     return <img className={imgClassName} src={src} alt={alt} {...props} />;
   }
 
-  const url = src.startsWith("/mnt/") ? resolveArtifactURL(src, threadId) : src;
+  const url = src.startsWith("/mnt/")
+    ? resolveArtifactURL(src, threadId)
+    : normalizeImageUrl(src);
 
   return (
     <a href={url} target="_blank" rel="noopener noreferrer">
@@ -338,7 +357,7 @@ function MessageContent_({
         content={contentToDisplay}
         isLoading={isLoading}
         rehypePlugins={[...rehypePlugins, [rehypeKatex, { output: "html" }]]}
-        className="my-2"
+        className="min-w-0"
         components={components}
       />
     </AIElementMessageContent>
