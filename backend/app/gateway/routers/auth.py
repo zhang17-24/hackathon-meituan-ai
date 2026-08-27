@@ -306,21 +306,13 @@ async def login_local(
 async def register(request: Request, response: Response, body: RegisterRequest):
     """Register a new user account (always 'user' role).
 
-    The first admin is created explicitly through /initialize. This endpoint creates regular users.
-    Auto-login by setting the session cookie.
+    Deployment policy: open registration is disabled. Accounts are created
+    via seed scripts / reset_admin only; this endpoint always rejects.
     """
-    try:
-        user = await get_local_provider().create_user(email=body.email, password=body.password, system_role="user")
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=AuthErrorResponse(code=AuthErrorCode.EMAIL_ALREADY_EXISTS, message="Email already registered").model_dump(),
-        )
-
-    token = create_access_token(str(user.id), token_version=user.token_version, nail_role=user.nail_role)
-    _set_session_cookie(response, token, request)
-
-    return UserResponse(id=str(user.id), email=user.email, system_role=user.system_role, nail_role=user.nail_role)
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=AuthErrorResponse(code=AuthErrorCode.INVALID_CREDENTIALS, message="Registration is disabled").model_dump(),
+    )
 
 
 @router.post("/logout", response_model=MessageResponse)

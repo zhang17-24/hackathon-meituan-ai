@@ -52,7 +52,6 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -93,21 +92,10 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const endpoint = isLogin
-        ? "/api/v1/auth/login/local"
-        : "/api/v1/auth/register";
-      const body = isLogin
-        ? `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`
-        : JSON.stringify({ email, password });
-
-      const headers: HeadersInit = isLogin
-        ? { "Content-Type": "application/x-www-form-urlencoded" }
-        : { "Content-Type": "application/json" };
-
-      const res = await fetch(endpoint, {
+      const res = await fetch("/api/v1/auth/login/local", {
         method: "POST",
-        headers,
-        body,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `username=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}`,
         credentials: "include", // Important: include HttpOnly cookie
       });
 
@@ -118,7 +106,7 @@ export default function LoginPage() {
         return;
       }
 
-      // Both login and register set a cookie — redirect to workspace
+      // Login sets a cookie — redirect to workspace
       router.push(redirectPath);
     } catch {
       setError("Network error. Please try again.");
@@ -142,9 +130,7 @@ export default function LoginPage() {
       <div className="border-border/20 bg-background/5 w-full max-w-md space-y-6 rounded-3xl border p-8 backdrop-blur-sm">
         <div className="text-center">
           <h1 className="text-foreground font-serif text-3xl">nailflow</h1>
-          <p className="text-muted-foreground mt-2">
-            {isLogin ? "Sign in to your account" : "Create a new account"}
-          </p>
+          <p className="text-muted-foreground mt-2">Sign in to your account</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-2">
@@ -172,35 +158,16 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="•••••••"
               required
-              minLength={isLogin ? 6 : 8}
+              minLength={6}
             />
           </div>
 
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {loading
-              ? "Please wait..."
-              : isLogin
-                ? "Sign In"
-                : "Create Account"}
+            {loading ? "Please wait..." : "Sign In"}
           </Button>
         </form>
-
-        <div className="text-center text-sm">
-          <button
-            type="button"
-            onClick={() => {
-              setIsLogin(!isLogin);
-              setError("");
-            }}
-            className="text-blue-500 hover:underline"
-          >
-            {isLogin
-              ? "Don't have an account? Sign up"
-              : "Already have an account? Sign in"}
-          </button>
-        </div>
 
         <div className="text-muted-foreground text-center text-xs">
           <Link href="/" className="hover:underline">
