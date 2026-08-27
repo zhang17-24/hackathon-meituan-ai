@@ -19,7 +19,23 @@ from .base import RESULTS_DIR
 
 logger = logging.getLogger(__name__)
 
-_TIMEOUT = int(os.getenv("NAIL_IMAGE_API_TIMEOUT", "60"))
+_TIMEOUT = int(os.getenv("NAIL_IMAGE_API_TIMEOUT", "240"))
+
+
+def _emit_progress(stage: str, progress: int, message: str = "") -> None:
+    """向 SSE 流发送试戴进度事件（stream_mode=custom 时前端可接收）。"""
+    try:
+        from langgraph.config import get_stream_writer
+
+        writer = get_stream_writer()
+        writer({
+            "type": "nail_tryon_progress",
+            "stage": stage,
+            "progress": progress,
+            "message": message,
+        })
+    except Exception:
+        pass
 
 
 def _detect_image_format(data: bytes) -> str:
@@ -263,7 +279,8 @@ def unified_tryon_tool(
 
     IMPORTANT: After this tool returns, reply with the image_url using markdown image syntax:
     ![试戴结果](image_url)
-    Then STOP. Do NOT call any other tools.
+    The image_url is a RELATIVE path (e.g. /api/nail/image?path=...). Use it EXACTLY as returned —
+    do NOT prepend any domain or convert it to an absolute URL. Then STOP. Do NOT call any other tools.
 
     Args:
         hand_image_path: 用户手图文件路径。
@@ -291,6 +308,8 @@ def unified_tryon_tool(
 
         api_key, api_url, model_name, api_type = creds
         logger.info("UnifiedTryon: model_id=%s type=%s", model_name, api_type)
+
+        _emit_progress("style", 20, "分析美甲款式...")
 
         # ── Step 2: 逐指款式分析 ──
         logger.info("UnifiedTryon: analyzing style per-nail...")
@@ -374,6 +393,7 @@ def unified_tryon_tool(
             )
 
         use_wan = (api_type == "wan")
+        _emit_progress("generating", 40, "AI 正在生成试戴效果图，约需 1-2 分钟...")
         logger.info("UnifiedTryon: calling %s, prompt_len=%d",
                      "Wan2.7" if use_wan else "Seedream", len(prompt_text))
 
@@ -391,8 +411,7 @@ def unified_tryon_tool(
                 "model": model_name,
                 "prompt": prompt_text,
                 "image": [hand_data_url, style_data_url],
-                "sequential_image_generation": "disabled",
-                "size": "2K",
+                "size": "2k",
                 "response_format": "b64_json",
                 "watermark": False,
             }
@@ -428,6 +447,7 @@ def unified_tryon_tool(
         with open(str(result_path), "wb") as f:
             f.write(img_data)
 
+        _emit_progress("done", 100, "试戴效果生成完成")
         image_url = f"/api/nail/image?path={result_path}"
         return json.dumps({
             "result_path": str(result_path),

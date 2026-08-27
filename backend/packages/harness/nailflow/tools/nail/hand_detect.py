@@ -1,63 +1,27 @@
 # backend/packages/harness/nailflow/tools/nail/hand_detect.py
-"""检测手部姿态，返回指尖坐标和甲床 bounding box。"""
-import base64
-import io
+"""检测手部姿态，返回指尖坐标和甲床 bounding box。
+
+mediapipe 与主项目依赖链（kubernetes 30 要求 protobuf>=6）存在根本的
+protobuf 版本冲突，无法同进程共存。检测逻辑运行在隔离的 .mp-venv 中
+（见 scripts/mp_hand_detect.py），本工具通过 subprocess 调用。
+"""
 import json
 import logging
 import os
+import subprocess
+import sys
 from pathlib import Path
 
-import mediapipe as mp
-import numpy as np
 from langchain.tools import tool
-from mediapipe.tasks import python as mp_python
-from mediapipe.tasks.python import vision as mp_vision
-from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-# mediapipe 0.10+ Tasks API
-_BaseOptions = mp_python.BaseOptions
-_HandLandmarker = mp_vision.HandLandmarker
-_HandLandmarkerOptions = mp_vision.HandLandmarkerOptions
-_VisionRunningMode = mp_vision.RunningMode
-
-# 默认模型路径（从环境变量读取，或使用相对于本文件的路径）
-_DEFAULT_MODEL_PATH = os.getenv(
-    "MEDIAPIPE_HAND_MODEL",
-    str(Path(__file__).resolve().parents[5] / "data" / "hand_landmarker.task"),
+_BACKEND_DIR = Path(__file__).resolve().parents[5]
+_MP_PYTHON = os.getenv(
+    "MEDIAPIPE_PYTHON",
+    str(_BACKEND_DIR / ".mp-venv" / "bin" / "python"),
 )
-
-# 指尖 landmark ID（拇指~小指）
-FINGERTIP_IDS = [4, 8, 12, 16, 20]
-# 指关节 landmark ID（指甲床对应的近端）
-KNUCKLE_IDS   = [3, 7, 11, 15, 19]
-
-
-def _load_image(image_path: str) -> tuple[np.ndarray, mp.Image]:
-    """加载图片：支持本地文件路径或 base64 字符串。
-
-    Returns:
-        (rgb_array, mp_image) 元组
-    Raises:
-        FileNotFoundError: 当路径不存在且不像 base64 字符串时
-    """
-    from .base import resolve_image_path
-
-    p = resolve_image_path(image_path)
-    if p.exists():
-        img = Image.open(p).convert("RGB")
-    elif len(image_path) > 260 or "/" not in image_path and "\\" not in image_path and not image_path.endswith(
-        (".jpg", ".jpeg", ".png", ".bmp", ".webp")
-    ):
-        # 看起来像 base64 字符串，尝试解码
-        data = base64.b64decode(image_path)
-        img = Image.open(io.BytesIO(data)).convert("RGB")
-    else:
-        raise FileNotFoundError(f"图片文件不存在：{image_path}")
-    arr = np.array(img)
-    mp_img = mp.Image(image_format=mp.ImageFormat.SRGB, data=arr)
-    return arr, mp_img
+_MP_SCRIPT = _BACKEND_DIR / "scripts" / "mp_hand_detect.py"
 
 
 @tool
@@ -75,75 +39,35 @@ def hand_detect_tool(image_path: str) -> str:
         - image_size (dict): {"width": w, "height": h}
     """
     try:
-        img_array, mp_img = _load_image(image_path)
-        h, w = img_array.shape[:2]
-
-        model_path = _DEFAULT_MODEL_PATH
-        if not Path(model_path).exists():
+        if not _MP_SCRIPT.exists():
             return json.dumps({
                 "detected": False,
-                "message": (
-                    f"MediaPipe 手部模型文件不存在（{model_path}）。"
-                    "请下载 hand_landmarker.task 并设置环境变量 MEDIAPIPE_HAND_MODEL。"
-                ),
+                "message": f"手部检测脚本不存在（{_MP_SCRIPT}）。请检查 backend/.mp-venv 是否已初始化。",
                 "nail_bboxes": [],
-                "image_size": {"width": w, "height": h},
+                "image_size": {},
             }, ensure_ascii=False)
 
-        options = _HandLandmarkerOptions(
-            base_options=_BaseOptions(model_asset_path=model_path),
-            running_mode=_VisionRunningMode.IMAGE,
-            num_hands=2,
-            min_hand_detection_confidence=0.5,
-            min_hand_presence_confidence=0.5,
-            min_tracking_confidence=0.5,
+        proc = subprocess.run(
+            [str(_MP_PYTHON), str(_MP_SCRIPT), image_path],
+            capture_output=True,
+            text=True,
+            timeout=60,
         )
-
-        with _HandLandmarker.create_from_options(options) as landmarker:
-            result = landmarker.detect(mp_img)
-
-        if not result.hand_landmarks:
+        if proc.returncode != 0:
+            logger.error("mp_hand_detect stderr: %s", proc.stderr[-500:])
             return json.dumps({
                 "detected": False,
-                "message": (
-                    "未检测到手部。建议：① 正面拍摄手背 ② 确保光线充足 "
-                    "③ 手指展开、完整入镜 ④ 避免背景颜色与肤色相近"
-                ),
+                "message": "手部检测进程异常退出，请稍后重试",
                 "nail_bboxes": [],
-                "image_size": {"width": w, "height": h},
+                "image_size": {},
             }, ensure_ascii=False)
 
-        nail_bboxes = []
-        for hand_lm in result.hand_landmarks:
-            lms = [(int(lm.x * w), int(lm.y * h)) for lm in hand_lm]
-            for tip_id, knuckle_id in zip(FINGERTIP_IDS, KNUCKLE_IDS):
-                tx, ty = lms[tip_id]
-                kx, ky = lms[knuckle_id]
-                # 甲面宽度取指尖-关节距离的 80%，高度取 50%
-                nail_w = max(int(abs(tx - kx) * 0.8), 18)
-                nail_h = max(int(abs(ty - ky) * 0.5), 12)
-                x1 = max(tx - nail_w // 2, 0)
-                y1 = max(min(ty, ky) - nail_h // 4, 0)
-                x2 = min(tx + nail_w // 2, w)
-                y2 = min(max(ty, ky) + nail_h // 4, h)
-                nail_bboxes.append({
-                    "finger_id": tip_id,
-                    "x1": x1, "y1": y1,
-                    "x2": x2, "y2": y2,
-                    "center_x": tx, "center_y": ty,
-                })
-
-        return json.dumps({
-            "detected": True,
-            "message": f"检测到 {len(result.hand_landmarks)} 只手，{len(nail_bboxes)} 个甲面区域",
-            "nail_bboxes": nail_bboxes,
-            "image_size": {"width": w, "height": h},
-        }, ensure_ascii=False)
-
-    except FileNotFoundError:
+        result = json.loads(proc.stdout.strip())
+        return json.dumps(result, ensure_ascii=False)
+    except subprocess.TimeoutExpired:
         return json.dumps({
             "detected": False,
-            "message": f"图片文件不存在：{image_path}",
+            "message": "手部检测超时，请稍后重试",
             "nail_bboxes": [],
             "image_size": {},
         }, ensure_ascii=False)

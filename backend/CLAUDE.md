@@ -25,9 +25,9 @@ nail-flow/
 │   ├── Makefile               # Backend-only commands (dev, gateway, lint)
 │   ├── langgraph.json         # LangGraph Studio graph configuration
 │   ├── packages/
-│   │   └── harness/           # nailflow-harness package (import: deerflow.*)
+│   │   └── harness/           # nailflow-harness package (import: nailflow.*)
 │   │       ├── pyproject.toml
-│   │       └── deerflow/
+│   │       └── nailflow/
 │   │           ├── agents/            # LangGraph agent system
 │   │           │   ├── lead_agent/    # Main agent (factory + system prompt)
 │   │           │   ├── middlewares/   # 10 middleware components
@@ -57,7 +57,6 @@ nail-flow/
 │   │   │   └── routers/       # FastAPI route modules (models, mcp, memory, skills, uploads, threads, artifacts, agents, suggestions, channels)
 │   │   └── channels/          # IM platform integrations
 │   ├── tests/                 # Test suite
-│   └── docs/                  # Documentation
 ├── frontend/                   # Next.js frontend application
 └── skills/                     # Agent skills directory
     ├── public/                # Public skills (committed)
@@ -126,7 +125,7 @@ Regression tests related to Docker/provisioner behavior:
 
 Blocking-IO runtime gate (`tests/blocking_io/`):
 - Wraps every item under `tests/blocking_io/` with a strict Blockbuster
-  context scoped to `app.*` and `deerflow.*` (see
+  context scoped to `app.*` and `nailflow.*` (see
   `tests/support/detectors/blocking_io_runtime.py`). Any sync blocking IO
   call whose stack passes through nailflow business code while running on
   the asyncio event loop raises `BlockingError` and fails the test.
@@ -154,10 +153,10 @@ CI runs these regression tests for every pull request via [.github/workflows/bac
 
 The backend is split into two layers with a strict dependency direction:
 
-- **Harness** (`packages/harness/nailflow/`): Publishable agent framework package (`nailflow-harness`). Import prefix: `deerflow.*`. Contains agent orchestration, tools, sandbox, models, MCP, skills, config — everything needed to build and run agents.
+- **Harness** (`packages/harness/nailflow/`): Publishable agent framework package (`nailflow-harness`). Import prefix: `nailflow.*`. Contains agent orchestration, tools, sandbox, models, MCP, skills, config — everything needed to build and run agents.
 - **App** (`app/`): Unpublished application code. Import prefix: `app.*`. Contains the FastAPI Gateway API and IM channel integrations (Feishu, Slack, Telegram, DingTalk).
 
-**Dependency rule**: App imports deerflow, but deerflow never imports app. This boundary is enforced by `tests/test_harness_boundary.py` which runs in CI.
+**Dependency rule**: App imports nailflow, but nailflow never imports app. This boundary is enforced by `tests/test_harness_boundary.py` which runs in CI.
 
 **Import conventions**:
 ```python
@@ -203,7 +202,7 @@ Lead-agent middlewares are assembled in strict append order across `packages/har
 3. **SandboxMiddleware** - Acquires sandbox, stores `sandbox_id` in state
 4. **DanglingToolCallMiddleware** - Injects placeholder ToolMessages for AIMessage tool_calls that lack responses (e.g., due to user interruption), including raw provider tool-call payloads preserved only in `additional_kwargs["tool_calls"]`
 5. **LLMErrorHandlingMiddleware** - Normalizes provider/model invocation failures into recoverable assistant-facing errors before later middleware/tool stages run
-6. **GuardrailMiddleware** - Pre-tool-call authorization via pluggable `GuardrailProvider` protocol (optional, if `guardrails.enabled` in config). Evaluates each tool call and returns error ToolMessage on deny. Three provider options: built-in `AllowlistProvider` (zero deps), OAP policy providers (e.g. `aport-agent-guardrails`), or custom providers. See [docs/GUARDRAILS.md](docs/GUARDRAILS.md) for setup, usage, and how to implement a provider.
+6. **GuardrailMiddleware** - Pre-tool-call authorization via pluggable `GuardrailProvider` protocol (optional, if `guardrails.enabled` in config). Evaluates each tool call and returns error ToolMessage on deny. Three provider options: built-in `AllowlistProvider` (zero deps), OAP policy providers (e.g. `aport-agent-guardrails`), or custom providers.
 7. **SandboxAuditMiddleware** - Audits sandboxed shell/file operations for security logging before tool execution continues
 8. **ToolErrorHandlingMiddleware** - Converts tool exceptions into error `ToolMessage`s so the run can continue instead of aborting
 9. **SummarizationMiddleware** - Context reduction when approaching token limits (optional, if enabled)
@@ -495,7 +494,7 @@ Both can be modified at runtime via Gateway API endpoints or `nailflowClient` me
 
 `nailflowClient` provides direct in-process access to all nailflow capabilities without HTTP services. All return types align with the Gateway API response schemas, so consumer code works identically in HTTP and embedded modes.
 
-**Architecture**: Imports the same `deerflow` modules that Gateway API uses. Shares the same config files and data directories. No FastAPI dependency.
+**Architecture**: Imports the same `nailflow` modules that Gateway API uses. Shares the same config files and data directories. No FastAPI dependency.
 
 **Agent Conversation**:
 - `chat(message, thread_id)` — synchronous, accumulates streaming deltas per message-id and returns the final AI text
@@ -507,7 +506,7 @@ Both can be modified at runtime via Gateway API endpoints or `nailflowClient` me
 - Agent created lazily via `create_agent()` + `_build_middlewares()`, same as `make_lead_agent`
 - Supports `checkpointer` parameter for state persistence across turns
 - `reset_agent()` forces agent recreation (e.g. after memory or skill changes)
-- See [docs/STREAMING.md](docs/STREAMING.md) for the full design: why Gateway and nailflowClient are parallel paths, LangGraph's `stream_mode` semantics, the per-id dedup invariants, and regression testing strategy
+- Gateway and nailflowClient are parallel paths; LangGraph's `stream_mode` semantics, per-id dedup invariants, and the regression testing strategy are described in code and tests.
 
 **Gateway Equivalent Methods** (replaces Gateway API):
 
@@ -605,7 +604,7 @@ Multi-file upload with automatic document conversion:
 - Duplicate filenames in a single upload request are auto-renamed with `_N` suffixes so later files do not truncate earlier files
 - Agent receives uploaded file list via `UploadsMiddleware`
 
-See [docs/FILE_UPLOAD.md](docs/FILE_UPLOAD.md) for details.
+Files are stored in thread-isolated directories.
 
 ### Plan Mode
 
@@ -614,7 +613,7 @@ TodoList middleware for complex multi-step tasks:
 - Provides `write_todos` tool for task tracking
 - One task in_progress at a time, real-time updates
 
-See [docs/plan_mode_usage.md](docs/plan_mode_usage.md) for details.
+See the `write_todos` tool and `TodoListMiddleware` for usage.
 
 ### Context Summarization
 
@@ -623,7 +622,7 @@ Automatic conversation summarization when approaching token limits:
 - Trigger types: tokens, messages, or fraction of max input
 - Keeps recent messages while summarizing older ones
 
-See [docs/summarization.md](docs/summarization.md) for details.
+Trigger types: tokens, messages, or fraction of max input.
 
 ### Vision Support
 
@@ -641,12 +640,4 @@ For models with `supports_vision: true`:
 
 ## Documentation
 
-See `docs/` directory for detailed documentation:
-- [CONFIGURATION.md](docs/CONFIGURATION.md) - Configuration options
-- [ARCHITECTURE.md](docs/ARCHITECTURE.md) - Architecture details
-- [API.md](docs/API.md) - API reference
-- [SETUP.md](docs/SETUP.md) - Setup guide
-- [FILE_UPLOAD.md](docs/FILE_UPLOAD.md) - File upload feature
-- [PATH_EXAMPLES.md](docs/PATH_EXAMPLES.md) - Path types and usage
-- [summarization.md](docs/summarization.md) - Context summarization
-- [plan_mode_usage.md](docs/plan_mode_usage.md) - Plan mode with TodoList
+Key features: file upload, plan mode, context summarization, vision support. See code and tests for details.

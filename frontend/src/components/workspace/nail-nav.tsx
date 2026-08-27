@@ -5,9 +5,8 @@ import {
   BoxIcon,
   ChartNoAxesColumnIcon,
   DatabaseIcon,
-  HeartIcon,
+  MessagesSquareIcon,
   SparklesIcon,
-  WrenchIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
@@ -38,9 +37,9 @@ const NAV_ITEMS: NailNavItem[] = [
     requiredRole: "user",
   },
   {
-    href: "/workspace/nail/tools",
-    label: "工具管理",
-    icon: WrenchIcon,
+    href: "/workspace/nail/community",
+    label: "社区",
+    icon: MessagesSquareIcon,
     requiredRole: "user",
   },
   {
@@ -54,12 +53,6 @@ const NAV_ITEMS: NailNavItem[] = [
     label: "数据中心",
     icon: DatabaseIcon,
     requiredRole: "ops",
-  },
-  {
-    href: "/workspace/nail/evaluation",
-    label: "评分面板",
-    icon: HeartIcon,
-    requiredRole: "dev",
   },
 ];
 

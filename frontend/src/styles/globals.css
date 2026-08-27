@@ -625,6 +625,12 @@
 .nail-message-assistant {
   color: #4d1f36;
   border-radius: 1.5rem 1.5rem 1.5rem 0.45rem;
+  /* 与用户气泡 px-4 py-3 对齐：气泡内文字不能贴边 */
+  padding: 0.75rem 1rem;
+  /* 防止长文本（URL/英文单词）把气泡撑破 */
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   background:
     linear-gradient(
       145deg,
@@ -651,6 +657,9 @@
 .nail-message-human pre {
   border: 1px solid rgba(255, 182, 215, 0.56);
   background: rgba(255, 255, 255, 0.62);
+  /* 长代码行在气泡内滚动而不是撑破气泡 */
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .chat-detail-input {

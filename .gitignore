@@ -28,12 +28,19 @@ __pycache__/
 **/__pycache__/
 
 # NailFlow runtime data (uploads, results, chroma vectors)
-data/
-!data/
+data/*
+**/data/*
 !data/mock/
 !data/mock/**
+!data/styles/
+!data/styles/**
+!data/seed_images/
+!data/seed_images/**
+!data/knowledge/
+!data/knowledge/**
 
-# DeerFlow local runtime state
+# NailFlow / DeerFlow local runtime state
+**/.nail-flow/
 **/.deer-flow/
 research/sources/deer-flow-main/
 research/cloned_repos/

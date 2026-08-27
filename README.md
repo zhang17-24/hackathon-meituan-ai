@@ -93,7 +93,7 @@
 
 | 层 | 技术 | 说明 |
 |----|------|------|
-| Agent 编排 | **DeerFlow + LangGraph** | SSE 流式思考链，Checkpoint 持久化 |
+| Agent 编排 | **LangGraph** | SSE 流式思考链，Checkpoint 持久化 |
 | 后端 | **FastAPI + uvicorn** | 异步，内嵌 LangGraph 运行时 |
 | 手部检测 | **MediaPipe Tasks** | HandLandmarker，21 个关键点定位 |
 | 向量检索 | **ChromaDB + Chinese-CLIP** | 进程内向量库，甲面局部化 embedding |
@@ -421,7 +421,7 @@ hackathon-meituan-ai/
 
 ## License
 
-本项目为美团黑客松参赛作品，基于 [DeerFlow](https://github.com/bytedance/deer-flow) 二次开发。
+本项目为美团黑客松参赛作品，基于 LangGraph 自主搭建的多 Agent 编排框架。
 
 ---
 

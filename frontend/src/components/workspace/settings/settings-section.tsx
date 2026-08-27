@@ -4,11 +4,13 @@ export function SettingsSection({
   className,
   title,
   description,
+  rightAction,
   children,
 }: {
   className?: string;
   title: React.ReactNode;
   description?: React.ReactNode;
+  rightAction?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -19,7 +21,10 @@ export function SettingsSection({
       )}
     >
       <header className="space-y-2">
-        <div className="text-lg font-bold text-[#5b1738]">{title}</div>
+        <div className="flex items-start justify-between gap-3">
+          <div className="text-lg font-bold text-[#5b1738]">{title}</div>
+          {rightAction}
+        </div>
         {description && (
           <div className="text-sm leading-6 text-[#8f7b88]">{description}</div>
         )}

@@ -35,6 +35,7 @@ def preference_rag_tool(action: str, user_id: str, style_id: str = "", data: str
                         "INSERT INTO ops_signals (user_id, style_id, signal_type) VALUES (?,?,?)",
                         (user_id, style_id, signal_type)
                     )
+                    conn.commit()
             return json.dumps({"saved": True, "signal_type": signal_type}, ensure_ascii=False)
 
         elif action == "get_stats":

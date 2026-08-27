@@ -255,7 +255,7 @@ export default function TryonPage() {
               <NailStyleGallery
                 selectedUrl={
                   galleryStylePath
-                    ? `/api/nail/image?path=${encodeURIComponent(galleryStylePath)}`
+                    ? `/api/nail/image?path=${galleryStylePath}`
                     : null
                 }
                 disabled={loading}
@@ -263,9 +263,7 @@ export default function TryonPage() {
                   const path = style.url.replace("/api/nail/image?path=", "");
                   setGalleryStylePath(path);
                   setStyleFile(null);
-                  setStylePreview(
-                    `/api/nail/image?path=${encodeURIComponent(path)}`,
-                  );
+                  setStylePreview(`/api/nail/image?path=${path}`);
                 }}
               />
             </div>

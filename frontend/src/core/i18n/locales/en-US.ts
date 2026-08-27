@@ -54,7 +54,6 @@ export const enUS: Translations = {
 
   // Home
   home: {
-    docs: "Docs",
     blog: "Blog",
   },
 

@@ -23,7 +23,13 @@ _PROCESSOR = None
 
 
 def _ensure_model():
-    """延迟加载 Chinese-CLIP 模型（首次调用时加载）。"""
+    """延迟加载 Chinese-CLIP 模型（首次调用时加载）。
+
+    默认只使用本地缓存（NAIL_EMBEDDING_OFFLINE=1）：HuggingFace 不可达时，
+    ``from_pretrained`` 会进入 huggingface_hub 的 5 次退避重试，把整个 run
+    阻塞数十秒，用户端表现为对话"卡住、不流式"。离线优先可立即失败并降级。
+    如需首次联网下载，设置 NAIL_EMBEDDING_OFFLINE=0（并配置 HF 镜像）。
+    """
     global _MODEL, _PROCESSOR
     if _MODEL is not None:
         return True
@@ -33,8 +39,15 @@ def _ensure_model():
         from transformers import ChineseCLIPModel, ChineseCLIPProcessor
 
         logger.info("Loading Chinese-CLIP model: %s (device=%s)", _MODEL_NAME, _DEVICE)
-        _MODEL = ChineseCLIPModel.from_pretrained(_MODEL_NAME)
-        _PROCESSOR = ChineseCLIPProcessor.from_pretrained(_MODEL_NAME)
+        if os.getenv("NAIL_EMBEDDING_OFFLINE", "1") == "1":
+            _MODEL = ChineseCLIPModel.from_pretrained(_MODEL_NAME, local_files_only=True)
+            _PROCESSOR = ChineseCLIPProcessor.from_pretrained(_MODEL_NAME, local_files_only=True)
+        else:
+            # 允许联网，但收紧 HF 请求超时，避免长时间重试
+            os.environ.setdefault("HF_HUB_ETAG_TIMEOUT", "10")
+            os.environ.setdefault("HF_HUB_DOWNLOAD_TIMEOUT", "30")
+            _MODEL = ChineseCLIPModel.from_pretrained(_MODEL_NAME)
+            _PROCESSOR = ChineseCLIPProcessor.from_pretrained(_MODEL_NAME)
         _MODEL.eval()
         if _DEVICE != "cpu" and torch.cuda.is_available():
             _MODEL = _MODEL.to(_DEVICE)

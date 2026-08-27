@@ -15,7 +15,7 @@ from .base import RESULTS_DIR
 
 logger = logging.getLogger(__name__)
 
-_TIMEOUT = int(os.getenv("NAIL_IMAGE_API_TIMEOUT", "60"))
+_TIMEOUT = int(os.getenv("NAIL_IMAGE_API_TIMEOUT", "240"))
 
 
 def _detect_image_format(data: bytes) -> str:
@@ -185,8 +185,7 @@ def image_generation_tool(
                 "model": model_name,
                 "prompt": prompt_text,
                 "image": reference_images,
-                "sequential_image_generation": "disabled",
-                "size": "2K",
+                "size": "2k",
                 "response_format": "b64_json",
                 "watermark": False,
             }

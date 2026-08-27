@@ -19,6 +19,17 @@ export interface StyleImage {
 
 const W = "/api/nail/warehouse";
 
+async function errorDetail(res: Response, fallback: string): Promise<string> {
+  try {
+    const d = await res.json();
+    const detail = (d as { detail?: unknown })?.detail;
+    if (typeof detail === "string" && detail) return detail;
+  } catch {
+    // 非 JSON 响应，用兜底文案
+  }
+  return fallback;
+}
+
 export async function listHands(): Promise<HandPhoto[]> {
   const res = await apiFetch(`${W}/hands`);
   if (!res.ok) throw new Error("加载手图失败");
@@ -30,7 +41,7 @@ export async function uploadHand(file: File): Promise<HandPhoto> {
   const fd = new FormData();
   fd.append("file", file);
   const res = await apiFetch(`${W}/hands`, { method: "POST", body: fd });
-  if (!res.ok) throw new Error("上传手图失败");
+  if (!res.ok) throw new Error(await errorDetail(res, "上传手图失败"));
   return res.json();
 }
 
@@ -51,7 +62,7 @@ export async function uploadStyle(file: File): Promise<StyleImage> {
   fd.append("category", "user");
   fd.append("tags", "[]");
   const res = await apiFetch(`${W}/styles`, { method: "POST", body: fd });
-  if (!res.ok) throw new Error("上传款式失败");
+  if (!res.ok) throw new Error(await errorDetail(res, "上传款式失败"));
   return res.json();
 }
 
