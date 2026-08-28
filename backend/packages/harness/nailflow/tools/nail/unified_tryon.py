@@ -119,6 +119,10 @@ def _resolve_style_structured(style_image_path: str) -> dict:
         ])
         resp = model.invoke([msg])
         raw = resp.content.strip()
+        # Strip reasoning/think blocks (MiniMax returns <think>...</think>)
+        if "<think>" in raw:
+            import re as _re
+            raw = _re.sub(r"<think>.*?</think>", "", raw, flags=_re.DOTALL).strip()
         if "```" in raw:
             parts = raw.split("```")
             raw = parts[1] if len(parts) > 1 else raw
